@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 Binder 机制 基础 (三) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Binder 是 Android 系统中的一种 IPC 进程间通信结构。最后一章我们来探讨一下整个 Binder 的流程，也通过流程来分析整个系统的最核心功能。最后和其他的 IPC机制 做一个简单的对比。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 Binder 机制 基础 (三)">
+<meta property="og:url" content="http://yoursite.com/2016/09/18/Android-浅析-Binder-机制-基础-三/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Binder 是 Android 系统中的一种 IPC 进程间通信结构。最后一章我们来探讨一下整个 Binder 的流程，也通过流程来分析整个系统的最核心功能。最后和其他的 IPC机制 做一个简单的对比。">
+<meta property="og:image" content="http://ww3.sinaimg.cn/bmiddle/7669bef3gw1ewjga6jqk8j20jh0nj790.jpg">
+<meta property="og:updated_time" content="2016-09-22T08:02:10.450Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 Binder 机制 基础 (三)">
+<meta name="twitter:description" content="Binder 是 Android 系统中的一种 IPC 进程间通信结构。最后一章我们来探讨一下整个 Binder 的流程，也通过流程来分析整个系统的最核心功能。最后和其他的 IPC机制 做一个简单的对比。">
+<meta name="twitter:image" content="http://ww3.sinaimg.cn/bmiddle/7669bef3gw1ewjga6jqk8j20jh0nj790.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-Binder-机制-基础-三" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/18/Android-浅析-Binder-机制-基础-三/" class="article-date">
+  <time datetime="2016-09-18T09:55:18.000Z" itemprop="datePublished">2016-09-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 Binder 机制 基础 (三)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="Binder-架构"><a href="#Binder-架构" class="headerlink" title="Binder 架构"></a>Binder 架构</h2><blockquote>
+<p>Android 的Binder机制就是一个C/S架构，整个机制包括：<br>1、ServiceManager；<br>2、服务端Server；<br>3、客户端client；<br>4、服务代理proxy；<br>5、Binder驱动；</p>
+</blockquote>
+<p>Android Binder 系统架构图<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">st=&gt;operation: 原生 Binder 客户端/服务端</div><div class="line">op=&gt;operation: 原生 Binder 框架</div><div class="line">op1=&gt;operation: Binder 核心库</div><div class="line">op2=&gt;operation: Binder Adapter</div><div class="line">ProcessState.cpp/IPCThreadState.cpp</div><div class="line">op3=&gt;operation: Binder 驱动</div><div class="line">e=&gt;end</div><div class="line"></div><div class="line">st-&gt;op-&gt;op1-&gt;op2-&gt;op3</div></pre></td></tr></table></figure></p>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><h3 id="应用层工作流程"><a href="#应用层工作流程" class="headerlink" title="应用层工作流程"></a>应用层工作流程</h3><ol>
+<li>客户端首先获取服务端的代理对象<a href="代理对象实际上就是客户端简历一个服务端的“引用”，该对象具有服务端的功能，使其在客户端访问服务端的方法就像访问本地方法一样。">^footnote</a>。</li>
+<li>客户端通过调用服务端代理的方式向服务端发送请求。</li>
+<li>代理对象将用户请求通过Binder驱动发送到服务器进程。</li>
+<li>服务器进程处理用户请求，并通过Binder驱动返回处理结果给客户端的服务端代理对象。</li>
+<li>客户端收到服务端的返回结果。</li>
+</ol>
+<p>Binder 内存结构图:<br><img src="http://ww3.sinaimg.cn/bmiddle/7669bef3gw1ewjga6jqk8j20jh0nj790.jpg" alt="binder 内存结构图"></p>
+<h3 id="系统层工作流程"><a href="#系统层工作流程" class="headerlink" title="系统层工作流程"></a>系统层工作流程</h3><p>具体Binder工作流程：</p>
+<ol>
+<li>Linux系统启动，Binder driver开始工作，注册设备文件/dev/binder</li>
+<li>Android系统启动，ServiceManager开始工作，向Binder driver注册ContextManager，这个过程中，Binder driver中创建了第一个binder_node(注意：ServiceManager在内核空间有binder_node,但是在用户空间没有对应的BBinder）</li>
+<li>Service进程启动，在用户空间创建了BBinder，并向ServiceManager注册服务，注册的过程中，Binder driver为Service在内核空间创建了binder_node</li>
+<li>Client启动，向ServiceManager请求指定Serivce的Handle,这个过程中，Binder driver为Client在内核空间创建了handle对应的binder_ref</li>
+<li>Client根据ServiceManager提供的handle,向Service请求服务</li>
+</ol>
+<h3 id="完整Binder工作流程"><a href="#完整Binder工作流程" class="headerlink" title="完整Binder工作流程"></a>完整Binder工作流程</h3><ol>
+<li>Client进程在用户态调用BpBinder的接口</li>
+<li>BpBinder调用ioctl向dev/binder文件写入数据，数据中包含自己的handle</li>
+<li>进程进入到核心态，执行binder driver的代码，先查找handle关联的binder_ref</li>
+<li>进一步根据binder_ref关联的binder_node,确定目标Service进程即(binder_proc)</li>
+<li>把数据保存到目标进程（或目标线程）的todo队列，这时的数据中添加了当前线程（binder_thread)信息，并唤醒Service</li>
+<li>Client开始等待回复</li>
+<li>Service进程内的binder driver被唤醒，缓存client发送过来的数据</li>
+<li>Service进程返回用户态，调用BBinder到接口，开始处理请求</li>
+<li>请求处理结束，调用ioctl，回复Client的请求</li>
+<li>进程进入核心态，通过步骤7缓存的数据，确定请求发起线程（步骤五中，数据内添加了请求发起线程的信息）</li>
+<li>把回复数据保存到client进程请求线程的todo队列中，并唤醒Client进程中的请求线程</li>
+<li>Service进程继续等待请求</li>
+<li>Client进程内的请求线程被唤醒，返回用户态</li>
+<li>返回到用户态，client进程处理回复数据</li>
+</ol>
+<h3 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h3><h4 id="Native-服务"><a href="#Native-服务" class="headerlink" title="Native 服务"></a>Native 服务</h4><blockquote>
+<p>实际就是在C++空间完成的服务。主要指系统开始初始化时通过Init.rc脚本启动的服务。</p>
+</blockquote>
+<h4 id="Android-服务"><a href="#Android-服务" class="headerlink" title="Android 服务"></a>Android 服务</h4><blockquote>
+<p>就是在JVM空间完成的服务，也使用Navite框架，但服务主体存在于Android空间。Android服务是在第二阶段Init2时简历的服务。</p>
+</blockquote>
+<h4 id="Init-空间服务"><a href="#Init-空间服务" class="headerlink" title="Init 空间服务"></a>Init 空间服务</h4><blockquote>
+<p>主要用于完成属性设置，采用Sockey方式通信。</p>
+</blockquote>
+<h3 id="Binder-Adapter"><a href="#Binder-Adapter" class="headerlink" title="Binder Adapter"></a>Binder Adapter</h3><blockquote>
+<p>实际上是对Binder驱动的封装，用于完成Binder库与Binder 内核驱动的交互。主要实现包括：IPCThreadState和ProcessState。</p>
+</blockquote>
+<p>PorcessState：包含通信细节，利用open_binder打开Linux设备dev\binder。通过ioctrl建立基本的通信框架。<br>IPCThreadState：主要负责Binder数据读取、写入和请求处理框架。<br>每个进程只有一个ProcessState对象。<br>每个线程都会有一个IPCThreadState对象。</p>
+<h4 id="PorcessState"><a href="#PorcessState" class="headerlink" title="PorcessState"></a>PorcessState</h4><blockquote>
+<p>ProcessState的作用是维护当前进程中所有Service代理（BpBinder对象）。一个客户端进程可能需要多个Service的服务，这样可能会创建多个Service代理（BpBinder对象），客户端进程中的ProcessState对象将会负责维护这些Service代理。</p>
+</blockquote>
+<p>ProcessState负责打开/driver/binder并将句柄记录在变量中。真正使用Binder设备句柄的是IPCThreadState。</p>
+<h4 id="IPCThreadState"><a href="#IPCThreadState" class="headerlink" title="IPCThreadState"></a>IPCThreadState</h4><p>有三个重要的函数功能。</p>
+<ol>
+<li>talkWithDriver() 负责读取和写入功能</li>
+<li>executeCommand() 负责处理请求功能</li>
+<li>joinThreadPool() 负责循环结构</li>
+</ol>
+<p>不管是客户端进程还是服务端进程，都需要IPCThreadState来与Binder设备通信。<br>客户端：通过服务代理对象BpBinder调用transact函数把请求写入Binder。<br>服务端：完成初始化后就进入循环状态等待客户端请求，Service进程调用它的IPCThreadState对象的joinThreadPool方法轮询Binder设备。</p>
+<h4 id="BBinder"><a href="#BBinder" class="headerlink" title="BBinder"></a>BBinder</h4><p>BBinder是server端用于接收消息的通道。<br>transact方法:<br>当IPCThreadState实例收到BD消息时，通过BBinder的transact的方法将其传递给它的子类BnSERVICE的onTransact函数执行server端的操作。</p>
+<h4 id="BpBinder"><a href="#BpBinder" class="headerlink" title="BpBinder"></a>BpBinder</h4><p>BpBinder是client端创建的用于消息发送的代理。主要功能是负责client向BD发送调用请求的数据。<br>transact方法:<br>向IPCThreadState实例发送消息，通知其有消息要发送给BD。</p>
+<h2 id="Binder-内存管理"><a href="#Binder-内存管理" class="headerlink" title="Binder 内存管理"></a>Binder 内存管理</h2><h3 id="传统-IPC-方式"><a href="#传统-IPC-方式" class="headerlink" title="传统 IPC 方式"></a>传统 IPC 方式</h3><p>在传统的IPC方式中，数据从发送端到达接收端通常的做法是，发送方将准备好的数据存放在缓存区中，调用API通过系统调用进入内核中。内核服务程序在内核空间分配内存，将数据从发送方缓存区复制到内核缓存区中。接收方读数据时也要提供一块缓存区，内核将数据从内核缓存区拷贝到接收方提供的缓存区中并唤醒接收线程，完成一次数据发送。这种存储-转发机制有两个缺陷：首先是效率低下，需要做两次拷贝：用户空间-&gt;内核空间-&gt;用户空间。Linux使用copy_from_user()和copy_to_user()实现这两个跨空间拷贝，在此过程中如果使用了高端内存（high memory），这种拷贝需要临时建立/取消页面映射，造成性能损失。其次是接收数据的缓存要由接收方提供，可接收方不知道到底要多大的缓存才够用，只能开辟尽量大的空间或先调用API接收消息头获得消息体大小，再开辟适当的空间接收消息体。两种做法都有不足，不是浪费空间就是浪费时间。</p>
+<h3 id="Binder-方式"><a href="#Binder-方式" class="headerlink" title="Binder 方式"></a>Binder 方式</h3><p><strong>Binder采用一种全新策略：由Binder驱动负责管理数据接收缓存。</strong>我们注意到Binder驱动实现了mmap()系统调用，这对字符设备是比较特殊的，因为mmap()通常用在有物理存储介质的文件系统上，而象Binder这样没有物理介质，纯粹用来通信的字符设备没必要支持mmap()。Binder驱动当然不是为了在物理介质和用户空间做映射，而是用来创建数据接收的缓存空间。先看mmap()是如何使用的：<br>fd = open(“/dev/binder”, O_RDWR);<br>mmap(NULL, MAP_SIZE, PROT_READ, MAP_PRIVATE, fd, 0);<br>这样Binder的接收方就有了一片大小为MAP_SIZE的接收缓存区。mmap()的返回值是内存映射在用户空间的地址，不过这段空间是由驱动管理，用户不必也不能直接访问（映射类型为PROT_READ，只读映射）。</p>
+<p>接收缓存区映射好后就可以做为缓存池接收和存放数据了。前面说过，接收数据包的结构为binder_transaction_data，但这只是消息头，真正的有效负荷位于data.buffer所指向的内存中。这片内存不需要接收方提供，恰恰是来自mmap()映射的这片缓存池。在数据从发送方向接收方拷贝时，驱动会根据发送数据包的大小，使用最佳匹配算法从缓存池中找到一块大小合适的空间，将数据从发送缓存区复制过来。要注意的是，存放binder_transaction_data结构本身以及表4中所有消息的内存空间还是得由接收者提供，但这些数据大小固定，数量也不多，不会给接收方造成不便。映射的缓存池要足够大，因为接收方的线程池可能会同时处理多条并发的交互，每条交互都需要从缓存池中获取目的存储区，一旦缓存池耗竭将产生导致无法预期的后果。</p>
+<p>有分配必然有释放。接收方在处理完数据包后，就要通知驱动释放data.buffer所指向的内存区。在介绍Binder协议时已经提到，这是由命令BC_FREE_BUFFER完成的。</p>
+<p>通过上面介绍可以看到，驱动为接收方分担了最为繁琐的任务：分配/释放大小不等，难以预测的有效负荷缓存区，而接收方只需要提供缓存来存放大小固定，最大空间可以预测的消息头即可。在效率上，由于mmap()分配的内存是映射在接收方用户空间里的，所有总体效果就相当于对有效负荷数据做了一次从发送方用户空间到接收方用户空间的直接数据拷贝，省去了内核中暂存这个步骤，提升了一倍的性能。顺便再提一点，Linux内核实际上没有从一个用户空间到另一个用户空间直接拷贝的函数，需要先用copy_from_user()拷贝到内核空间，再用copy_to_user()拷贝到另一个用户空间。为了实现用户空间到用户空间的拷贝，mmap()分配的内存除了映射进了接收方进程里，还映射进了内核空间。所以调用copy_from_user()将数据拷贝进内核空间也相当于拷贝进了接收方的用户空间，这就是Binder只需一次拷贝的‘秘密’。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/18/Android-浅析-Binder-机制-基础-三/" data-id="civ9405rs0006akqt40oar9r6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Binder/">Binder</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/21/Android-浅析-EventBus-一-使用/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 EventBus (一) 使用
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/09/18/Android-浅析-Binder-机制-基础-二/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 Binder 机制 基础 (二)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

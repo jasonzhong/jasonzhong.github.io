@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 Volley (二) 原理 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 Volley (二) 原理">
+<meta property="og:url" content="http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
+<meta property="og:image" content="http://ww3.sinaimg.cn/large/7669bef3gw1ezgdilrd3pj20f20e3ac8.jpg">
+<meta property="og:image" content="http://ww4.sinaimg.cn/large/7669bef3gw1ezx3ienw1bj20uo16kn2f.jpg">
+<meta property="og:image" content="http://ww1.sinaimg.cn/large/7669bef3gw1f00b880kdij20kb0frjt6.jpg">
+<meta property="og:image" content="http://ww2.sinaimg.cn/large/7669bef3gw1f00b3tru6mj20qo0k0taw.jpg">
+<meta property="og:image" content="http://ww4.sinaimg.cn/large/7669bef3gw1f00b3up95qj20qo0k0ac5.jpg">
+<meta property="og:updated_time" content="2016-09-22T04:07:56.391Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 Volley (二) 原理">
+<meta name="twitter:description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
+<meta name="twitter:image" content="http://ww3.sinaimg.cn/large/7669bef3gw1ezgdilrd3pj20f20e3ac8.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-Volley-二-原理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/21/Android-浅析-Volley-二-原理/" class="article-date">
+  <time datetime="2016-09-21T13:38:27.000Z" itemprop="datePublished">2016-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 Volley (二) 原理
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>本文通过对Volley源码进行分析来打通Volley的流程，并且知晓其原理，Volley的整体结构比较简单，但是细节有很多值得学习的地方。</p>
+</blockquote>
+<p><img src="http://ww3.sinaimg.cn/large/7669bef3gw1ezgdilrd3pj20f20e3ac8.jpg" alt="Volley 原理图"></p>
+<h2 id="Volley初始化"><a href="#Volley初始化" class="headerlink" title="Volley初始化"></a>Volley初始化</h2><p><code>RequestQueue mQueue = Volley.newRequestQueue(this);</code><br>Volley的初始化就是简单的一行代码，但是里面做的事情比较复杂了。</p>
+<h3 id="Volley"><a href="#Volley" class="headerlink" title="Volley"></a>Volley</h3><blockquote>
+<p>这是Volley系统最主要的类之一，它用来初始化缓存目录和初始化下载响应队列。</p>
+</blockquote>
+<h4 id="Volley-newRequestQueue-…"><a href="#Volley-newRequestQueue-…" class="headerlink" title="Volley.newRequestQueue(…)"></a>Volley.newRequestQueue(…)</h4><blockquote>
+<p>Creates a default instance of the worker pool and calls <code>RequestQueue.start()</code> on it.</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">HttpStack stack = <span class="keyword">new</span> HurlStack();</div><div class="line">Network network = <span class="keyword">new</span> BasicNetwork(stack);</div><div class="line"></div><div class="line">File cacheDir = <span class="keyword">new</span> File(...);</div><div class="line">RequestQueue queue = <span class="keyword">new</span> RequestQueue(<span class="keyword">new</span> DiskBasedCache(cacheDir), network);</div><div class="line"></div><div class="line">queue.start();</div></pre></td></tr></table></figure>
+<p>这个函数不难，首先创建一个<code>HttpStack</code>对象和创建一个缓存文件，然后用创建的对象生成一个<code>RequestQueue</code>响应队列，最后调用<code>RequestQueue.start()</code>函数开始运行。</p>
+<p>那么我们开始深入去看下，首先看下RequestQueue。</p>
+<h3 id="RequestQueue"><a href="#RequestQueue" class="headerlink" title="RequestQueue"></a>RequestQueue</h3><blockquote>
+<p>A request dispatch queue with a thread pool of dispatchers.<br>Calling <code>add(Request)</code> will enqueue the given Request for dispatch, resolving from either cache or network on a worker thread, and then delivering a parsed response on the main thread.</p>
+</blockquote>
+<h4 id="RequestQueue-RequestQueue-…"><a href="#RequestQueue-RequestQueue-…" class="headerlink" title="RequestQueue.RequestQueue(…)"></a>RequestQueue.RequestQueue(…)</h4><blockquote>
+<p>Creates the worker pool.<br>初始化这里有几个关键的点：<br>1、DEFAULT_NETWORK_THREAD_POOL_SIZE：访问网络的线程数，默认是4条线程。<br>2、new ExecutorDelivery(new Handler(Looper.getMainLooper()))：新建一个用来推出网络响应和错误的类。<br>3、new NetworkDispatcher[threadPoolSize]：新建四条网络连接的线程。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//@param cache A Cache to use for persisting responses to disk</span></div><div class="line"><span class="comment">//@param network A Network interface for performing HTTP requests</span></div><div class="line"><span class="comment">//@param threadPoolSize Number of network dispatcher threads to create</span></div><div class="line"><span class="comment">//@param delivery A ResponseDelivery interface for posting responses and errors</span></div><div class="line">RequestQueue(Cache cache, Network network, <span class="keyword">int</span> threadPoolSize, ResponseDelivery delivery)</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="RequestQueue-Start"><a href="#RequestQueue-Start" class="headerlink" title="RequestQueue.Start()"></a>RequestQueue.Start()</h4><blockquote>
+<p>Starts the dispatchers in this queue.</p>
+</blockquote>
+<p>首先是创建一个<code>CacheDispatcher</code>缓存发送者，它是一个缓存发送的线程，然后调用<code>CacheDispatcher</code>的<code>start()</code>函数。<br>然后循环创建<code>NetworkDispatcher</code>对象，因为默认的线程数是4，所以会循环4次创建网络调度（和相应的线程）到池大小，接着再调用<code>start()</code>函数。<br>简单来说当调用了Volley.newRequestQueue(context)之后，就会有<strong>五个线程</strong>一直在后台运行，不断等待网络请求的到来，其中CacheDispatcher是缓存线程，NetworkDispatcher是网络请求线程。</p>
+<h4 id="RequestQueue-Stop"><a href="#RequestQueue-Stop" class="headerlink" title="RequestQueue.Stop()"></a>RequestQueue.Stop()</h4><blockquote>
+<p>Stops the cache and network dispatchers.</p>
+</blockquote>
+<p>将所有缓存和网络发送者停止。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>通过这几行简单的函数就创建了Volley的缓存和网络发送者队列，为以后的请求建立了机制。</p>
+<h2 id="Volley添加请求"><a href="#Volley添加请求" class="headerlink" title="Volley添加请求"></a>Volley添加请求</h2><p>Volley的添加请求也很简单。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">StringRequest stringRequest = <span class="keyword">new</span> StringRequest(...);</div><div class="line"></div><div class="line">mQueue.add(stringRequest);</div></pre></td></tr></table></figure></p>
+<p>创建一个Request对象并且添加进Queue队列就行了。看起来简单，实际，好吧，很复杂。</p>
+<h3 id="RequestQueue-1"><a href="#RequestQueue-1" class="headerlink" title="RequestQueue"></a>RequestQueue</h3><h4 id="RequestQueue-add"><a href="#RequestQueue-add" class="headerlink" title="RequestQueue.add()"></a>RequestQueue.add()</h4><p>这里函数本身比较简单易懂，首先将Request标识为当前队列，然后添加到<code>mCurrentRequests</code>当前请求队列里。接着判断是否可以缓存，如果不行则直接调用网络队列进行请求。最后插入请求到现阶段，如果已经有一个缓存键的请求在进行。</p>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>添加的操作是比较简单，但难的是里面的具体过程，缓存请求和网络请求都是独立线程，在添加到队列之后就会不断的去获取然后对网络或者缓存进行处理。</p>
+<h2 id="Volley-类分析"><a href="#Volley-类分析" class="headerlink" title="Volley 类分析"></a>Volley 类分析</h2><p><img src="http://ww4.sinaimg.cn/large/7669bef3gw1ezx3ienw1bj20uo16kn2f.jpg" alt="volley 类图"></p>
+<h3 id="工具类"><a href="#工具类" class="headerlink" title="工具类"></a>工具类</h3><h4 id="网络类"><a href="#网络类" class="headerlink" title="网络类"></a>网络类</h4><h5 id="HttpStack"><a href="#HttpStack" class="headerlink" title="HttpStack"></a>HttpStack</h5><blockquote>
+<p>Performs an HTTP request with the given parameters.<br>用于处理 Http 请求，返回请求结果的接口。</p>
+</blockquote>
+<h5 id="HurlStack"><a href="#HurlStack" class="headerlink" title="HurlStack"></a>HurlStack</h5><blockquote>
+<p>based on HttpURLConnection.<br>实现 HttpStack 接口，基于HttpURLConnection进行各种请求方式的请求封装。</p>
+</blockquote>
+<h5 id="BasicNetwork"><a href="#BasicNetwork" class="headerlink" title="BasicNetwork"></a>BasicNetwork</h5><blockquote>
+<p>A network performing Volley requests over an HttpStack.<br>一个基于HttpStack执行Volley请求的网络。</p>
+</blockquote>
+<p>调用HttpStack处理请求，并将结果转换为可被ResponseDelivery处理的NetworkResponse。<br>主要实现了以下功能：<br>1、利用 HttpStack 执行网络请求。<br>2、如果 Request 中带有实体信息，如 Etag,Last-Modify 等，则进行缓存新鲜度的验证，并处理 304（Not Modify）响应。<br>3、如果发生超时，认证失败等错误，进行重试操作，直到成功、抛出异常(不满足重试策略等)结束。</p>
+<h5 id="Network"><a href="#Network" class="headerlink" title="Network"></a>Network</h5><blockquote>
+<p>An interface for performing requests.<br>接口类，作为网络请求的主要接口，传入需要访问的执行信息，并且返回一个<code>NetworkResponse</code>网络响应对象。</p>
+</blockquote>
+<h4 id="缓存类"><a href="#缓存类" class="headerlink" title="缓存类"></a>缓存类</h4><h5 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h5><blockquote>
+<p>An interface for a cache keyed by a String with a byte array as data.<br>接口，一个可以获取请求结果，存储请求结果的缓存。</p>
+</blockquote>
+<h6 id="Entry-get-String-key"><a href="#Entry-get-String-key" class="headerlink" title="Entry get(String key)"></a>Entry get(String key)</h6><blockquote>
+<p>通过 key 获取请求的缓存实体</p>
+</blockquote>
+<h6 id="void-put-String-key-Entry-entry"><a href="#void-put-String-key-Entry-entry" class="headerlink" title="void put(String key, Entry entry)"></a>void put(String key, Entry entry)</h6><blockquote>
+<p>存入一个请求的缓存实体</p>
+</blockquote>
+<h6 id="void-remove-String-key"><a href="#void-remove-String-key" class="headerlink" title="void remove(String key)"></a>void remove(String key)</h6><blockquote>
+<p>移除指定的缓存实体</p>
+</blockquote>
+<h6 id="void-clear"><a href="#void-clear" class="headerlink" title="void clear()"></a>void clear()</h6><blockquote>
+<p>清空缓存</p>
+</blockquote>
+<h6 id="Entry内部类"><a href="#Entry内部类" class="headerlink" title="Entry内部类"></a>Entry内部类</h6><p>byte[] data : 请求返回的数据（Body 实体）<br>String etag Http : 响应首部中用于缓存新鲜度验证的 ETag<br>long serverDate Http : 响应首部中的响应产生时间<br>long ttl : 缓存的过期时间<br>long softTtl : 缓存的新鲜时间<br>Map<string, string=""> responseHeaders : 响应的 Headers<br>boolean isExpired() : 判断缓存是否过期，过期缓存不能继续使用<br>boolean refreshNeeded() : 判断缓存是否新鲜，不新鲜的缓存需要发到服务端做新鲜度的检测</string,></p>
+<h5 id="NoCache"><a href="#NoCache" class="headerlink" title="NoCache"></a>NoCache</h5><blockquote>
+<p>什么缓存都没有。不做任何操作的缓存实现类，可将它作为构建RequestQueue的参数以实现一个不带缓存的请求队列。</p>
+</blockquote>
+<h5 id="DiskBasedCache"><a href="#DiskBasedCache" class="headerlink" title="DiskBasedCache"></a>DiskBasedCache</h5><blockquote>
+<p>Cache implementation that caches files directly onto the hard disk in the specified directory. The default disk usage size is 5MB, but is configurable.</p>
+</blockquote>
+<h6 id="void-initialize"><a href="#void-initialize" class="headerlink" title="void initialize()"></a>void initialize()</h6><blockquote>
+<p>Initializes the DiskBasedCache by scanning for all files currently in the specified root directory. Creates the root directory if necessary.<br>初始化，扫描缓存目录得到所有缓存数据摘要信息放入内存。</p>
+</blockquote>
+<h6 id="Entry-get-String-key-1"><a href="#Entry-get-String-key-1" class="headerlink" title="Entry get(String key)"></a>Entry get(String key)</h6><blockquote>
+<p>Returns the cache entry with the specified key if it exists, null otherwise.<br>从缓存中得到数据。先从缓存头中得到头部信息，然后读取缓存数据文件得到内容。</p>
+</blockquote>
+<h6 id="void-put-String-key-Entry-entry-1"><a href="#void-put-String-key-Entry-entry-1" class="headerlink" title="void put(String key, Entry entry)"></a>void put(String key, Entry entry)</h6><blockquote>
+<p>Puts the entry with the specified key into the cache.<br>将数据文件内容保存到缓存。先检查缓存是否已满，已满则先删除缓存中部分数据，然后再新建缓存文件。</p>
+</blockquote>
+<h6 id="void-pruneIfNeeded-int-neededSpace"><a href="#void-pruneIfNeeded-int-neededSpace" class="headerlink" title="void pruneIfNeeded(int neededSpace)"></a>void pruneIfNeeded(int neededSpace)</h6><blockquote>
+<p>Prunes the cache to fit the amount of bytes specified.<br>检查是否能再分配 neededSpace 字节的空间，如果不能则删除缓存中部分数据。</p>
+</blockquote>
+<h6 id="void-clear-1"><a href="#void-clear-1" class="headerlink" title="void clear()"></a>void clear()</h6><blockquote>
+<p>Clears the cache. Deletes all cached files from disk.<br>清空缓存。 </p>
+</blockquote>
+<h6 id="void-remove-String-key-1"><a href="#void-remove-String-key-1" class="headerlink" title="void remove(String key)"></a>void remove(String key)</h6><blockquote>
+<p>Removes the specified key from the cache if it exists.<br>删除缓存中某个元素。</p>
+</blockquote>
+<h6 id="CacheHeader"><a href="#CacheHeader" class="headerlink" title="CacheHeader"></a>CacheHeader</h6><blockquote>
+<p>Handles holding onto the cache headers for an entry.<br>缓存文件头部信息在entry里。</p>
+</blockquote>
+<h5 id="ByteArrayPool"><a href="#ByteArrayPool" class="headerlink" title="ByteArrayPool"></a>ByteArrayPool</h5><blockquote>
+<p>ByteArrayPool is a source and repository of <code>byte[]</code> objects.</p>
+</blockquote>
+<p>byte[] 的回收池，用于 byte[] 的回收再利用，减少了内存的分配和回收。 主要通过一个元素长度从小到大排序的ArrayList作为 byte[] 的缓存，另有一个按使用时间先后排序的ArrayList属性用于缓存满时清理元素。</p>
+<h5 id="PoolingByteArrayOutputStream"><a href="#PoolingByteArrayOutputStream" class="headerlink" title="PoolingByteArrayOutputStream"></a>PoolingByteArrayOutputStream</h5><blockquote>
+<p>A variation of <code>java.io.ByteArrayOutputStream</code> that uses a pool of byte[] buffers instead of always allocating them fresh, saving on heap churn.</p>
+</blockquote>
+<h5 id="Authenticator"><a href="#Authenticator" class="headerlink" title="Authenticator"></a>Authenticator</h5><p>身份认证接口，用于基本认证或者摘要认证。这个类是 Volley 用于和身份验证打通的接口，比如 OAuth，不过目前的使用不是特别广泛和 Volley 的内部结合也不是特别紧密。</p>
+<h5 id="AndroidAuthenticator"><a href="#AndroidAuthenticator" class="headerlink" title="AndroidAuthenticator"></a>AndroidAuthenticator</h5><p>继承 Authenticator，基于 Android AccountManager 的认证交互实现类。</p>
+<h3 id="基础类"><a href="#基础类" class="headerlink" title="基础类"></a>基础类</h3><h4 id="NetworkResponse"><a href="#NetworkResponse" class="headerlink" title="NetworkResponse"></a>NetworkResponse</h4><blockquote>
+<p>Data and headers returned from performRequest(Request).<br>作为<code>Network</code>接口返回的值，<code>Request</code>的 <code>parseNetworkResponse(…)</code>参数，是 Volley 中用于内部 Response 转换的核心类。</p>
+</blockquote>
+<p>封装了网络请求响应的 StatusCode，Headers 和 Body 等。</p>
+<h5 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h5><p><code>int statusCode</code> Http 响应状态码<br><code>byte[] data</code> Body 数据<br><code>Map&lt;String, String&gt; headers</code> 响应 Headers<br><code>boolean notModified</code> 表示是否为 304 响应<br><code>long networkTimeMs</code> 请求耗时</p>
+<h5 id="内部-Response-转换流程图"><a href="#内部-Response-转换流程图" class="headerlink" title="内部 Response 转换流程图"></a>内部 Response 转换流程图</h5><p><img src="http://ww1.sinaimg.cn/large/7669bef3gw1f00b880kdij20kb0frjt6.jpg" alt="volley response"></p>
+<h4 id="CacheDispatcher"><a href="#CacheDispatcher" class="headerlink" title="CacheDispatcher"></a>CacheDispatcher</h4><blockquote>
+<p>Provides a thread for performing cache triage on a queue of requests.</p>
+</blockquote>
+<p>CacheDispatcher类是一个线程类，里面有四个比较重要的变量：<br>1、<code>BlockingQueue&lt;Request&lt;?&gt;&gt; mCacheQueue</code>来自缓存的队列。<br>2、<code>BlockingQueue&lt;Request&lt;?&gt;&gt; mNetworkQueue</code>将会访问网络的队列。<br>3、<code>Cache mCache</code>缓存的处理类。<br>4、<code>ResponseDelivery mDelivery</code>回调响应的类。</p>
+<h5 id="CacheDispatcher-run"><a href="#CacheDispatcher-run" class="headerlink" title="CacheDispatcher.run()"></a>CacheDispatcher.run()</h5><p>在线程被创建后马上就被执行了。里面首先会对缓存路径进行初始化工作。接着就进入一个无限的循环等待里。</p>
+<p>首先会从缓存队列出取出请求，如果队列为空则会一直阻塞直到队列有数据，接着尝试从缓存当中取出响应结果，如何为空的话则把这条请求加入到网络请求队列中，如果不为空的话再判断该缓存是否已过期，如果已经过期了则同样把这条请求加入到网络请求队列中，否则就认为不需要重发网络请求，直接使用缓存中的数据即可。之后会调用Request的parseNetworkResponse()方法来对数据进行解析，最后就是将解析出来的数据进行回调了。</p>
+<h5 id="CacheDispatcher-流程图"><a href="#CacheDispatcher-流程图" class="headerlink" title="CacheDispatcher 流程图"></a>CacheDispatcher 流程图</h5><p><img src="http://ww2.sinaimg.cn/large/7669bef3gw1f00b3tru6mj20qo0k0taw.jpg" alt="NetworkDispatcher"></p>
+<h4 id="NetworkDispatcher"><a href="#NetworkDispatcher" class="headerlink" title="NetworkDispatcher"></a>NetworkDispatcher</h4><blockquote>
+<p>Provides a thread for performing network dispatch from a queue of requests.</p>
+</blockquote>
+<p>NetworkDispatcher类是一个线程类，里面有四个比较重要的变量：<br>1、BlockingQueue<request<?>&gt; mQueue响应来自服务的队列。<br>2、Network mNetwork 网络进度请求。<br>3、Cache mCache缓存的处理类。<br>4、ResponseDelivery mDelivery回调响应的类。</request<?></p>
+<h5 id="NetworkDispatcher-run"><a href="#NetworkDispatcher-run" class="headerlink" title="NetworkDispatcher.run()"></a>NetworkDispatcher.run()</h5><p>在线程被创建后马上就被执行了。首先进入一个无限的循环等待里。等待任务进来。</p>
+<p>在接受到请求后会直接访问网络发送请求，请求处理结束则将结果传递给ResponseDelivery去执行后续处理，并判断结果是否要进行缓存。</p>
+<h5 id="NetworkDispatcher-流程图"><a href="#NetworkDispatcher-流程图" class="headerlink" title="NetworkDispatcher 流程图"></a>NetworkDispatcher 流程图</h5><p><img src="http://ww4.sinaimg.cn/large/7669bef3gw1f00b3up95qj20qo0k0ac5.jpg" alt="NetworkDispatcher"></p>
+<h4 id="ResponseDelivery"><a href="#ResponseDelivery" class="headerlink" title="ResponseDelivery"></a>ResponseDelivery</h4><blockquote>
+<p>一个返回结果的分发接口。</p>
+</blockquote>
+<p>有三个分发接口：<br>1、解析一个从网络或缓存的响应并分发。<br><code>postResponse(Request&lt;?&gt; request, Response&lt;?&gt; response);</code><br>2、解析一个从网络或缓存的响应并分发。提供的运行将会在分发后被执行。<br><code>postResponse(Request&lt;?&gt; request, Response&lt;?&gt; response, Runnable runnable);</code><br>3、推送一个收到的错误。<br><code>postError(Request&lt;?&gt; request, VolleyError error);</code></p>
+<h4 id="RetryPolicy"><a href="#RetryPolicy" class="headerlink" title="RetryPolicy"></a>RetryPolicy</h4><blockquote>
+<p>Retry policy for a request.</p>
+</blockquote>
+<p><code>void retry(VolleyError error) throws VolleyError</code><br>确定是否重试，参数为这次异常的具体信息。在请求异常时此接口会被调用，可在此函数实现中抛出传入的异常表示停止重试。</p>
+<h4 id="DefaultRetryPolicy"><a href="#DefaultRetryPolicy" class="headerlink" title="DefaultRetryPolicy"></a>DefaultRetryPolicy</h4><blockquote>
+<p>Default retry policy for requests.</p>
+</blockquote>
+<p>实现 RetryPolicy，Volley 默认的重试策略实现类。主要通过在 retry(…) 函数中判断重试次数是否达到上限确定是否继续重试。<br>其中mCurrentRetryCount变量表示已经重试次数。<br>mBackoffMultiplier表示每次重试之前的 timeout 该乘以的因子。<br>mCurrentTimeoutMs变量表示当前重试的 timeout 时间，会以mBackoffMultiplier作为因子累计前几次重试的 timeout。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/" data-id="civ9405s70011akqtvwomuo2m" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Volley/">Volley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/开源库/">开源库</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/21/Android-浅析-ButterKnife-一-使用/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 ButterKnife (一) 使用
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/09/21/Android-浅析-Volley-一-使用/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 Volley (一) 使用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

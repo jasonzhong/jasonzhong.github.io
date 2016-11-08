@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Java 注解 Dependency injection | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="注解(Annotation)，也叫元数据。一种代码级别的说明，是一种将程序中的元素与任何信息关联一起的途径和方法。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 注解 Dependency injection">
+<meta property="og:url" content="http://yoursite.com/2016/09/21/Java-注解-Dependency-injection/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="注解(Annotation)，也叫元数据。一种代码级别的说明，是一种将程序中的元素与任何信息关联一起的途径和方法。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-6d9c0bfb6b9c5127.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2016-09-22T04:06:39.544Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 注解 Dependency injection">
+<meta name="twitter:description" content="注解(Annotation)，也叫元数据。一种代码级别的说明，是一种将程序中的元素与任何信息关联一起的途径和方法。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1645265-6d9c0bfb6b9c5127.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Java-注解-Dependency-injection" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/21/Java-注解-Dependency-injection/" class="article-date">
+  <time datetime="2016-09-21T13:57:32.000Z" itemprop="datePublished">2016-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java 注解 Dependency injection
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="现有的开源库"><a href="#现有的开源库" class="headerlink" title="现有的开源库"></a>现有的开源库</h2><ul>
+<li>RoboGuice</li>
+<li>Android Annotations</li>
+<li>Dragger</li>
+<li>ButterKnife</li>
+<li>Transfuse</li>
+</ul>
+<h2 id="注解-Annotation"><a href="#注解-Annotation" class="headerlink" title="注解(Annotation)"></a>注解(Annotation)</h2><p>从三个方向了解注解：</p>
+<ol>
+<li>注解是什么？</li>
+<li>注解有什么用？</li>
+<li>注解怎么用？</li>
+</ol>
+<h3 id="注解是什么"><a href="#注解是什么" class="headerlink" title="注解是什么"></a>注解是什么</h3><blockquote>
+<p>注解(Annotation)，也叫元数据。一种代码级别的说明，是一种将程序中的元素与任何信息关联一起的途径和方法。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。</p>
+</blockquote>
+<h3 id="注解有什么用"><a href="#注解有什么用" class="headerlink" title="注解有什么用"></a>注解有什么用</h3><blockquote>
+<ol>
+<li>创建文档。</li>
+<li>跟踪代码中的依赖性。</li>
+<li>甚至执行基本编译时检查。</li>
+</ol>
+</blockquote>
+<p>在Java 5.0 中java.lang包有三个标准Annotation类型。</p>
+<ol>
+<li>标准 Annotation (JDK内置系统注解)</li>
+</ol>
+<p>标准 Annotation 是指 Java 自带的几个 Annotation，例如： @Override, @Deprecated, @SuppressWarnings。</p>
+<ol>
+<li>元 Annotation (元注解)</li>
+</ol>
+<p>元 Annotation 是指用来定义 Annotation 的 Annotation，例如：@Retention, @Target, @Inherited, @Documented。</p>
+<ol>
+<li>自定义 Annotation (自定义注解)</li>
+</ol>
+<p>自定义 Annotation 表示自己根据需要定义的 Annotation，定义时需要用到元 Annotation。</p>
+<h3 id="注解怎么用"><a href="#注解怎么用" class="headerlink" title="注解怎么用"></a>注解怎么用</h3><blockquote>
+<p>注解的语法比较简单，就是在前面添加<code>@</code>符号，后面的语法就更Java语法一致。</p>
+</blockquote>
+<h4 id="标准-Annotation"><a href="#标准-Annotation" class="headerlink" title="标准 Annotation"></a>标准 Annotation</h4><p>我们列出三个例子：</p>
+<ol>
+<li>@Override</li>
+<li>@Deprecated</li>
+<li>@SuppressWarnnings</li>
+</ol>
+<h5 id="Override"><a href="#Override" class="headerlink" title="@Override"></a>@Override</h5><blockquote>
+<p>用于修饰此方法覆盖了父类的方法。</p>
+</blockquote>
+<p>@Override 是一个标记注解类型，它被用作标注方法。它说明了被标注的方法重载了父类的方法，起到了断言的作用。如果重载的方法写错了在编译期会有警告出现。</p>
+<h5 id="Deprecated"><a href="#Deprecated" class="headerlink" title="@Deprecated"></a>@Deprecated</h5><blockquote>
+<p>用于修饰已经过时的方法。</p>
+</blockquote>
+<p>@Deprecated是一个标记注解。当一个类型或者类型成员使用@Deprecated修饰的话，编译器将不鼓励使用这个被标注的程序元素。这个标记注解具有继承性，可被子类继承。</p>
+<h5 id="SuppressWarnnings"><a href="#SuppressWarnnings" class="headerlink" title="@SuppressWarnnings"></a>@SuppressWarnnings</h5><blockquote>
+<p>用于通知java编译器禁止特定的编译警告。</p>
+</blockquote>
+<p>@SuppressWarnings 被用于有选择的关闭编译器对类、方法、成员变量、变量初始化的警告。@SuppressWarnings使用格式有这几种：</p>
+<ol>
+<li>@SuppressWarnings(value={“deprecation”, “unchecked”})</li>
+<li>@SuppressWarnings({“deprecation”, “unchecked”})</li>
+<li>@SuppressWarnings(“unchecked”)</li>
+</ol>
+<p>常见的@SuppressWarnings参数值：</p>
+<ul>
+<li><strong>all</strong> to suppress all warnings</li>
+<li><strong>boxing</strong> to suppress warnings relative to boxing/unboxing operations</li>
+<li><strong>cast</strong> to suppress warnings relative to cast operations</li>
+<li><strong>dep-ann</strong> to suppress warnings relative to deprecated annotation</li>
+<li><strong>deprecation</strong> to suppress warnings relative to deprecation</li>
+<li><strong>fallthrough</strong> to suppress warnings relative to missing breaks in switch statements</li>
+<li><strong>finally</strong> to suppress warnings relative to finally block that don’t return</li>
+<li><strong>hiding</strong> to suppress warnings relative to locals that hide variable</li>
+<li><strong>incomplete-switch</strong> to suppress warnings relative to missing entries in a switch statement (enum case)</li>
+<li><strong>nls</strong> to suppress warnings relative to non-nls string literals</li>
+<li><strong>null</strong> to suppress warnings relative to null analysis</li>
+<li><strong>rawtypes</strong> to suppress warnings relative to un-specific types when using generics on class params</li>
+<li><strong>restriction</strong> to suppress warnings relative to usage of discouraged or forbidden references</li>
+<li><strong>serial</strong> to suppress warnings relative to missing serialVersionUID field for a serializable class</li>
+<li><strong>static-access</strong> to suppress warnings relative to incorrect static access</li>
+<li><strong>synthetic-access</strong> to suppress warnings relative to unoptimized access from inner classes</li>
+<li><strong>unchecked</strong> to suppress warnings relative to unchecked operations</li>
+<li><strong>unqualified-field-access</strong> to suppress warnings relative to field access unqualified</li>
+<li><strong>unused</strong> to suppress warnings relative to unused code</li>
+</ul>
+<h4 id="元-Annotation"><a href="#元-Annotation" class="headerlink" title="元 Annotation"></a>元 Annotation</h4><p>元注解的作用就是负责注解其他注解。在Java 5.0 中有四个标准元注解：</p>
+<ol>
+<li>@Target</li>
+<li>@Retention</li>
+<li>@Documented</li>
+<li>@Inherited</li>
+</ol>
+<h5 id="Target"><a href="#Target" class="headerlink" title="@Target"></a>@Target</h5><p>定义了Annotation所修饰的对象范围：可被用于 packages、types(类、接口、枚举、Annotation类型)、类型成员(方法、构造方法、成员变量、枚举值)、方法参数和本地变量(如循环变量、catch参数)。<br>取值类型有这么几个：</p>
+<ol>
+<li>CONSTRUCTOR:用于描述构造器</li>
+<li>FIELD:用于描述域</li>
+<li>LOCAL_VARIABLE:用于描述局部变量</li>
+<li>METHOD:用于描述方法</li>
+<li>PACKAGE:用于描述包</li>
+<li>PARAMETER:用于描述参数</li>
+<li>TYPE:用于描述类、接口(包括注解类型) 或enum声明</li>
+</ol>
+<h5 id="Retention"><a href="#Retention" class="headerlink" title="@Retention"></a>@Retention</h5><p>定义了该Annotation被保留的时间长短。<br>取值类型有这么几个：</p>
+<ol>
+<li>SOURCE:在源文件中有效(即源文件保留)</li>
+<li>CLASS:在class文件中有效(即class保留)</li>
+<li>RUNTIME:在运行时有效(即运行时保留)</li>
+</ol>
+<h5 id="Documented"><a href="#Documented" class="headerlink" title="@Documented"></a>@Documented</h5><p>用于描述其它类型的annotation应该被作为被标注的程序成员的公共API，因此可以被如javadoc此类的工具文档化。</p>
+<h5 id="Inherited"><a href="#Inherited" class="headerlink" title="@Inherited"></a>@Inherited</h5><p>这是一个标记注解，阐述了某个被标注的类型是被继承的。</p>
+<h4 id="自定义-Annotation"><a href="#自定义-Annotation" class="headerlink" title="自定义 Annotation"></a>自定义 Annotation</h4><p>通过使用<code>@interface</code>符号来完成自定义注解，自定义注解不能继承其它注解或接口。可以通过default来声明参数的默认值。</p>
+<p>注解格式：<br>public @interface 注解名 {定义体}</p>
+<p>支持的数据类型：</p>
+<ol>
+<li>所有基本数据类型（int,float,boolean,byte,double,char,long,short)</li>
+<li>String类型</li>
+<li>Class类型</li>
+<li>enum类型</li>
+<li>Annotation类型</li>
+<li>以上所有类型的数组</li>
+</ol>
+<p>备注：</p>
+<ol>
+<li>如果只有一个参数成员,最好把参数名称设为”value”，后加小括号。</li>
+<li>只能用public或默认(default)这两个访问权修饰。</li>
+</ol>
+<p>例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Target</span>(ElementType.FIELD)</div><div class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</div><div class="line"><span class="meta">@Documented</span></div><div class="line"><span class="keyword">public</span> <span class="meta">@interface</span> FileName &#123;</div><div class="line">    <span class="function">String <span class="title">value</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@Target</span>(ElementType.FIELD)</div><div class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</div><div class="line"><span class="meta">@Documented</span></div><div class="line"><span class="keyword">public</span> <span class="meta">@interface</span> FileType &#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">enum</span> Color&#123;BULE,RED,GREEN&#125;;</div><div class="line">    <span class="function">Color <span class="title">fruitColor</span><span class="params">()</span> <span class="keyword">default</span> Color.GREEN</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 使用</span></div><div class="line"><span class="meta">@FileName</span>(<span class="string">"Safe"</span>)</div><div class="line"><span class="keyword">private</span> String FileName;</div></pre></td></tr></table></figure></p>
+<h3 id="注解处理器类库"><a href="#注解处理器类库" class="headerlink" title="注解处理器类库"></a>注解处理器类库</h3><p>最后这里介绍下注解处理类库:<br><code>java.lang.reflect.AnnotatedElement</code><br>可以通过它处理很多复杂的注解工作。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1645265-6d9c0bfb6b9c5127.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="注解学习图"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/21/Java-注解-Dependency-injection/" data-id="civ9405sn0017akqt8geqvn5b" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/注解/">注解</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/22/Android-浅析-RxJava-一-使用/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 RxJava (一) 使用
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 ButterKnife (二) 源码解析</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

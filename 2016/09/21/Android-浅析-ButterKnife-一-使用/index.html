@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 ButterKnife (一) 使用 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。其自定义注解的实现都是限定为 RetentionPolicy.CLASS，也就是到编译出.class文件为止有效，在运行时不额外消耗性能，其是通过java注解自动生成java代码的形式来完成工作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 ButterKnife (一) 使用">
+<meta property="og:url" content="http://yoursite.com/2016/09/21/Android-浅析-ButterKnife-一-使用/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。其自定义注解的实现都是限定为 RetentionPolicy.CLASS，也就是到编译出.class文件为止有效，在运行时不额外消耗性能，其是通过java注解自动生成java代码的形式来完成工作。">
+<meta property="og:updated_time" content="2016-09-22T04:07:56.091Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 ButterKnife (一) 使用">
+<meta name="twitter:description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。其自定义注解的实现都是限定为 RetentionPolicy.CLASS，也就是到编译出.class文件为止有效，在运行时不额外消耗性能，其是通过java注解自动生成java代码的形式来完成工作。">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-ButterKnife-一-使用" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/21/Android-浅析-ButterKnife-一-使用/" class="article-date">
+  <time datetime="2016-09-21T13:44:49.000Z" itemprop="datePublished">2016-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 ButterKnife (一) 使用
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>Field and method binding for Android views which uses annotation processing to generate boilerplate code for you.<br>ButterKnife是一个用注解的方式生成公式化的代码将Android view的域和方法绑定一起的库。</p>
+</blockquote>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="Step-1-gradle"><a href="#Step-1-gradle" class="headerlink" title="Step 1 gradle"></a>Step 1 gradle</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.jakewharton:butterknife:7.0.1'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在Gradle中添加<code>butterknife</code>库。</p>
+<h3 id="Step-2-Bind"><a href="#Step-2-Bind" class="headerlink" title="Step 2 Bind"></a>Step 2 Bind</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExampleActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">  <span class="meta">@Bind</span>(R.id.title) TextView title;</div><div class="line">  <span class="meta">@Bind</span>(R.id.subtitle) TextView subtitle;</div><div class="line">  <span class="meta">@Bind</span>(R.id.footer) TextView footer;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.simple_activity);</div><div class="line">    ButterKnife.bind(<span class="keyword">this</span>);</div><div class="line">    <span class="comment">// TODO Use fields...</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这段代码是帮你简化我们平常书写繁琐的<code>findViewById()</code>操作，在代码实际编译中的时候会自动转换成我们熟悉的代码，例子中的代码在实际编译中会生成这些代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bind</span><span class="params">(ExampleActivity activity)</span> </span>&#123;</div><div class="line">  activity.subtitle = (android.widget.TextView) activity.findViewById(<span class="number">2130968578</span>);</div><div class="line">  activity.footer = (android.widget.TextView) activity.findViewById(<span class="number">2130968579</span>);</div><div class="line">  activity.title = (android.widget.TextView) activity.findViewById(<span class="number">2130968577</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="资源的BINDING"><a href="#资源的BINDING" class="headerlink" title="资源的BINDING"></a>资源的BINDING</h4><p>在对资源的Bind方法中有许多不同的注解可以用：<br><code>@BindBool, @BindColor, @BindDimen, @BindDrawable, @BindInt, @BindString</code><br>这些可以帮你在资源使用前绑定资源的id。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExampleActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">  <span class="meta">@BindString</span>(R.string.title) String title;</div><div class="line">  <span class="meta">@BindDrawable</span>(R.drawable.graphic) Drawable graphic;</div><div class="line">  <span class="meta">@BindColor</span>(R.color.red) <span class="keyword">int</span> red; <span class="comment">// int or ColorStateList field</span></div><div class="line">  <span class="meta">@BindDimen</span>(R.dimen.spacer) Float spacer; <span class="comment">// int (for pixel size) or float (for exact value) field</span></div><div class="line">  <span class="comment">// ...</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>ButterKnife的简单实用方法就是这些了，非常简单，接下来我们深入的看看深入使用方法。</p>
+<h3 id="非Activity中使用"><a href="#非Activity中使用" class="headerlink" title="非Activity中使用"></a>非Activity中使用</h3><p>在非Activity中也可以同过绑定view 来实行绑定资源。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initFloatWinCollectPage</span><span class="params">()</span> </span>&#123;</div><div class="line">    View view = findViewById(R.id.floatwin_collectpage_layout);</div><div class="line">    ButterKnife.bind(<span class="keyword">this</span>, view);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>当然这种绑定也可以用在holder这些繁琐的操作上面，在getview的函数里不断的绑定view也只需要一个操作就实现了。</p>
+<h3 id="批量操作"><a href="#批量操作" class="headerlink" title="批量操作"></a>批量操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 方法一</span></div><div class="line"><span class="meta">@Bind</span>(&#123; R.id.first_name, R.id.middle_name, R.id.last_name &#125;)</div><div class="line">List&lt;EditText&gt; nameViews;</div><div class="line"></div><div class="line"><span class="comment">// 方法二</span></div><div class="line">ButterKnife.apply(nameViews, DISABLE);</div><div class="line">ButterKnife.apply(nameViews, ENABLED, <span class="keyword">false</span>);</div><div class="line"></div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> ButterKnife.Action&lt;View&gt; DISABLE = <span class="keyword">new</span> ButterKnife.Action&lt;View&gt;() &#123;</div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(View view, <span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">    view.setEnabled(<span class="keyword">false</span>);</div><div class="line">  &#125;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> ButterKnife.Setter&lt;View, Boolean&gt; ENABLED = <span class="keyword">new</span> ButterKnife.Setter&lt;View, Boolean&gt;() &#123;</div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(View view, Boolean value, <span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">    view.setEnabled(value);</div><div class="line">  &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>这两个方法都可以对资源进行批量操作，第一种是批量的赋值操作，第二种是对资源的批量显示或隐藏操作。<br><code>ButterKnife.apply(nameViews, View.ALPHA, 0.0f);</code><br>当然也可以对资源的属性进行操作了。</p>
+<h3 id="LISTENER-绑定"><a href="#LISTENER-绑定" class="headerlink" title="LISTENER 绑定"></a>LISTENER 绑定</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@OnClick</span>(R.id.submit)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">submit</span><span class="params">(View view)</span> </span>&#123;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@OnClick</span>(R.id.submit)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayHi</span><span class="params">(Button button)</span> </span>&#123;</div><div class="line">  button.setText(<span class="string">"Hello!"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过绑定可以快速的将一个方法和控件联系在一起。</p>
+<p>当然也可以将多个id绑定到一个方法里：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@OnClick</span>(&#123; R.id.door1, R.id.door2, R.id.door3 &#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pickDoor</span><span class="params">(DoorView door)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (door.hasPrizeBehind()) &#123;&#125; </div><div class="line">  <span class="keyword">else</span> &#123;&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="BINDING-RESET"><a href="#BINDING-RESET" class="headerlink" title="BINDING RESET"></a>BINDING RESET</h3><p>在绑定取消的时候调用<code>unbind</code>方法<br><code>ButterKnife.unbind(this);</code></p>
+<h3 id="OPTIONAL-BINDINGS"><a href="#OPTIONAL-BINDINGS" class="headerlink" title="OPTIONAL BINDINGS"></a>OPTIONAL BINDINGS</h3><p>默认情况下，@Bind和监听绑定是必需的。如果目标视图不能找到一个异常将被抛出。<br>为了抑制这种行为，创造一个可选的绑定，添加注释@Nullable到方法最外边。<br><code>@Nullable @Bind(R.id.might_not_be_there) TextView mightNotBeThere;</code></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后，要细看ButterKnife的代码应该直接看源码：<br><a href="https://github.com/JakeWharton/butterknife" target="_blank" rel="external">https://github.com/JakeWharton/butterknife</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/21/Android-浅析-ButterKnife-一-使用/" data-id="civ9405rs000cakqt3b5ys4su" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/开源库/">开源库</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 ButterKnife (二) 源码解析
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/09/21/Android-浅析-Volley-二-原理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 Volley (二) 原理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 ContentProvider (二) 安装原理 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Android ContentProvider 是 android 四大组件之一，上一节学习了如何使用 ContentProvider 并且介绍了使用中的各个细节，这章我们将从源码的角度通过 ContentProvider 的安装过程来学习。将会详细了解 ContentProvider 从APK包里是如何加载到PMS以提供外部使用的流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 ContentProvider (二) 安装原理">
+<meta property="og:url" content="http://yoursite.com/2015/10/16/Android-浅析-ContentProvider-二-安装原理/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Android ContentProvider 是 android 四大组件之一，上一节学习了如何使用 ContentProvider 并且介绍了使用中的各个细节，这章我们将从源码的角度通过 ContentProvider 的安装过程来学习。将会详细了解 ContentProvider 从APK包里是如何加载到PMS以提供外部使用的流程。">
+<meta property="og:updated_time" content="2016-09-22T08:02:09.849Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 ContentProvider (二) 安装原理">
+<meta name="twitter:description" content="Android ContentProvider 是 android 四大组件之一，上一节学习了如何使用 ContentProvider 并且介绍了使用中的各个细节，这章我们将从源码的角度通过 ContentProvider 的安装过程来学习。将会详细了解 ContentProvider 从APK包里是如何加载到PMS以提供外部使用的流程。">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-ContentProvider-二-安装原理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/16/Android-浅析-ContentProvider-二-安装原理/" class="article-date">
+  <time datetime="2015-10-16T07:19:05.000Z" itemprop="datePublished">2015-10-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 ContentProvider (二) 安装原理
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<p>ContentProvider下文将会简称CP。<br>ContentResolver下文将会简称CR。</p>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>ContentProvider的安装原理其实就是Apk的安装原理，这里仅仅分析从安装过程中安装provider的过程。</p>
+</blockquote>
+<h2 id="CP-安装原理"><a href="#CP-安装原理" class="headerlink" title="CP 安装原理"></a>CP 安装原理</h2><h3 id="PackageManagerService"><a href="#PackageManagerService" class="headerlink" title="PackageManagerService"></a>PackageManagerService</h3><blockquote>
+<p>负责系统中Package的管理，应用程序的安装、卸载、信息查询等。</p>
+</blockquote>
+<p>我们的安装流程从scanDirLI()开始，无论是android开机安装还是手动安装还是其他安装方式，最终都会走到PMS的scanDirLI()函数里面，对于我们provider的安装从scanDirLI()开始就够了。</p>
+<h4 id="Step1、scanDirLI"><a href="#Step1、scanDirLI" class="headerlink" title="Step1、scanDirLI()"></a>Step1、scanDirLI()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scanDirLI</span><span class="params">(File dir, <span class="keyword">int</span> parseFlags, <span class="keyword">int</span> scanFlags, <span class="keyword">long</span> currentTime)</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> File[] files = dir.listFiles();</div><div class="line">    ...</div><div class="line">    scanPackageLI(file, parseFlags | PackageParser.PARSE_MUST_BE_APK,</div><div class="line">            scanFlags, currentTime, <span class="keyword">null</span>);</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数会对于后缀为APK的文件进行解析和安装。</p>
+<h4 id="Step2、scanPackageLI"><a href="#Step2、scanPackageLI" class="headerlink" title="Step2、scanPackageLI()"></a>Step2、scanPackageLI()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> PackageParser.<span class="function">Package <span class="title">scanPackageLI</span><span class="params">(File scanFile, <span class="keyword">int</span> parseFlags, <span class="keyword">int</span> scanFlags,</span></span></div><div class="line">            <span class="keyword">long</span> currentTime, UserHandle user) &#123;</div><div class="line">    ...</div><div class="line">    parseFlags |= mDefParseFlags;</div><div class="line">    PackageParser pp = <span class="keyword">new</span> PackageParser();</div><div class="line">    ...</div><div class="line">    <span class="keyword">final</span> PackageParser.Package pkg;</div><div class="line">    pkg = pp.parsePackage(scanFile, parseFlags);</div><div class="line">    ...</div><div class="line">    <span class="keyword">if</span> (replace) &#123;</div><div class="line">        replacePackageLI(pkg, parseFlags, scanFlags | SCAN_REPLACING, args.user,</div><div class="line">            installerPackageName, volumeUuid, res);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        installNewPackageLI(pkg, parseFlags, scanFlags | SCAN_DELETE_DATA_ON_FAILURES,</div><div class="line">            args.user, installerPackageName, volumeUuid, res);</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    <span class="keyword">return</span> scannedPkg;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数首先会为这个Apk文件创建一个PackageParser实例，接着调用这个实例的parsePackage函数来对这个Apk文件进行解析。这个函数最后还会调用另外一个scanPackageLI函数来把解析后得到的应用程序信息保存在PackageManagerService中，其中就包括Provider信息。</p>
+<h4 id="Step3、PackageParser-parsePackage"><a href="#Step3、PackageParser-parsePackage" class="headerlink" title="Step3、PackageParser.parsePackage()"></a>Step3、PackageParser.parsePackage()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Package <span class="title">parsePackage</span><span class="params">(File sourceFile, String destCodePath, DisplayMetrics metrics, <span class="keyword">int</span> flags)</span> </span>&#123;</div><div class="line">    ...</div><div class="line">    mArchiveSourcePath = sourceFile.getPath();</div><div class="line">    ...</div><div class="line">    XmlResourceParser parser = <span class="keyword">null</span>;</div><div class="line">    AssetManager assmgr = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">boolean</span> assetError = <span class="keyword">true</span>;</div><div class="line">    </div><div class="line">    assmgr = <span class="keyword">new</span> AssetManager();</div><div class="line">    <span class="keyword">int</span> cookie = assmgr.addAssetPath(mArchiveSourcePath);</div><div class="line">    <span class="keyword">if</span>(cookie != <span class="number">0</span>) &#123;</div><div class="line">        parser = assmgr.openXmlResourceParser(cookie, <span class="string">"AndroidManifest.xml"</span>);</div><div class="line">        assetError = <span class="keyword">false</span>;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    String[] errorText = <span class="keyword">new</span> String[<span class="number">1</span>];</div><div class="line">    Package pkg = <span class="keyword">null</span>;</div><div class="line">    Exception errorException = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    Resources res = <span class="keyword">new</span> Resources(assmgr, metrics, <span class="keyword">null</span>);</div><div class="line">    pkg = parsePackage(res, parser, flags, errorText);</div><div class="line">    ...</div><div class="line">    parser.close();</div><div class="line">    assmgr.close();</div><div class="line"></div><div class="line">    pkg.mPath = destCodePath;</div><div class="line">    pkg.mScanPath = mArchiveSourcePath;</div><div class="line">    pkg.mSignatures = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> pkg;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每一个Apk文件都是一个归档文件，里面包含了Android应用程序的配置文件AndroidManifest.xml，这里主要就是要对这个配置文件进行解析，从Apk归档文件中得到这个配置文件后调用另外一个parsePackage()。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Package <span class="title">parsePackage</span><span class="params">(Resources res, XmlResourceParser parser, <span class="keyword">int</span> flags, String[] outError)</span> </span>&#123;</div><div class="line">    ...</div><div class="line">    String pkgName = parsePackageName(parser, attrs, flags, outError);</div><div class="line">    ...</div><div class="line">    TypedArray sa = res.obtainAttributes(attrs, com.android.internal.R.styleable.AndroidManifest);</div><div class="line">    ...</div><div class="line">    <span class="keyword">int</span> type;</div><div class="line">    <span class="keyword">while</span> ((type=parser.next()) != parser.END_DOCUMENT</div><div class="line">       &amp;&amp; (type != parser.END_TAG || parser.getDepth() &gt; outerDepth)) &#123;</div><div class="line">        <span class="keyword">if</span> (type == parser.END_TAG || type == parser.TEXT) &#123;<span class="keyword">continue</span>;&#125;</div><div class="line">        </div><div class="line">        String tagName = parser.getName();</div><div class="line">        <span class="keyword">if</span> (tagName.equals(<span class="string">"application"</span>)) &#123;</div><div class="line">            <span class="keyword">if</span> (!parseApplication(pkg, res, parser, attrs, flags, outError)) &#123;<span class="keyword">return</span> <span class="keyword">null</span>;&#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tagName.equals(<span class="string">"permission-group"</span>)) &#123;  </div><div class="line">            ......  </div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tagName.equals(<span class="string">"permission"</span>)) &#123;  </div><div class="line">            ......  </div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tagName.equals(<span class="string">"permission-tree"</span>)) &#123;  </div><div class="line">            ......  </div><div class="line">        &#125; ...</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> pkg;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这函数就是对AndroidManifest.xml里的标签进行解析。<br><a href="http://developer.android.com/guide/topics/manifest/manifest-intro.html是谷歌官方文档。" target="_blank" rel="external">http://developer.android.com/guide/topics/manifest/manifest-intro.html是谷歌官方文档。</a><br>接下来对provider的解析存在在”application”里，对”application”的解析是调用parseApplication函数。</p>
+<h4 id="Step4、PackageParser-parseApplication"><a href="#Step4、PackageParser-parseApplication" class="headerlink" title="Step4、PackageParser.parseApplication()"></a>Step4、PackageParser.parseApplication()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">parseApplication</span><span class="params">(Package owner, Resources res,</span></span></div><div class="line">            XmlPullParser parser, AttributeSet attrs, <span class="keyword">int</span> flags, String[] outError)&#123;</div><div class="line">    <span class="keyword">final</span> ApplicationInfo ai = owner.applicationInfo;</div><div class="line">    <span class="keyword">final</span> String pkgName = owner.applicationInfo.packageName;</div><div class="line">    </div><div class="line">    TypedArray sa = res.obtainAttributes(attrs,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestApplication);</div><div class="line">                </div><div class="line">    <span class="keyword">int</span> type;</div><div class="line">    <span class="keyword">while</span> ((type=parser.next()) != parser.END_DOCUMENT</div><div class="line">           &amp;&amp; (type != parser.END_TAG || parser.getDepth() &gt; innerDepth)) &#123;</div><div class="line">        String tagName = parser.getName();</div><div class="line">        <span class="keyword">if</span> (tagName.equals(<span class="string">"activity"</span>)) &#123;</div><div class="line">            ...</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tagName.equals(<span class="string">"provider"</span>)) &#123;</div><div class="line">        Provider p = parseProvider(owner, res, parser, attrs, flags, outError);</div><div class="line">        owner.providers.add(p);</div><div class="line">    &#125; ...</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>parseApplication通过对AndroidManifest.xml文件中的application标签进行解析，这里我们可以看到对于provider的解析是调用了parseProvider函数。</p>
+<h4 id="Step5、parseProvider"><a href="#Step5、parseProvider" class="headerlink" title="Step5、parseProvider()"></a>Step5、parseProvider()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Provider <span class="title">parseProvider</span><span class="params">(Package owner, Resources res,</span></span></div><div class="line">        XmlPullParser parser, AttributeSet attrs, <span class="keyword">int</span> flags, String[] outError) &#123;</div><div class="line">    TypedArray sa = res.obtainAttributes(attrs,</div><div class="line">            com.android.internal.R.styleable.AndroidManifestProvider);</div><div class="line">    <span class="keyword">if</span> (mParseProviderArgs == <span class="keyword">null</span>) &#123;</div><div class="line">        mParseProviderArgs = <span class="keyword">new</span> ParseComponentArgs(owner, outError,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_name,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_label,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_icon, <span class="number">0</span>,</div><div class="line">                mSeparateProcesses,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_process,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_description,</div><div class="line">                com.android.internal.R.styleable.AndroidManifestProvider_enabled);</div><div class="line">        mParseProviderArgs.tag = <span class="string">"&lt;provider&gt;"</span>;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    mParseProviderArgs.sa = sa;</div><div class="line">    mParseProviderArgs.flags = flags;</div><div class="line">    ...</div><div class="line">    Provider p = <span class="keyword">new</span> Provider(mParseProviderArgs, <span class="keyword">new</span> ProviderInfo());</div><div class="line">    ...</div><div class="line">    sa.recycle();</div><div class="line">    p.info.authority = cpname.intern();</div><div class="line">    <span class="keyword">return</span> p;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这里解析我们的provider标签了，最后将解析完毕的Provider对象返回，这个返回会一直返回到<strong>Step2</strong>，然后调用另外一个installNewPackageLI()或者replacePackageLI()函数将获取的值保存。但其实在installNewPackageLI()或者replacePackageLI()函数核心里最后都会调用scanPackageLI()。所以将直接分析最后的scanPackageLI()函数</p>
+<h4 id="Step6、scanPackageLI"><a href="#Step6、scanPackageLI" class="headerlink" title="Step6、scanPackageLI()"></a>Step6、scanPackageLI()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// All available providers, for your resolving pleasure.</span></div><div class="line"><span class="keyword">final</span> ProviderIntentResolver mProviders = <span class="keyword">new</span> ProviderIntentResolver();</div><div class="line">    </div><div class="line"><span class="keyword">private</span> PackageParser.<span class="function">Package <span class="title">scanPackageLI</span><span class="params">(PackageParser.Package pkg, <span class="keyword">int</span> parseFlags,</span></span></div><div class="line">        <span class="keyword">int</span> scanFlags, <span class="keyword">long</span> currentTime, UserHandle user) <span class="keyword">throws</span> PackageManagerException &#123;</div><div class="line">    <span class="keyword">boolean</span> success = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">final</span> PackageParser.Package res = scanPackageDirtyLI(pkg, parseFlags, scanFlags,</div><div class="line">            currentTime, user);</div><div class="line">    success = <span class="keyword">true</span>;</div><div class="line">    <span class="keyword">return</span> res;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">private</span> PackageParser.<span class="function">Package <span class="title">scanPackageDirtyLI</span><span class="params">(PackageParser.Package pkg, <span class="keyword">int</span> parseFlags,</span></span></div><div class="line">            <span class="keyword">int</span> scanFlags, <span class="keyword">long</span> currentTime, UserHandle user) &#123;</div><div class="line">    <span class="comment">// writer</span></div><div class="line">    <span class="keyword">synchronized</span> (mPackages) &#123;</div><div class="line">        ...</div><div class="line">        <span class="keyword">int</span> N = pkg.providers.size();</div><div class="line">        <span class="keyword">int</span> i;</div><div class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;N; i++) &#123;</div><div class="line">            PackageParser.Provider p = pkg.providers.get(i);</div><div class="line">            p.info.processName = fixProcessName(pkg.applicationInfo.processName,</div><div class="line">                    p.info.processName, pkg.applicationInfo.uid);</div><div class="line">            mProviders.addProvider(p); <span class="comment">// 将Provider保存在本地了。</span></div><div class="line">            ...</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>最后我们走过相当长的旅程，终于将Provider从AndroidManifest里面拿出来并且保存到系统的PackageManagerService里面。以后每当我们要获取对应的Provider时候就可以从PMS里面查询并且获取。<br>需要注意的是：如果有相同的provider已经加载，新的就不加载进来了。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>通过六个步骤我们了解了APK里面的Provider怎么从安装包里面加载到PMS里，以提供外部使用。<br>最后总结下这六个步骤：</p>
+<ol>
+<li>扫描所有后缀为APK的文件并准备对其进行解析和安装。</li>
+<li>扫描单个APK看是新安装还是覆盖安装，来做不同的区分解析和安装。</li>
+<li>对每一个Apk文件包含的Android应用程序的配置文件AndroidManifest.xml进行解析。</li>
+<li>深入解析AndroidManifest里的application标签。</li>
+<li>具体解析provider标签。</li>
+<li>将所有解析的信息保存到PMS相应的变量里。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/10/16/Android-浅析-ContentProvider-二-安装原理/" data-id="civ9405rs000kakqtklet7v0j" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/16/Android-浅析-ContentProvider-三-获取原理/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 ContentProvider (三) 获取原理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/15/Android-浅析-ContentProvider-一-使用/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 ContentProvider (一) 使用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

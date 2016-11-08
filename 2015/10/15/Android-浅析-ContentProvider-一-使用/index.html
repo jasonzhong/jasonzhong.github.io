@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 ContentProvider (一) 使用 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Android ContentProvider 是 android 四大组件之一，为应用程序提供内容。他们封装数据并通过ContentResolver接口提供给应用程序。如果需要在多个应用程序之间共享数据，则只需要一个内容提供程序。如果你不需要共享数据在多个应用程序，你可以使用一个数据库，直接通过SQLite数据库。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 ContentProvider (一) 使用">
+<meta property="og:url" content="http://yoursite.com/2015/10/15/Android-浅析-ContentProvider-一-使用/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Android ContentProvider 是 android 四大组件之一，为应用程序提供内容。他们封装数据并通过ContentResolver接口提供给应用程序。如果需要在多个应用程序之间共享数据，则只需要一个内容提供程序。如果你不需要共享数据在多个应用程序，你可以使用一个数据库，直接通过SQLite数据库。">
+<meta property="og:image" content="http://ww4.sinaimg.cn/large/7669bef3gw1exccy7p7lzj20l00bxwg9.jpg">
+<meta property="og:updated_time" content="2016-09-22T08:02:10.119Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 ContentProvider (一) 使用">
+<meta name="twitter:description" content="Android ContentProvider 是 android 四大组件之一，为应用程序提供内容。他们封装数据并通过ContentResolver接口提供给应用程序。如果需要在多个应用程序之间共享数据，则只需要一个内容提供程序。如果你不需要共享数据在多个应用程序，你可以使用一个数据库，直接通过SQLite数据库。">
+<meta name="twitter:image" content="http://ww4.sinaimg.cn/large/7669bef3gw1exccy7p7lzj20l00bxwg9.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-ContentProvider-一-使用" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/15/Android-浅析-ContentProvider-一-使用/" class="article-date">
+  <time datetime="2015-10-15T11:49:39.000Z" itemprop="datePublished">2015-10-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 ContentProvider (一) 使用
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>Content providers are one of the primary building blocks of Android applications, providing content to applications. They encapsulate data and provide it to applications through the single ContentResolver interface. A content provider is only required if you need to share data between multiple applications. For example, the contacts data is used by multiple applications and must be stored in a content provider. If you don’t need to share data amongst multiple applications you can use a database directly via SQLiteDatabase.</p>
+</blockquote>
+<p>我们先来看一张图片让我们对Content Provider有一个直观的了解：<br><img src="http://ww4.sinaimg.cn/large/7669bef3gw1exccy7p7lzj20l00bxwg9.jpg" alt="Content Provider"></p>
+<p>ContentProvider提供了在应用程序之前共享数据的一种机制。<br>1、存储和获取数据提供了统一的接口。<br>2、对数据进行封装，不用关心数据存储的细节。<br>3、Android为常见的一些数据提供了默认的ContentProvider(包括音频、视频、图片和通讯录等)。<br>最主要的是ContentProvider对外共享数据统一了数据的访问方式。</p>
+<h2 id="组件使用"><a href="#组件使用" class="headerlink" title="组件使用"></a>组件使用</h2><p>首先来看下如何实现一个ContentProvider功能：</p>
+<h3 id="功能简述"><a href="#功能简述" class="headerlink" title="功能简述"></a>功能简述</h3><p>服务端：<br>有六个最主要的方法需要重写：<br>1、<strong>onCreate()</strong> which is called to initialize the provider.<br>2、<strong>query(Uri, String[], String, String[], String)</strong> which returns data to the caller.<br>3、<strong>insert(Uri, ContentValues)</strong> which inserts new data into the content provider.<br>4、<strong>update(Uri, ContentValues, String, String[])</strong> which updates existing data in the content provider.<br>5、<strong>delete(Uri, String, String[])</strong> which deletes data from the content provider.<br>6、<strong>getType(Uri)</strong> which returns the MIME type of data in the content provider.<br>注意：<br>insert()和update()方法有可能被多线程调用，一定要是线程安全的。<br>onCreate()方法只会调用一次，但要避免冗长的操作。</p>
+<p>客户端：<br>通过<strong>ContentResolver</strong>可以自动获取Provider的实例，不必担心跨进程调用的细节。</p>
+<h3 id="代码例子"><a href="#代码例子" class="headerlink" title="代码例子"></a>代码例子</h3><p>服务端：<br>AndroidManifest.xml<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;!-- android:exported="true" 指示该服务是否能够被其他应用程序组件调用或跟它交互。 --&gt;</div><div class="line">&lt;provider</div><div class="line">    android:name="com.unknow.jason.testdatabaseex.DatabaseProvider"</div><div class="line">    android:authorities="com.unknow.jason.testdatabaseex.provider"</div><div class="line">    android:exported="true"</div><div class="line">    android:enabled="true" &gt;</div><div class="line">&lt;/provider&gt;</div></pre></td></tr></table></figure></p>
+<p>浅析：<br>AndroidManifest添加provider服务，在安装App的时候会自动注册这个Provider服务到AMS里作备份，这个服务最关键的点是<strong>authorities</strong>，作为Provider唯一标识，让其它程序可以在AMS里面查询到此Provider服务。<br>ps.更多关于Provider的权限可以看<a href="http://developer.android.com/guide/topics/manifest/provider-element.html。" target="_blank" rel="external">http://developer.android.com/guide/topics/manifest/provider-element.html。</a></p>
+<p>DatabaseProvider.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DatabaseProvider</span> <span class="keyword">extends</span> <span class="title">ContentProvider</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Cursor <span class="title">query</span><span class="params">(Uri uri, String[] projection, String selection, String[] selectionArgs,</span></span></div><div class="line">                        String sortOrder) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Uri <span class="title">insert</span><span class="params">(Uri uri, ContentValues values)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">update</span><span class="params">(Uri uri, ContentValues values, String selection, String[] selectionArgs)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">delete</span><span class="params">(Uri uri, String selection, String[] selectionArgs)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getType</span><span class="params">(Uri uri)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>浅析：</p>
+<h4 id="Provider-最主要的六个方法。"><a href="#Provider-最主要的六个方法。" class="headerlink" title="Provider 最主要的六个方法。"></a>Provider 最主要的六个方法。</h4><p>getType():<br>Implement this to handle requests for the MIME type of the data at the given URI. The returned MIME type should start with <strong>vnd.android.cursor.item for a single record, or vnd.android.cursor.dir/ for multiple items.</strong><br><em>注意: 这方法有可能用于多线程。用于访问此信息的应用程序不需要权限；如果您的内容提供者需要读和/或写权限，或不导出，所有应用程序都可以调用此方法，不管其访问权限。这使他们能够检索URI的MIME类型时，调度意图。</em></p>
+<p>insert():<br>Implement this to handle requests to insert a new row. As a courtesy, call notifyChange() after inserting.<br><em>注意: 这方法有可能用于多线程。</em></p>
+<p>onCreate():<br>Implement this to initialize your content provider on startup. This method is called for all registered content providers on the application main thread at application launch time. <strong>It must not perform lengthy operations, or application startup will be delayed.</strong><br><em>注意： 如果你使用SQLite进行数据库操作，切勿在此方法中调用getReadableDatabase() or getWritableDatabase()方法，作为代替，可以使用onOpen(SQLiteDatabase)作为第一次初始数据库。</em></p>
+<p>query():<br>Implement this to handle query requests from clients.<br><em>注意: 这方法有可能用于多线程。</em></p>
+<p>delete():<br>Implement this to handle requests to delete one or more rows. The implementation should apply the selection clause when performing deletion, allowing the operation to affect multiple rows in a directory. As a courtesy, call notifyChange() after deleting.<br><em>注意: 这方法有可能用于多线程。如果一个特定的行要被删除，它会在URI的末尾解析出这一行的ID。</em></p>
+<p>update():<br>Implement this to handle requests to update one or more rows. The implementation should update all rows matching the selection to set the columns according to the provided values map. As a courtesy, call notifyChange() after updating.<br><em>注意: 这方法有可能用于多线程。</em></p>
+<p>sqlhelper.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SqlHelper</span> <span class="keyword">extends</span> <span class="title">SQLiteOpenHelper</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String CREATE_BOOK = <span class="string">"create table Book ("</span></div><div class="line">            + <span class="string">"id integer primary key autoincrement, "</span></div><div class="line">            + <span class="string">"author text, "</span></div><div class="line">            + <span class="string">"price real, "</span></div><div class="line">            + <span class="string">"pages integer, "</span></div><div class="line">            + <span class="string">"name text)"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String CREATE_CATEGORY = <span class="string">"create table Category ("</span></div><div class="line">            + <span class="string">"id integer primary key autoincrement, "</span></div><div class="line">            + <span class="string">"category_name text)"</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SqlHelper</span><span class="params">(Context context, String name, SQLiteDatabase.CursorFactory factory, <span class="keyword">int</span> version)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(context, name, factory, version);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(SQLiteDatabase db)</span> </span>&#123;</div><div class="line">        db.execSQL(CREATE_BOOK);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUpgrade</span><span class="params">(SQLiteDatabase db, <span class="keyword">int</span> oldVersion, <span class="keyword">int</span> newVersion)</span> </span>&#123;</div><div class="line">        db.execSQL(<span class="string">"drop table if exists Book"</span>);</div><div class="line">        onCreate(db);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>客户端：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">Uri uri = Uri.parse(<span class="string">"content://com.unknow.jason.testdatabaseex.provider/book"</span>);</div><div class="line">Cursor cursor = getContentResolver().query(uri, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (cursor != <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">while</span> (cursor.moveToNext()) &#123;</div><div class="line">        String name = cursor.getString(cursor.getColumnIndex(<span class="string">"name"</span>));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>浅析：<br>getContentResolver().query():<br>Query the given URI, returning a Cursor over the result set with optional support for cancellation.<br><em>为了更佳的性能，调用者应该遵循两点：<br>1、提供一个明确的projection，防止从存储中读取不需要的数据。<br>2、使用问号参数标记，如“电话=？”而不是在选择参数中的显式值，因此，不同的值的查询将被确认为缓存的目的相同的。</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/10/15/Android-浅析-ContentProvider-一-使用/" data-id="civ9405rs000dakqtcmusoprd" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/16/Android-浅析-ContentProvider-二-安装原理/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 ContentProvider (二) 安装原理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/09/20/Android-浅析-SharedPreferences-二-原理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 SharedPreferences (二) 原理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

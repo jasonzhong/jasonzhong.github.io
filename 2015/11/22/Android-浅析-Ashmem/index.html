@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 Ashmem | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="匿名共享内存子系统 Ashmem（Anonymous Shared Memory），它以驱动程序的形式实现在内核空间中。它有两个特点，一是能够辅助内存管理系统来有效地管理不再使用的内存块，二是它通过Binder进程间通信机制来实现进程间的内存共享。Android的Ashmem建立在Linux内核实现的共享内存的基础上封装了一层。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 Ashmem">
+<meta property="og:url" content="http://yoursite.com/2015/11/22/Android-浅析-Ashmem/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="匿名共享内存子系统 Ashmem（Anonymous Shared Memory），它以驱动程序的形式实现在内核空间中。它有两个特点，一是能够辅助内存管理系统来有效地管理不再使用的内存块，二是它通过Binder进程间通信机制来实现进程间的内存共享。Android的Ashmem建立在Linux内核实现的共享内存的基础上封装了一层。">
+<meta property="og:updated_time" content="2016-09-22T08:17:32.192Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 Ashmem">
+<meta name="twitter:description" content="匿名共享内存子系统 Ashmem（Anonymous Shared Memory），它以驱动程序的形式实现在内核空间中。它有两个特点，一是能够辅助内存管理系统来有效地管理不再使用的内存块，二是它通过Binder进程间通信机制来实现进程间的内存共享。Android的Ashmem建立在Linux内核实现的共享内存的基础上封装了一层。">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-Ashmem" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/22/Android-浅析-Ashmem/" class="article-date">
+  <time datetime="2015-11-22T08:03:33.000Z" itemprop="datePublished">2015-11-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 Ashmem
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>匿名共享内存子系统Ashmem（Anonymous Shared Memory），它以驱动程序的形式实现在内核空间中。它有两个特点，一是能够辅助内存管理系统来有效地管理不再使用的内存块，二是它通过Binder进程间通信机制来实现进程间的内存共享。<br>Android的Ashmem建立在Linux内核实现的共享内存的基础上封装了一层。</p>
+</blockquote>
+<h2 id="Java-接口分析"><a href="#Java-接口分析" class="headerlink" title="Java 接口分析"></a>Java 接口分析</h2><blockquote>
+<p>Android应用程序框架层，提供了一个MemoryFile接口来封装了匿名共享内存文件的创建和使用</p>
+</blockquote>
+<p>地址：frameworks/base/core/java/android/os/MemoryFile.java</p>
+<p>首先通过底层接口来大致了解下ashmem的操作：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">struct</span> file_operations ashmem_fops = &#123;  </div><div class="line">    .owner = THIS_MODULE,  </div><div class="line">    .open = ashmem_open,  </div><div class="line">    .release = ashmem_release,  </div><div class="line">    .mmap = ashmem_mmap,  </div><div class="line">    .unlocked_ioctl = ashmem_ioctl,  </div><div class="line">    .compat_ioctl = ashmem_ioctl,  </div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>它提供了open、mmap、release和ioctl四种操作，因为是通过内存映射地址来进行读写的操作，所以没有提供read和write操作。</p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">MemoryFile</span><span class="params">(String name, <span class="keyword">int</span> length)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">    mLength = length;</div><div class="line">    <span class="keyword">if</span> (length &gt;= <span class="number">0</span>) &#123;</div><div class="line">        mFD = native_open(name, length);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Invalid length: "</span> + length);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (length &gt; <span class="number">0</span>) &#123;</div><div class="line">        mAddress = native_mmap(mFD, length, PROT_READ | PROT_WRITE);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        mAddress = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>构造函数具体的工作就是通过JNI调用C++的内核来进行初始化的工作，具体就是实现了open和mmap的构造。</p>
+<ul>
+<li>native_open：主要执行的操作是调用open打开设备文件/dev/ashmem，在Ashmem驱动程序中创建了一个ashmem_area结构，表示一块新的共享内存，接着调用了两次ioctl文件操作分别来设置这块新建的匿名共享内存的名字和大小。</li>
+<li>native_mmap：首先获取文件描述符fd，fd是在前面open匿名设备文件/dev/ashmem获得的，之后通过mmap来执行内存映射操作了。最后的调用函数是ashmem_mmap，ashmem_mmap调用了Linux内核提供的shmem_file_setup函数来在临时文件系统tmpfs中创建一个临时文件，这个临时文件与Ashmem驱动程序创建的匿名共享内存对应。函数shmem_file_setup是Linux内核中用来创建共享内存文件的方法，而Linux内核中的共享内存机制其实是一种进程间通信（IPC）机制，它的实现相对也是比较复杂，Android系统的匿名共享内存机制正是由于直接使用了Linux内核共享内存机制，才会很小巧。最后，ashmem_mmap执行完成后，经过层层返回到JNI方法native_mmap中去，就从mmap函数的返回值中得到了这块虚拟空间的起始地址，这个起始地址最终返回到应用程序框架层的MemoryFile类的构造函数中，并且保存在成员变量mAddress中，接下来共享内存的读写操作就是对这个地址空间进行操作了。</li>
+</ul>
+<h3 id="读写函数"><a href="#读写函数" class="headerlink" title="读写函数"></a>读写函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">native_read</span><span class="params">(FileDescriptor fd, <span class="keyword">long</span> address, <span class="keyword">byte</span>[] buffer, <span class="keyword">int</span> srcOffset, <span class="keyword">int</span> destOffset, <span class="keyword">int</span> count, <span class="keyword">boolean</span> isUnpinned)</span> <span class="keyword">throws</span> IOException</span>;</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">native_write</span><span class="params">(FileDescriptor fd, <span class="keyword">long</span> address, <span class="keyword">byte</span>[] buffer, <span class="keyword">int</span> srcOffset, <span class="keyword">int</span> destOffset, <span class="keyword">int</span> count, <span class="keyword">boolean</span> isUnpinned)</span> <span class="keyword">throws</span> IOException</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Reads bytes from the memory file.</div><div class="line"> * Will throw an IOException if the file has been purged.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readBytes</span><span class="params">(<span class="keyword">byte</span>[] buffer, <span class="keyword">int</span> srcOffset, <span class="keyword">int</span> destOffset, <span class="keyword">int</span> count)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">    ...</div><div class="line">    <span class="keyword">return</span> native_read(mFD, mAddress, buffer, srcOffset, destOffset, count, mAllowPurging);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Write bytes to the memory file.</div><div class="line"> * Will throw an IOException if the file has been purged.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeBytes</span><span class="params">(<span class="keyword">byte</span>[] buffer, <span class="keyword">int</span> srcOffset, <span class="keyword">int</span> destOffset, <span class="keyword">int</span> count)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">    ...</div><div class="line">    native_write(mFD, mAddress, buffer, srcOffset, destOffset, count, mAllowPurging);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>address参数就是我们在前面执行mmap来映射匿名共享内存文件到内存中时，得到的进程虚拟地址空间的起始地址了,接着就能够直接访问了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_os_MemoryFile_read</span><span class="params">(JNIEnv* env, jobject clazz, jobject fileDescriptor, jint address, jbyteArray buffer, jint srcOffset, jint destOffset, jint count, jboolean unpinned)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">int</span> fd = jniGetFDFromFileDescriptor(env, fileDescriptor);  </div><div class="line">    <span class="keyword">if</span> (unpinned &amp;&amp; ashmem_pin_region(fd, <span class="number">0</span>, <span class="number">0</span>) == ASHMEM_WAS_PURGED) &#123;  </div><div class="line">        ashmem_unpin_region(fd, <span class="number">0</span>, <span class="number">0</span>);  </div><div class="line">        jniThrowException(env, <span class="string">"java/io/IOException"</span>, <span class="string">"ashmem region was purged"</span>);  </div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;  </div><div class="line">    &#125;  </div><div class="line">  </div><div class="line">    env-&gt;SetByteArrayRegion(buffer, destOffset, count, (<span class="keyword">const</span> jbyte *)address + srcOffset);  </div><div class="line">  </div><div class="line">    <span class="keyword">if</span> (unpinned) &#123;  </div><div class="line">        ashmem_unpin_region(fd, <span class="number">0</span>, <span class="number">0</span>);  </div><div class="line">    &#125;  </div><div class="line">    <span class="keyword">return</span> count;  </div><div class="line">&#125;  </div><div class="line">  </div><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_os_MemoryFile_write</span><span class="params">(JNIEnv* env, jobject clazz, jobject fileDescriptor, jint address, jbyteArray buffer, jint srcOffset, jint destOffset, jint count, jboolean unpinned)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">int</span> fd = jniGetFDFromFileDescriptor(env, fileDescriptor);  </div><div class="line">    <span class="keyword">if</span> (unpinned &amp;&amp; ashmem_pin_region(fd, <span class="number">0</span>, <span class="number">0</span>) == ASHMEM_WAS_PURGED) &#123;  </div><div class="line">        ashmem_unpin_region(fd, <span class="number">0</span>, <span class="number">0</span>);  </div><div class="line">        jniThrowException(env, <span class="string">"java/io/IOException"</span>, <span class="string">"ashmem region was purged"</span>);  </div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;  </div><div class="line">    &#125;  </div><div class="line">  </div><div class="line">    env-&gt;GetByteArrayRegion(buffer, srcOffset, count, (jbyte *)address + destOffset);  </div><div class="line">  </div><div class="line">    <span class="keyword">if</span> (unpinned) &#123;  </div><div class="line">        ashmem_unpin_region(fd, <span class="number">0</span>, <span class="number">0</span>);  </div><div class="line">    &#125;  </div><div class="line">    <span class="keyword">return</span> count;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里是内核具体的读写操作，我们可以看到在拿到内存首地址后对数据的访问都是直接的。</p>
+<h3 id="加锁和解锁函数"><a href="#加锁和解锁函数" class="headerlink" title="加锁和解锁函数"></a>加锁和解锁函数</h3><p>Android系统的运行时库提到了执行匿名共享内存的锁定和解锁操作的两个函数ashmem_pin_region和ashmem_unpin_region。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">ashmem_pin_region</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">size_t</span> offset, <span class="keyword">size_t</span> len)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">struct</span> ashmem_pin pin = &#123; offset, len &#125;;  </div><div class="line">    <span class="keyword">return</span> ioctl(fd, ASHMEM_PIN, &amp;pin);  </div><div class="line">&#125;  </div><div class="line">  </div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">ashmem_unpin_region</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">size_t</span> offset, <span class="keyword">size_t</span> len)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">struct</span> ashmem_pin pin = &#123; offset, len &#125;;  </div><div class="line">    <span class="keyword">return</span> ioctl(fd, ASHMEM_UNPIN, &amp;pin);  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>它们最后都是通过ioctl来进行操作，只是传入的参数各不相同。分别是ASHMEM_PIN和ASHMEM_UNPIN。</p>
+<p>首先先来了解下锁的数据结构：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* </span></div><div class="line"> * ashmem_range - represents an interval of unpinned (evictable) pages </div><div class="line"> * Lifecycle: From unpin to pin </div><div class="line"> * Locking: Protected by `ashmem_mutex' </div><div class="line"> */  </div><div class="line"><span class="keyword">struct</span> ashmem_range &#123;  </div><div class="line">    <span class="keyword">struct</span> list_head lru;       <span class="comment">/* entry in LRU list */</span>  </div><div class="line">    <span class="keyword">struct</span> list_head unpinned;  <span class="comment">/* entry in its area's unpinned list */</span>  </div><div class="line">    <span class="keyword">struct</span> ashmem_area *asma;   <span class="comment">/* associated area */</span>  </div><div class="line">    <span class="keyword">size_t</span> pgstart;         <span class="comment">/* starting page, inclusive */</span>  </div><div class="line">    <span class="keyword">size_t</span> pgend;           <span class="comment">/* ending page, inclusive */</span>  </div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> purged;        <span class="comment">/* ASHMEM_NOT or ASHMEM_WAS_PURGED */</span>  </div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">switch</span> (cmd) &#123;  </div><div class="line"><span class="keyword">case</span> ASHMEM_PIN:  </div><div class="line">    ret = ashmem_pin(asma, pgstart, pgend); </div><div class="line">    <span class="keyword">break</span>;  </div><div class="line"><span class="keyword">case</span> ASHMEM_UNPIN:  </div><div class="line">    ret = ashmem_unpin(asma, pgstart, pgend);  </div><div class="line">    <span class="keyword">break</span>;  </div><div class="line">......  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>根据当前要执行的是ASHMEM_PIN操作还是ASHMEM_UNPIN操作来分别执行ashmem_pin和ashmem_unpin来进一步处理。<strong>创建匿名共享内存时，默认所有的内存都是pinned状态的</strong>，只有用户告诉Ashmem驱动程序要unpin某一块内存时，Ashmem驱动程序才会把这块内存unpin，之后，用户可以再告诉Ashmem驱动程序要重新pin某一块之前被unpin过的内块，从而把这块内存从unpinned状态改为pinned状态，也就是说，执行ASHMEM_PIN操作时，目标对象必须是一块当前处于unpinned状态的内存块。</p>
+<p>ashmem_unpin函数：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* </span></div><div class="line"> * ashmem_unpin - unpin the given range of pages. Returns zero on success. </div><div class="line"> * </div><div class="line"> * Caller must hold ashmem_mutex. </div><div class="line"> */  </div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ashmem_unpin</span><span class="params">(<span class="keyword">struct</span> ashmem_area *asma, <span class="keyword">size_t</span> pgstart, <span class="keyword">size_t</span> pgend)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">struct</span> ashmem_range *range, *next;  </div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> purged = ASHMEM_NOT_PURGED;  </div><div class="line">  </div><div class="line">restart:  </div><div class="line">    list_for_each_entry_safe(range, next, &amp;asma-&gt;unpinned_list, unpinned) &#123;  </div><div class="line">        <span class="comment">/* short circuit: this is our insertion point */</span>  </div><div class="line">        <span class="keyword">if</span> (range_before_page(range, pgstart))  </div><div class="line">            <span class="keyword">break</span>;  </div><div class="line">  </div><div class="line">        <span class="comment">/* </span></div><div class="line">         * The user can ask us to unpin pages that are already entirely </div><div class="line">         * or partially pinned. We handle those two cases here. </div><div class="line">         */  </div><div class="line">        <span class="keyword">if</span> (page_range_subsumed_by_range(range, pgstart, pgend))  </div><div class="line">            <span class="keyword">return</span> <span class="number">0</span>;  </div><div class="line">        <span class="keyword">if</span> (page_range_in_range(range, pgstart, pgend)) &#123;  </div><div class="line">            pgstart = <span class="keyword">min_t</span>(<span class="keyword">size_t</span>, range-&gt;pgstart, pgstart),  </div><div class="line">            pgend = <span class="keyword">max_t</span>(<span class="keyword">size_t</span>, range-&gt;pgend, pgend);  </div><div class="line">            purged |= range-&gt;purged;  </div><div class="line">            range_del(range);  </div><div class="line">            <span class="keyword">goto</span> restart;  </div><div class="line">        &#125;  </div><div class="line">    &#125;  </div><div class="line">  </div><div class="line">    <span class="keyword">return</span> range_alloc(asma, range, purged, pgstart, pgend);  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>函数的主体就是在遍历asma-&gt;unpinned_list列表，从中查找当前处于unpinned状态的内存块是否与将要unpin的内存块[pgstart, pgend]是否相交，如果相交，则要执行合并操作，即调整pgstart和pgend的大小，然后通过调用range_del函数删掉原来的已经被unpinned过的内存块，最后再通过range_alloc函数来重新unpinned这块调整过后的内存块[pgstart, pgend]，这里新的内存块[pgstart, pgend]已经包含了刚才所有被删掉的unpinned状态的内存。注意，这里如果找到一块相并的内存块，并且调整了pgstart和pgend的大小之后，要重新再扫描一遍asma-&gt;unpinned_list列表，因为新的内存块[pgstart, pgend]可能还会与前后的处于unpinned状态的内存块发生相交。</p>
+<p>ashmem_pin函数：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* </span></div><div class="line"> * ashmem_pin - pin the given ashmem region, returning whether it was </div><div class="line"> * previously purged (ASHMEM_WAS_PURGED) or not (ASHMEM_NOT_PURGED). </div><div class="line"> * </div><div class="line"> * Caller must hold ashmem_mutex. </div><div class="line"> */  </div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ashmem_pin</span><span class="params">(<span class="keyword">struct</span> ashmem_area *asma, <span class="keyword">size_t</span> pgstart, <span class="keyword">size_t</span> pgend)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">struct</span> ashmem_range *range, *next;  </div><div class="line">    <span class="keyword">int</span> ret = ASHMEM_NOT_PURGED;  </div><div class="line">  </div><div class="line">    list_for_each_entry_safe(range, next, &amp;asma-&gt;unpinned_list, unpinned) &#123;  </div><div class="line">        <span class="comment">/* moved past last applicable page; we can short circuit */</span>  </div><div class="line">        <span class="keyword">if</span> (range_before_page(range, pgstart))  </div><div class="line">            <span class="keyword">break</span>;  </div><div class="line">  </div><div class="line">        <span class="comment">/* </span></div><div class="line">         * The user can ask us to pin pages that span multiple ranges, </div><div class="line">         * or to pin pages that aren't even unpinned, so this is messy. </div><div class="line">         * </div><div class="line">         * Four cases: </div><div class="line">         * 1. The requested range subsumes an existing range, so we </div><div class="line">         *    just remove the entire matching range. </div><div class="line">         * 2. The requested range overlaps the start of an existing </div><div class="line">         *    range, so we just update that range. </div><div class="line">         * 3. The requested range overlaps the end of an existing </div><div class="line">         *    range, so we just update that range. </div><div class="line">         * 4. The requested range punches a hole in an existing range, </div><div class="line">         *    so we have to update one side of the range and then </div><div class="line">         *    create a new range for the other side. </div><div class="line">         */  </div><div class="line">        <span class="keyword">if</span> (page_range_in_range(range, pgstart, pgend)) &#123;  </div><div class="line">            ret |= range-&gt;purged;  </div><div class="line">  </div><div class="line">            <span class="comment">/* Case #1: Easy. Just nuke the whole thing. */</span>  </div><div class="line">            <span class="keyword">if</span> (page_range_subsumes_range(range, pgstart, pgend)) &#123;  </div><div class="line">                range_del(range);  </div><div class="line">                <span class="keyword">continue</span>;  </div><div class="line">            &#125;  </div><div class="line">  </div><div class="line">            <span class="comment">/* Case #2: We overlap from the start, so adjust it */</span>  </div><div class="line">            <span class="keyword">if</span> (range-&gt;pgstart &gt;= pgstart) &#123;  </div><div class="line">                range_shrink(range, pgend + <span class="number">1</span>, range-&gt;pgend);  </div><div class="line">                <span class="keyword">continue</span>;  </div><div class="line">            &#125;  </div><div class="line">  </div><div class="line">            <span class="comment">/* Case #3: We overlap from the rear, so adjust it */</span>  </div><div class="line">            <span class="keyword">if</span> (range-&gt;pgend &lt;= pgend) &#123;  </div><div class="line">                range_shrink(range, range-&gt;pgstart, pgstart<span class="number">-1</span>);  </div><div class="line">                <span class="keyword">continue</span>;  </div><div class="line">            &#125;  </div><div class="line">  </div><div class="line">            <span class="comment">/* </span></div><div class="line">             * Case #4: We eat a chunk out of the middle. A bit </div><div class="line">             * more complicated, we allocate a new range for the </div><div class="line">             * second half and adjust the first chunk's endpoint. </div><div class="line">             */  </div><div class="line">            range_alloc(asma, range, range-&gt;purged,  </div><div class="line">                    pgend + <span class="number">1</span>, range-&gt;pgend);  </div><div class="line">            range_shrink(range, range-&gt;pgstart, pgstart - <span class="number">1</span>);  </div><div class="line">            <span class="keyword">break</span>;  </div><div class="line">        &#125;  </div><div class="line">    &#125;  </div><div class="line">  </div><div class="line">    <span class="keyword">return</span> ret;  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先要执行pin操作的内存块必须要在unpinned_list列表中的，如果不在，就什么都不用做。要判断要pin的内存块是否在unpinned_list列表中，还是要通过遍历相应的asma-&gt;unpinned_list列表来找出与之相交的内存块了。</p>
+<h2 id="辅助内存管理"><a href="#辅助内存管理" class="headerlink" title="辅助内存管理"></a>辅助内存管理</h2><p>ashmem_init函数：<br>ashmem_init函数是Ashmem驱动程序模块初始化函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">struct</span> shrinker ashmem_shrinker = &#123;  </div><div class="line">    .shrink = ashmem_shrink,  </div><div class="line">    .seeks = DEFAULT_SEEKS * <span class="number">4</span>,  </div><div class="line">&#125;;  </div><div class="line">  </div><div class="line"><span class="keyword">static</span> <span class="keyword">int</span> __<span class="function">init <span class="title">ashmem_init</span><span class="params">(<span class="keyword">void</span>)</span>  </span></div><div class="line">&#123;  </div><div class="line">    <span class="keyword">int</span> ret;  </div><div class="line">    ......  </div><div class="line">    register_shrinker(&amp;ashmem_shrinker);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>调用register_shrinker函数向内存管理系统注册一个内存回收算法函数。在Linux内核中，当系统内存紧张时，内存管理系统就会进行内存回收算法，将一些最近没有用过的内存换出物理内存去，这样可以增加物理内存的供应。因此，当内存管理系统进行内存回收时，就会调用到这里的ashmem_shrink函数，让Ashmem驱动程序执行内存回收操作。<br>具体的管理函数可以在kernel/common/mm/memory.c中找到。</p>
+<h2 id="简析Ashmen进程间传递"><a href="#简析Ashmen进程间传递" class="headerlink" title="简析Ashmen进程间传递"></a>简析Ashmen进程间传递</h2><p>在Linux系统中，文件描述符其实就是一个整数。每一个进程在内核空间都有一个打开文件的数组，这个文件描述符的整数值就是用来索引这个数组的，而且，这个文件描述符只是在本进程内有效，也就是说，在不同的进程中，相同的文件描述符的值，代表的可能是不同的打开文件。因此，在进程间传输文件描述符时，不能简要地把一个文件描述符从一个进程传给另外一个进程，中间必须做一过转换，使得这个文件描述在目标进程中是有效的，并且它和源进程的文件描述符所对应的打开文件是一致的，这样才能保证共享。</p>
+<p>在讲解前了解两个结构体：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* </span></div><div class="line"> * This is the flattened representation of a Binder object for transfer between processes.  The 'offsets' supplied as part of a binder transaction contains offsets into the data where these structures occur.  The Binder  driver takes care of re-writing the structure type and data as it moves  between processes. </div><div class="line"> */  </div><div class="line"><span class="keyword">struct</span> flat_binder_object &#123;  </div><div class="line">    <span class="comment">/* 8 bytes for large_flat_header. */</span>  </div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>       type;  </div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>       flags;  </div><div class="line">  </div><div class="line">    <span class="comment">/* 8 bytes of data. */</span>  </div><div class="line">    <span class="keyword">union</span> &#123;  </div><div class="line">        <span class="keyword">void</span>        *binder;    <span class="comment">/* local object */</span>  </div><div class="line">        <span class="keyword">signed</span> <span class="keyword">long</span> handle;     <span class="comment">/* remote object */</span>  </div><div class="line">    &#125;;  </div><div class="line">  </div><div class="line">    <span class="comment">/* extra data associated with local object */</span>  </div><div class="line">    <span class="keyword">void</span>            *cookie;  </div><div class="line">&#125;; </div><div class="line"></div><div class="line"><span class="keyword">enum</span> &#123;  </div><div class="line">    BINDER_TYPE_BINDER  = B_PACK_CHARS(<span class="string">'s'</span>, <span class="string">'b'</span>, <span class="string">'*'</span>, B_TYPE_LARGE),  </div><div class="line">    BINDER_TYPE_WEAK_BINDER = B_PACK_CHARS(<span class="string">'w'</span>, <span class="string">'b'</span>, <span class="string">'*'</span>, B_TYPE_LARGE),  </div><div class="line">    BINDER_TYPE_HANDLE  = B_PACK_CHARS(<span class="string">'s'</span>, <span class="string">'h'</span>, <span class="string">'*'</span>, B_TYPE_LARGE),  </div><div class="line">    BINDER_TYPE_WEAK_HANDLE = B_PACK_CHARS(<span class="string">'w'</span>, <span class="string">'h'</span>, <span class="string">'*'</span>, B_TYPE_LARGE),  </div><div class="line">    BINDER_TYPE_FD      = B_PACK_CHARS(<span class="string">'f'</span>, <span class="string">'d'</span>, <span class="string">'*'</span>, B_TYPE_LARGE),  </div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>在binder里关键的结构体flat_binder_object中，主要看的type是BINDER_TYPE_FD，要传输的文件描述符的值保存在handle域中。</p>
+<p>文件描述符类型的Binder对象在Binder驱动程序中的相关处理逻辑实现在binder_transact函数。</p>
+<p>binder_transact函数核心功能：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">case</span> BINDER_TYPE_FD: &#123;  </div><div class="line">    <span class="keyword">int</span> target_fd;  </div><div class="line">    <span class="keyword">struct</span> file *file;  </div><div class="line"></div><div class="line">    <span class="keyword">if</span> (reply) &#123;  </div><div class="line">        <span class="keyword">if</span> (!(in_reply_to-&gt;flags &amp; TF_ACCEPT_FDS)) &#123; </div><div class="line">            return_error = BR_FAILED_REPLY;  </div><div class="line">            <span class="keyword">goto</span> err_fd_not_allowed;  </div><div class="line">        &#125;  </div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!target_node-&gt;accept_fds) &#123;  </div><div class="line">        return_error = BR_FAILED_REPLY;  </div><div class="line">        <span class="keyword">goto</span> err_fd_not_allowed;  </div><div class="line">    &#125;  </div><div class="line"></div><div class="line">    file = fget(fp-&gt;handle);  </div><div class="line">    <span class="keyword">if</span> (file == <span class="literal">NULL</span>) &#123;  </div><div class="line">        return_error = BR_FAILED_REPLY;  </div><div class="line">        <span class="keyword">goto</span> err_fget_failed;  </div><div class="line">    &#125;  </div><div class="line">    target_fd = task_get_unused_fd_flags(target_proc, O_CLOEXEC);  </div><div class="line">    <span class="keyword">if</span> (target_fd &lt; <span class="number">0</span>) &#123;  </div><div class="line">        fput(file);  </div><div class="line">        return_error = BR_FAILED_REPLY;  </div><div class="line">        <span class="keyword">goto</span> err_get_unused_fd_failed;  </div><div class="line">    &#125;  </div><div class="line">    task_fd_install(target_proc, target_fd, file);  </div><div class="line">     </div><div class="line">    <span class="comment">/* <span class="doctag">TODO:</span> fput? */</span>  </div><div class="line">    fp-&gt;handle = target_fd;  </div><div class="line">&#125; <span class="keyword">break</span>;</div></pre></td></tr></table></figure></p>
+<p>代码地址：kernel/common/drivers/staging/android/binder.c<br>最后的功能非常复杂，以后会在详细解析上来分析。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/11/22/Android-浅析-Ashmem/" data-id="civ9405rc0002akqtrbxhls26" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ashmem/">Ashmem</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/14/FreeLoad/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          FreeLoad 下载库
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/11/10/Android-浅析-智能指针/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 智能指针</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

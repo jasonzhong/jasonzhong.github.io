@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 ContentProvider (三) 获取原理 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Android ContentProvider 是 android 四大组件之一。上一节从源码的角度来学习了 ContentProvider 安装过程，本章依旧会从源码角度来分析 ContentProvider 客户端如何从 PMS 里面找到对应想要的 provider。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 ContentProvider (三) 获取原理">
+<meta property="og:url" content="http://yoursite.com/2015/10/16/Android-浅析-ContentProvider-三-获取原理/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Android ContentProvider 是 android 四大组件之一。上一节从源码的角度来学习了 ContentProvider 安装过程，本章依旧会从源码角度来分析 ContentProvider 客户端如何从 PMS 里面找到对应想要的 provider。">
+<meta property="og:updated_time" content="2016-09-22T08:02:09.953Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 ContentProvider (三) 获取原理">
+<meta name="twitter:description" content="Android ContentProvider 是 android 四大组件之一。上一节从源码的角度来学习了 ContentProvider 安装过程，本章依旧会从源码角度来分析 ContentProvider 客户端如何从 PMS 里面找到对应想要的 provider。">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-ContentProvider-三-获取原理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/16/Android-浅析-ContentProvider-三-获取原理/" class="article-date">
+  <time datetime="2015-10-16T08:13:38.000Z" itemprop="datePublished">2015-10-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 ContentProvider (三) 获取原理
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<p>ContentProvider下文将会简称CP。<br>ContentResolver下文将会简称CR。</p>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>本文首先从ContentResolver一路深入浅析CP客户端如何找到对应的provider。</p>
+</blockquote>
+<h2 id="CP-获取原理"><a href="#CP-获取原理" class="headerlink" title="CP 获取原理"></a>CP 获取原理</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Cursor cursor = context.getContentResolver().query(uri, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</div></pre></td></tr></table></figure>
+<p>这是CP客户端用来启动服务端的代码。在获取到cursor后就可以从中取出数据集。</p>
+<p>我们首先通过getContentResolver()来获取一个ContentResolve对象。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> ApplicationContentResolver mContentResolver;</div><div class="line"><span class="function"><span class="keyword">public</span> ContentResolver <span class="title">getContentResolver</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> mContentResolver;&#125;</div></pre></td></tr></table></figure></p>
+<p>通过代码我们可以知道返回的mContentResolver对象是ApplicationContentResolver类，而ApplicationContentResolver类又是继承于ContentResolver的。所以我们接下来首先分析下ContentResolver。</p>
+<h3 id="Step1、ContentResolver"><a href="#Step1、ContentResolver" class="headerlink" title="Step1、ContentResolver"></a>Step1、ContentResolver</h3><blockquote>
+<p>SDK：provides applications access to the content model.<br>翻译：提供app访问内容模型。</p>
+</blockquote>
+<p>CR 通过一套标准及统一的接口获取其他应用程序暴露的数据，那个标准就是URI，除了URI以外，还必须知道需要获取的数据段的名称，以及此数据段的数据类型。</p>
+<h4 id="主要方法"><a href="#主要方法" class="headerlink" title="主要方法"></a>主要方法</h4><p>因为CP是以类似数据库中表的方式将数据暴露出去，那么CR也将采用类似数据库的操作来从CP中获取数据。</p>
+<h5 id="insert"><a href="#insert" class="headerlink" title="insert"></a>insert</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="meta">@Nullable</span> <span class="function">Uri <span class="title">insert</span><span class="params">(@NonNull Uri url, @Nullable ContentValues values)</span></span>&#123;&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">bulkInsert</span><span class="params">(@NonNull Uri url, @NonNull ContentValues[] values)</span></span>&#123;&#125;</div></pre></td></tr></table></figure>
+<p>insert:<br>Inserts a row into a table at the given URL.<br>If the content provider supports transactions the insertion will be atomic.<br>翻译：在给定的URL插入一行到表里面，如果CP支持，处理过程将是原子操作。</p>
+<p>bulkInsert:<br>Inserts multiple rows into a table at the given URL.<br>This function make no guarantees about the atomicity of the insertions.<br>翻译：在给定的URL插入多行到表里面，处理过程不对原子操作作保证。</p>
+<h5 id="delete"><a href="#delete" class="headerlink" title="delete"></a>delete</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">delete</span><span class="params">(Uri url, String where, String[] selectionArgs)</span></span>&#123;&#125;</div></pre></td></tr></table></figure>
+<p>Deletes row(s) specified by a content URI.<br>If the content provider supports transactions, the deletion will be atomic.<br>翻译：删除一行或多行由uri指定，如果CP支持，处理过程将是原子操作。</p>
+<h5 id="update"><a href="#update" class="headerlink" title="update"></a>update</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">update</span><span class="params">(Uri uri, ContentValues values, String where,</span></span></div><div class="line">            String[] selectionArgs) &#123;&#125;</div></pre></td></tr></table></figure>
+<p>Update row(s) in a content URI.<br>If the content provider supports transactions the update will be atomic.<br>翻译：在给定的URL更新多行，如果CP支持，处理过程将是原子操作。</p>
+<h5 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Cursor <span class="title">query</span><span class="params">(Uri uri, String[] projection,</span></span></div><div class="line">            String selection, String[] selectionArgs, String sortOrder) &#123;&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Cursor <span class="title">query</span><span class="params">(<span class="keyword">final</span> Uri uri, String[] projection,</span></span></div><div class="line">            String selection, String[] selectionArgs, String sortOrder,</div><div class="line">            CancellationSignal cancellationSignal) &#123;&#125;</div></pre></td></tr></table></figure>
+<p>Query the given URI, returning a Cursor over the result set.<br>翻译：从给定的URI中查询，从结果集中返回一个Cursor对象。<br>注意：<br>1：提供一个明确的空间，防止从不希望被使用的内存中读取数据。<br>2：使用问号参数标记，如“电话=？”而不是在选择参数中的显式值，因此，不同的值的查询将被确认为缓存的目的相同的。</p>
+<h5 id="call"><a href="#call" class="headerlink" title="call"></a>call</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Bundle <span class="title">call</span><span class="params">(Uri uri, String method, String arg, Bundle extras)</span> </span>&#123;&#125;</div></pre></td></tr></table></figure>
+<p>Call a provider-defined method. This can be used to implement read or write interfaces which are cheaper than using a Cursor and/or do not fit into the traditional table model.<br>翻译：<br>调用提供者定义方法。这可以用来实现读写接口，比使用游标和/或不符合传统的表模型更好。</p>
+<h4 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h4><p>在insert、query、updata这些方法中都调用一个最主要的方法acquireProvider()。</p>
+<h5 id="acquireProvider"><a href="#acquireProvider" class="headerlink" title="acquireProvider"></a>acquireProvider</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Returns the content provider for the given content URI.</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> IContentProvider <span class="title">acquireUnstableProvider</span><span class="params">(Uri uri)</span> </span>&#123;</div><div class="line">    ...</div><div class="line">    <span class="keyword">return</span> acquireUnstableProvider(mContext, uri.getAuthority());</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>acquireProvider()是一个抽象函数，由子类去实现细节。那么在android中，实现细节的子类就是<strong>ApplicationContentResolver</strong>。</p>
+<h3 id="Step2、ApplicationContentResolver"><a href="#Step2、ApplicationContentResolver" class="headerlink" title="Step2、ApplicationContentResolver"></a>Step2、ApplicationContentResolver</h3><blockquote>
+<p>ApplicationContentResolver是contextimpl的内部类，继承ContentResolver。其内部封装了一个ActivityThread对象，最后调用的方法都是调用ActivityThread的方法，所以ApplicationContentResolver就是一个中间过度类。</p>
+</blockquote>
+<p>接着我们来看下ActivityThread关于acquireProvider()的核心方法：</p>
+<h3 id="Step3、ActivityThread"><a href="#Step3、ActivityThread" class="headerlink" title="Step3、ActivityThread"></a>Step3、ActivityThread</h3><p>acquireProvider：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> IContentProvider <span class="title">acquireProvider</span><span class="params">(</span></span></div><div class="line">            Context c, String auth, <span class="keyword">int</span> userId, <span class="keyword">boolean</span> stable) &#123;</div><div class="line">    <span class="keyword">final</span> IContentProvider provider = acquireExistingProvider(c, auth, userId, stable);</div><div class="line">    <span class="keyword">if</span> (provider != <span class="keyword">null</span>) &#123;<span class="keyword">return</span> provider;&#125;</div><div class="line"></div><div class="line">    IActivityManager.ContentProviderHolder holder = <span class="keyword">null</span>;</div><div class="line">    holder = ActivityManagerNative.getDefault().getContentProvider(</div><div class="line">            getApplicationThread(), auth, userId, stable);</div><div class="line">    <span class="keyword">if</span> (holder == <span class="keyword">null</span>) &#123;<span class="keyword">return</span> <span class="keyword">null</span>;&#125;</div><div class="line"></div><div class="line">    holder = installProvider(c, holder, holder.info,</div><div class="line">                <span class="keyword">true</span> <span class="comment">/*noisy*/</span>, holder.noReleaseNeeded, stable);</div><div class="line">    <span class="keyword">return</span> holder.provider;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这段函数主要流程：<br>1、从已经保存的本地provider中查找是否有对应的provider，有则将其返回退出。<br>2、从AMS中找到对应的provider。<br>3、安装从AMS中找到的provider。并且将provider保存在本地。<br>4、返回此provider。</p>
+<p>最后我们来看下ActivityManagerService关于getContentProvider()的核心方法：</p>
+<h3 id="Step4、ActivityManagerService"><a href="#Step4、ActivityManagerService" class="headerlink" title="Step4、ActivityManagerService"></a>Step4、ActivityManagerService</h3><p>getContentProvider:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ContentProviderHolder <span class="title">getContentProvider</span><span class="params">(</span></span></div><div class="line">            IApplicationThread caller, String name, <span class="keyword">int</span> userId, <span class="keyword">boolean</span> stable) &#123;</div><div class="line">    enforceNotIsolatedCaller(<span class="string">"getContentProvider"</span>);</div><div class="line">    <span class="keyword">return</span> getContentProviderImpl(caller, name, <span class="keyword">null</span>, stable, userId);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">final</span> ContentProviderHolder <span class="title">getContentProviderImpl</span><span class="params">(IApplicationThread caller,</span></span></div><div class="line">            String name, IBinder token, <span class="keyword">boolean</span> stable, <span class="keyword">int</span> userId) &#123;</div><div class="line">    ...</div><div class="line">    ContentProviderRecord cpr;</div><div class="line">    </div><div class="line">    <span class="comment">// First check if this content provider has been published...</span></div><div class="line">    cpr = mProviderMap.getProviderByName(name, userId);</div><div class="line">    ...</div><div class="line">    <span class="keyword">if</span> (!providerRunning) &#123;</div><div class="line">        cpi = AppGlobals.getPackageManager().resolveContentProvider(name, STOCK_PM_FLAGS | PackageManager.GET_URI_PERMISSION_PATTERNS, userId);</div><div class="line">    &#125;         </div><div class="line">    ...</div><div class="line">    cpr = mProviderMap.getProviderByClass(comp, userId);</div><div class="line">    <span class="keyword">if</span> (firstClass) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            ApplicationInfo ai = AppGlobals.getPackageManager().</div><div class="line">                getApplicationInfo(cpi.applicationInfo.packageName, STOCK_PM_FLAGS, userId);</div><div class="line">            cpr = <span class="keyword">new</span> ContentProviderRecord(<span class="keyword">this</span>, cpi, ai, comp, singleton);</div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">            Binder.restoreCallingIdentity(ident);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">    <span class="keyword">if</span> (firstClass) &#123;</div><div class="line">        mProviderMap.putProviderByClass(comp, cpr);</div><div class="line">    &#125;</div><div class="line">    mProviderMap.putProviderByName(name, cpr);</div><div class="line">    ...</div><div class="line">    <span class="comment">// Wait for the provider to be published... </span></div><div class="line">    <span class="keyword">synchronized</span> (cpr) &#123;  </div><div class="line">        <span class="keyword">while</span> (cpr.provider == <span class="keyword">null</span>) &#123;  </div><div class="line">            ......  </div><div class="line">            <span class="keyword">try</span> &#123;  </div><div class="line">                cpr.wait();  </div><div class="line">            &#125; </div><div class="line">        &#125;  </div><div class="line">    &#125;  </div><div class="line">    <span class="keyword">return</span> cpr != <span class="keyword">null</span> ? cpr.newHolder(conn) : <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这段函数主要从AMS中查找已经注册了的provider，然后将provider对象返回给客户端。<br>在ActivityManagerService中，有两个成员变量是用来保存系统中的Content Provider信息的，一个是mProvidersByName，一个是mProvidersByClass，前者是以Content Provider的authoriry值为键值来保存的，后者是以Content Provider的类名为键值来保存的。这里要用两个Map来保存，这里为了方便根据不同条件来快速查找而设计的。<br>如果在mProviderMap里找不到对应的provider，会通过AppGlobals.getPackageManager()从PackageManagerService里获取。然后保存到mProviderMap里面。</p>
+<h3 id="Step5、PackageManagerService"><a href="#Step5、PackageManagerService" class="headerlink" title="Step5、PackageManagerService"></a>Step5、PackageManagerService</h3><p>resolveContentProvider:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> ProviderInfo <span class="title">resolveContentProvider</span><span class="params">(String name, <span class="keyword">int</span> flags, <span class="keyword">int</span> userId)</span> </span>&#123;</div><div class="line">    <span class="keyword">synchronized</span> (mPackages) &#123;</div><div class="line">        <span class="keyword">final</span> PackageParser.Provider provider = mProvidersByAuthority.get(name);</div><div class="line">        PackageSetting ps = mSettings.mPackages.get(provider.owner.packageName);</div><div class="line">        <span class="keyword">return</span> PackageParser.generateProviderInfo(provider, flags,</div><div class="line">                        ps.readUserState(userId), userId);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>查找的最底层就是在PMS里面，PMS里面的mProvidersByAuthority保存了本机所有apk包含的provider定义。通过它可以找到所有对应的provider。(终)</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>ContentProvider的整个获取原理比较简单，并没有太难的地方，主要还是一层层调用比较费劲，封装了几层。<br>再来总结下获取的整个流程(以query函数为例)：<br>1、首先每个context类都会内部包含了一个ContentResolver的子对象ApplicationContentResolver。<br>2、通过调用ApplicationContentResolver的主要方法query来获取CP的数据库数据。<br>3、调用的过程首先会调用ContentResolver的核心方法acquireProvider()。而acquireProvider()方法是一个抽象方法，其实现是交由子类实现。<br>4、通过子类的acquireProvider()方法实现了解到主要的实现是交由ActivityThread类来完成。<br>5、ActivityThread类会做出一个判断，如果本地保存一个需要获取的CP对象实例，就会直接返回这个对象实例，如果没有保存，则会访问AMS对象去查找获取一个对象的CP对象实例，当找到这个对象实例后会保存到本地以便日后快速获取。<br>6、如果在AMS里面没有找到，就会继续深入到PMS里去从全部的provider中查找。<br>7、获取到CP对象实例后会通过层层返回，最后再调用该CP对象的query方法获取相应的数据。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/10/16/Android-浅析-ContentProvider-三-获取原理/" data-id="civ9405rs000hakqttboccex5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/16/Android-浅析-ContentProvider-四-启动原理/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android 浅析 ContentProvider (四) 启动原理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/16/Android-浅析-ContentProvider-二-安装原理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 ContentProvider (二) 安装原理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

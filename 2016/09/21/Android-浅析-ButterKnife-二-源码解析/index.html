@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 ButterKnife (二) 源码解析 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。本章照旧从源码角度分析 ButterKnife 是如何工作的，并且也可以从中看出大神对库的理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 ButterKnife (二) 源码解析">
+<meta property="og:url" content="http://yoursite.com/2016/09/21/Android-浅析-ButterKnife-二-源码解析/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。本章照旧从源码角度分析 ButterKnife 是如何工作的，并且也可以从中看出大神对库的理解。">
+<meta property="og:updated_time" content="2016-09-22T04:07:56.046Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 ButterKnife (二) 源码解析">
+<meta name="twitter:description" content="ButterKnife 是一个用注解的方式生成公式化的代码将 Android view 的域和方法绑定一起的库。本章照旧从源码角度分析 ButterKnife 是如何工作的，并且也可以从中看出大神对库的理解。">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-浅析-ButterKnife-二-源码解析" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/" class="article-date">
+  <time datetime="2016-09-21T13:49:42.000Z" itemprop="datePublished">2016-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 浅析 ButterKnife (二) 源码解析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><p>这章将会根据由浅入深的过程浅析ButterKnife的注解方式。</p>
+<h2 id="工程结构"><a href="#工程结构" class="headerlink" title="工程结构"></a>工程结构</h2><ul>
+<li>butterknife</li>
+<li>butterknife-annotations</li>
+<li>butterknife-compiler</li>
+</ul>
+<p>可以看到工程的目录结构还是很清楚的<br><code>butterknife</code>负责工程的主要逻辑调用入口。<br><code>butterknife-annotations</code>负责所有注解的自定义文件。<br><code>butterknife-compiler</code>负责在编译时解析Annotations。</p>
+<h2 id="butterknife-annotations"><a href="#butterknife-annotations" class="headerlink" title="butterknife-annotations"></a>butterknife-annotations</h2><p>这里面的文件都是由注解组成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Bind a field to the view for the specified ID. The view will automatically be cast to the field</div><div class="line"> * type.</div><div class="line"> * &lt;pre&gt;&lt;code&gt;</div><div class="line"> * &#123;<span class="doctag">@literal</span> @&#125;Bind(R.id.title) TextView title;</div><div class="line"> * &lt;/code&gt;&lt;/pre&gt;</div><div class="line"> */</div><div class="line"><span class="meta">@Retention</span>(CLASS) <span class="meta">@Target</span>(FIELD)</div><div class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Bind &#123;</div><div class="line">  <span class="comment">/** View ID to which the field will be bound. */</span></div><div class="line">  <span class="meta">@IdRes</span> <span class="keyword">int</span>[] value();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>例如我们最经典的<code>Bind</code>方法的注解就是在这里定义的，这里通过注释我们可以很直接知道这些注解做的是什么就不再一一解析了。</p>
+<h2 id="butterknife-compiler"><a href="#butterknife-compiler" class="headerlink" title="butterknife-compiler"></a>butterknife-compiler</h2><p>接下来我们看编译过程，这里是butterknife的主要部分。<br>所有的注解要在编译时进行解析，都需要自定义一个类继承于<code>javax.annotation.processing.AbstractProcessor</code>，通过复写其中的方法来实现。</p>
+<p>先来看下支持注解的类类型：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> List&lt;Class&lt;? extends Annotation&gt;&gt; LISTENERS = Arrays.asList(<span class="comment">//</span></div><div class="line">    OnCheckedChanged.class, <span class="comment">//</span></div><div class="line">    OnClick.class, <span class="comment">//</span></div><div class="line">    OnEditorAction.class, <span class="comment">//</span></div><div class="line">    OnFocusChange.class, <span class="comment">//</span></div><div class="line">    OnItemClick.class, <span class="comment">//</span></div><div class="line">    OnItemLongClick.class, <span class="comment">//</span></div><div class="line">    OnItemSelected.class, <span class="comment">//</span></div><div class="line">    OnLongClick.class, <span class="comment">//</span></div><div class="line">    OnPageChange.class, <span class="comment">//</span></div><div class="line">    OnTextChanged.class, <span class="comment">//</span></div><div class="line">    OnTouch.class <span class="comment">//</span></div><div class="line">);</div><div class="line"></div><div class="line"><span class="comment">//获取支持注解的类型</span></div><div class="line"><span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> Set&lt;String&gt; <span class="title">getSupportedAnnotationTypes</span><span class="params">()</span> </span>&#123;</div><div class="line">  Set&lt;String&gt; types = <span class="keyword">new</span> LinkedHashSet&lt;&gt;();</div><div class="line">  types.add(Bind.class.getCanonicalName());</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (Class&lt;? extends Annotation&gt; listener : LISTENERS) &#123;</div><div class="line">    types.add(listener.getCanonicalName());</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  types.add(BindArray.class.getCanonicalName());</div><div class="line">  types.add(BindBitmap.class.getCanonicalName());</div><div class="line">  types.add(BindBool.class.getCanonicalName());</div><div class="line">  types.add(BindColor.class.getCanonicalName());</div><div class="line">  types.add(BindDimen.class.getCanonicalName());</div><div class="line">  types.add(BindDrawable.class.getCanonicalName());</div><div class="line">  types.add(BindInt.class.getCanonicalName());</div><div class="line">  types.add(BindString.class.getCanonicalName());</div><div class="line">  types.add(Unbinder.class.getCanonicalName());</div><div class="line"></div><div class="line">  <span class="keyword">return</span> types;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里我们可以看到基本都涵盖了我们在<code>butterknife-annotations</code>自定义的文件。</p>
+<p>接着我们来看主要的逻辑：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">process</span><span class="params">(Set&lt;? extends TypeElement&gt; elements, RoundEnvironment env)</span> </span>&#123;</div><div class="line">  <span class="comment">//查找和解析注解</span></div><div class="line">  Map&lt;TypeElement, BindingClass&gt; targetClassMap = findAndParseTargets(env);</div><div class="line"></div><div class="line">  <span class="comment">//循环遍历拿出注解中的键值</span></div><div class="line">  <span class="keyword">for</span> (Map.Entry&lt;TypeElement, BindingClass&gt; entry : targetClassMap.entrySet()) &#123;</div><div class="line">    TypeElement typeElement = entry.getKey();</div><div class="line">    BindingClass bindingClass = entry.getValue();</div><div class="line">    <span class="comment">//写进文件，生成辅助类</span></div><div class="line">    bindingClass.brewJava().writeTo(filer);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里我们看到主要的<code>process</code>函数里实现的就三个功能<br>1:查找和解析注解；<br>2:循环遍历拿出注解中的键值；<br>3:写进文件，生成辅助类。</p>
+<p>我们先来看第一个功能，查找和解析注解：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Map&lt;TypeElement, BindingClass&gt; <span class="title">findAndParseTargets</span><span class="params">(RoundEnvironment env)</span> </span>&#123;</div><div class="line">    Map&lt;TypeElement, BindingClass&gt; targetClassMap = <span class="keyword">new</span> LinkedHashMap&lt;&gt;();</div><div class="line">    Set&lt;TypeElement&gt; erasedTargetNames = <span class="keyword">new</span> LinkedHashSet&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="comment">// Process each @Bind element.</span></div><div class="line">    <span class="keyword">for</span> (Element element : env.getElementsAnnotatedWith(Bind.class)) &#123;</div><div class="line">      <span class="keyword">if</span> (!SuperficialValidation.validateElement(element)) <span class="keyword">continue</span>;</div><div class="line">      parseBind(element, targetClassMap, erasedTargetNames);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// Process each annotation that corresponds to a listener.</span></div><div class="line">    <span class="keyword">for</span> (Class&lt;? extends Annotation&gt; listener : LISTENERS) &#123;</div><div class="line">      findAndParseListener(env, listener, targetClassMap, erasedTargetNames);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// Process each @BindInt element.</span></div><div class="line">    <span class="keyword">for</span> (Element element : env.getElementsAnnotatedWith(BindInt.class)) &#123;</div><div class="line">      <span class="keyword">if</span> (!SuperficialValidation.validateElement(element)) <span class="keyword">continue</span>;</div><div class="line">      <span class="keyword">try</span> &#123;</div><div class="line">        parseResourceInt(element, targetClassMap, erasedTargetNames);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        logParsingError(element, BindInt.class, e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们拿了一个比较简单的<code>@BindInt</code>来分析。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseResourceInt</span><span class="params">(Element element, Map&lt;TypeElement, BindingClass&gt; targetClassMap,</span></span></div><div class="line">    Set&lt;TypeElement&gt; erasedTargetNames) &#123;</div><div class="line">  <span class="keyword">boolean</span> hasError = <span class="keyword">false</span>;</div><div class="line">  TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();</div><div class="line">  ...</div><div class="line">  <span class="comment">// Verify common generated code restrictions.</span></div><div class="line">  hasError |= isInaccessibleViaGeneratedCode(BindInt.class, <span class="string">"fields"</span>, element);</div><div class="line">  hasError |= isBindingInWrongPackage(BindInt.class, element);</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (hasError) &#123;<span class="keyword">return</span>;&#125;</div><div class="line"></div><div class="line">  <span class="comment">// Assemble information on the field.</span></div><div class="line">  String name = element.getSimpleName().toString();</div><div class="line">  <span class="keyword">int</span> id = element.getAnnotation(BindInt.class).value();</div><div class="line"></div><div class="line">  BindingClass bindingClass = getOrCreateTargetClass(targetClassMap, enclosingElement);</div><div class="line">  FieldResourceBinding binding = <span class="keyword">new</span> FieldResourceBinding(id, name, <span class="string">"getInteger"</span>, <span class="keyword">false</span>);</div><div class="line">  bindingClass.addResource(binding);</div><div class="line"></div><div class="line">  erasedTargetNames.add(enclosingElement);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里我们首先看到<code>isInaccessibleViaGeneratedCode()</code>，它里面判断了三个点：</p>
+<ol>
+<li>验证方法修饰符不能为<code>private</code>和<code>static</code>。</li>
+<li>验证包含类型不能为非<code>Class</code>。</li>
+<li>验证包含类的可见性并不是<code>private</code>。</li>
+</ol>
+<p>接着我们来看<code>isBindingInWrongPackage</code>，它判断了这个类的包名，包名不能以android.和java.开头，butterknife不可以在Android Framework和JDK框架内部使用。</p>
+<p>最后就是调用<code>getOrCreateTargetClass</code>函数获取或者生成一个绑定类，并将之存入数组。</p>
+<p>接下来我们肯定要分析最常用的注解<code>@Bind</code>了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseBind</span><span class="params">(Element element, Map&lt;TypeElement, BindingClass&gt; targetClassMap, Set&lt;TypeElement&gt; erasedTargetNames)</span> </span>&#123;</div><div class="line">  <span class="comment">// Verify common generated code restrictions.</span></div><div class="line">  <span class="keyword">if</span> (isInaccessibleViaGeneratedCode(Bind.class, <span class="string">"fields"</span>, element)</div><div class="line">      || isBindingInWrongPackage(Bind.class, element)) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  TypeMirror elementType = element.asType();</div><div class="line">  <span class="keyword">if</span> (elementType.getKind() == TypeKind.ARRAY) &#123;</div><div class="line">    parseBindMany(element, targetClassMap, erasedTargetNames);</div><div class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (LIST_TYPE.equals(doubleErasure(elementType))) &#123;</div><div class="line">    parseBindMany(element, targetClassMap, erasedTargetNames);</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    parseBindOne(element, targetClassMap, erasedTargetNames);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>看出这里第一步也是判断两个<code>isInaccessibleViaGeneratedCode()</code>和<code>isBindingInWrongPackage</code>的条件，接着通过<code>parseBindMany()</code>来解析这个注解：</p>
+<ol>
+<li>验证这个类型是一个<code>List</code>还是一个<code>array</code>。</li>
+<li>验证这个目标类型是否继承自<code>View</code>。</li>
+<li>在作用域里组装信息。</li>
+<li>当然，最后将生成的<code>BindingClass</code>存入数组中。</li>
+</ol>
+<p>分析完<code>findAndParseTargets</code>我们接着回到<code>process</code>往下看<code>bindingClass.brewJava()</code>。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="function">JavaFile <span class="title">brewJava</span><span class="params">()</span> </span>&#123;</div><div class="line">    TypeSpec.Builder result = TypeSpec.classBuilder(className)</div><div class="line">        .addModifiers(PUBLIC)</div><div class="line">        .addTypeVariable(TypeVariableName.get(<span class="string">"T"</span>, ClassName.bestGuess(targetClass)));</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (parentViewBinder != <span class="keyword">null</span>) &#123;</div><div class="line">      result.superclass(ParameterizedTypeName.get(ClassName.bestGuess(parentViewBinder),</div><div class="line">          TypeVariableName.get(<span class="string">"T"</span>)));</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      result.addSuperinterface(ParameterizedTypeName.get(VIEW_BINDER, TypeVariableName.get(<span class="string">"T"</span>)));</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (hasUnbinder()) &#123;</div><div class="line">      result.addType(createUnbinderClass());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    result.addMethod(createBindMethod());</div><div class="line"></div><div class="line">    <span class="keyword">return</span> JavaFile.builder(classPackage, result.build())</div><div class="line">        .addFileComment(<span class="string">"Generated code from Butter Knife. Do not modify!"</span>)</div><div class="line">        .build();</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>这个函数通过将我们绑定类的信息写入到文件外还负责创建绑定和创建解除绑定。<br>在将绑定函数写入到文件后，整个编译器的注解方法就结束了。接下来就到运行时的注解过程了。</p>
+<h2 id="butterknife"><a href="#butterknife" class="headerlink" title="butterknife"></a>butterknife</h2><blockquote>
+<p>Field and method binding for Android views. Use this class to simplify finding views and attaching listeners by binding them with annotations.<br>这是关于ButterKnife类的说明，关于ButterKnife的使用基本都是通过这个主类来实现的。<br>这里面最关键的函数就数<code>bind()</code>了：</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">bind</span><span class="params">(@NonNull Activity target)</span> </span>&#123;</div><div class="line">    bind(target, target, Finder.ACTIVITY);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每个bind函数实际上都是通过相同的函数不同参数实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">bind</span><span class="params">(@NonNull Object target, @NonNull Object source, @NonNull Finder finder)</span> </span>&#123;</div><div class="line">    Class&lt;?&gt; targetClass = target.getClass();</div><div class="line"></div><div class="line">    ViewBinder&lt;Object&gt; viewBinder = findViewBinderForClass(targetClass);</div><div class="line">    viewBinder.bind(finder, target, source);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先通过<code>findViewBinderForClass</code>生成每个类，然后再调用这些类的bind方法进行绑定，这些类的方法都是在编译期通过<code>createBindMethod()</code>方法一个个生成的。这些也就是辅助类的用处了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上就是对ButterKnife的浅析，具体来说就是在你写下注解后，ButterKnife会帮你在编译期帮你把代码补全，然后在运行期来调用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/09/21/Android-浅析-ButterKnife-二-源码解析/" data-id="civ9405rs000fakqttxjmxohp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/开源库/">开源库</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/21/Java-注解-Dependency-injection/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Java 注解 Dependency injection
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/09/21/Android-浅析-ButterKnife-一-使用/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android 浅析 ButterKnife (一) 使用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/FreeLoad/">FreeLoad</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android-基础知识/">Android_基础知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ashmem/">Ashmem</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Broadcast/">Broadcast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ButterKnife/">ButterKnife</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventBus/">EventBus</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeLoad/">FreeLoad</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SharedPreferences/">SharedPreferences</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Volley/">Volley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/开源库/">开源库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/智能指针/">智能指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/注解/">注解</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Android-基础知识/" style="font-size: 18.33px;">Android_基础知识</a> <a href="/tags/Ashmem/" style="font-size: 10px;">Ashmem</a> <a href="/tags/Binder/" style="font-size: 13.33px;">Binder</a> <a href="/tags/Broadcast/" style="font-size: 13.33px;">Broadcast</a> <a href="/tags/ButterKnife/" style="font-size: 11.67px;">ButterKnife</a> <a href="/tags/ContentProvider/" style="font-size: 15px;">ContentProvider</a> <a href="/tags/EventBus/" style="font-size: 11.67px;">EventBus</a> <a href="/tags/FreeLoad/" style="font-size: 10px;">FreeLoad</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/RxJava/" style="font-size: 11.67px;">RxJava</a> <a href="/tags/SharedPreferences/" style="font-size: 11.67px;">SharedPreferences</a> <a href="/tags/Volley/" style="font-size: 11.67px;">Volley</a> <a href="/tags/开源库/" style="font-size: 16.67px;">开源库</a> <a href="/tags/智能指针/" style="font-size: 10px;">智能指针</a> <a href="/tags/注解/" style="font-size: 10px;">注解</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/08/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-二-原理/">Android 浅析 RxJava (二) 原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/22/Android-浅析-RxJava-一-使用/">Android 浅析 RxJava (一) 使用</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Java-注解-Dependency-injection/">Java 注解 Dependency injection</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/21/Android-浅析-ButterKnife-二-源码解析/">Android 浅析 ButterKnife (二) 源码解析</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
