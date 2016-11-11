@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 文件读写 | Zhong&#39;s_blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Android_基础知识,文件读写," />
+  
+
+  <meta name="description" content="文件读写是每个系统最重要的一部分，每此存储都伴随着文件的操作，所以文件的读写是 Android 操作的核心基础之一。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 文件读写">
+<meta property="og:url" content="http://yoursite.com/2016/11/10/Android-浅析-文件读写/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="文件读写是每个系统最重要的一部分，每此存储都伴随着文件的操作，所以文件的读写是 Android 操作的核心基础之一。">
+<meta property="og:updated_time" content="2016-11-11T08:53:02.680Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 文件读写">
+<meta name="twitter:description" content="文件读写是每个系统最重要的一部分，每此存储都伴随着文件的操作，所以文件的读写是 Android 操作的核心基础之一。">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=028c63b1" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Tag</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Tag</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Blog
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tag
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据区的读写"><span class="toc-text">数据区的读写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#写入操作"><span class="toc-text">写入操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读取操作"><span class="toc-text">读取操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#外部存储读写"><span class="toc-text">外部存储读写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Stream-写入操作"><span class="toc-text">Stream 写入操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Stream-读取操作"><span class="toc-text">Stream 读取操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-写入操作"><span class="toc-text">File 写入操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-读取操作"><span class="toc-text">File 读取操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-功能"><span class="toc-text">File 功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RandomAccessFile"><span class="toc-text">RandomAccessFile</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#getFilePointer"><span class="toc-text">getFilePointer ()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#seek-long-offset"><span class="toc-text">seek (long offset)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#write-byte-b-int-off-int-len"><span class="toc-text">write (byte[] b, int off, int len)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#write-byte-b"><span class="toc-text">write (byte[] b)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#read-byte-b-int-off-int-len"><span class="toc-text">read (byte[] b, int off, int len)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#read-byte-b"><span class="toc-text">read (byte[] b)</span></a></li></ol></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Android-浅析-文件读写" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Android 浅析 文件读写</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.11.10</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>钟华健</span>
+        </span>
+      
+
+      
+
+
+      
+        <span>
+          <i class="icon-comment"></i>
+          <a href="https://github.com/jasonzhong/2016/11/10/Android-浅析-文件读写/#disqus_thread"></a>
+        </span>
+      
+
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>Android 作为基于 Linux 的系统，所以文件的操作也继承于 Linux 那一套。文件的读写可以分为这么几个，对文件进行读、写操作 ：FileReader、FileWriter、FileInputStream、FileOutputStream 总共包括四大操作方式。</p>
+</blockquote>
+<ol>
+<li><strong>数据区的读写</strong>：存放在数据区(/data/data/..)的文件只能使用openFileOutput和openFileInput进行操作。注意这里不能使用FileInputStream和FileOutputStream进行文件的操作。</li>
+<li><strong>SD的读写</strong>：SD卡中的文件使用FileInputStream和FileOutputStream进行文件的操作。</li>
+</ol>
+<h2 id="数据区的读写"><a href="#数据区的读写" class="headerlink" title="数据区的读写"></a>数据区的读写</h2><blockquote>
+<p>默认情况下，保存到内部存储的文件是应用的私有文件，其他应用（和用户）不能访问这些文件。 当用户卸载您的应用时，这些文件也会被移除。</p>
+</blockquote>
+<h3 id="写入操作"><a href="#写入操作" class="headerlink" title="写入操作"></a>写入操作</h3><ol>
+<li>使用文件名称和操作模式调用 openFileOutput()。这将返回一个 FileOutputStream。</li>
+<li>使用 write() 写入到文件。</li>
+<li>使用 close() 关闭流式传输。</li>
+</ol>
+<p>操作模式：</p>
+<ol>
+<li>MODE_PRIVATE：默认模式，只能在应用内使用。</li>
+<li>MODE_APPEND：如果文件存在则会从文件的尾端开始写入。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">String FILENAME = <span class="string">"hello_file"</span>;</div><div class="line">String string = <span class="string">"hello world!"</span>;</div><div class="line">FileOutputStream fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);</div><div class="line">fos.write(string.getBytes());</div><div class="line">fos.close();</div></pre></td></tr></table></figure>
+<h3 id="读取操作"><a href="#读取操作" class="headerlink" title="读取操作"></a>读取操作</h3><ol>
+<li>调用 openFileInput() 并向其传递要读取的文件名称。这将返回一个 FileInputStream。</li>
+<li>使用 read() 读取文件字节。</li>
+<li>然后使用 close() 关闭流式传输。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">String FILENAME = <span class="string">"hello_file"</span>;</div><div class="line">String string = <span class="string">"hello world!"</span>;</div><div class="line">FileInputStream fin = openFileput(FILENAME);</div><div class="line"><span class="keyword">int</span> length = fin.available(); </div><div class="line"><span class="keyword">byte</span> [] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[length]; </div><div class="line">fin.read(buffer);     </div><div class="line">res = EncodingUtils.getString(buffer, <span class="string">"UTF-8"</span>); </div><div class="line">fin.close();</div></pre></td></tr></table></figure>
+<h2 id="外部存储读写"><a href="#外部存储读写" class="headerlink" title="外部存储读写"></a>外部存储读写</h2><p>首先要获取到读取和写入外部存储的权限：</p>
+<p><uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission></p>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE">
+
+<p>如果存在SDCard并且想要访问里面的资源则首先要判断是否存在SDCard。Environment.getExternalStorageState()方法用于获取SDCard的状态，如果手机装有SDCard，并且可以进行读写，那么方法返回的状态等于<strong>Environment.MEDIA_MOUNTED</strong>。<br><code>Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())</code></p>
+<h3 id="Stream-写入操作"><a href="#Stream-写入操作" class="headerlink" title="Stream 写入操作"></a>Stream 写入操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">FileOutputStream fout = <span class="keyword">new</span> FileOutputStream(fileName); </div><div class="line"><span class="keyword">byte</span> [] bytes = write_str.getBytes(); </div><div class="line">fout.write(bytes); </div><div class="line">fout.close();</div></pre></td></tr></table></figure>
+<h3 id="Stream-读取操作"><a href="#Stream-读取操作" class="headerlink" title="Stream 读取操作"></a>Stream 读取操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">FileInputStream fin = <span class="keyword">new</span> FileInputStream(fileName); </div><div class="line"><span class="keyword">int</span> length = fin.available(); </div><div class="line"><span class="keyword">byte</span> [] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[length]; </div><div class="line">fin.read(buffer);     </div><div class="line">res = EncodingUtils.getString(buffer, <span class="string">"UTF-8"</span>); </div><div class="line">fin.close();</div></pre></td></tr></table></figure>
+<h3 id="File-写入操作"><a href="#File-写入操作" class="headerlink" title="File 写入操作"></a>File 写入操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">File file = <span class="keyword">new</span> File(fileName);  </div><div class="line">FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(file);  </div><div class="line"><span class="keyword">byte</span> [] bytes = write_str.getBytes(); </div><div class="line">fos.write(bytes); </div><div class="line">fos.close();</div></pre></td></tr></table></figure>
+<h3 id="File-读取操作"><a href="#File-读取操作" class="headerlink" title="File 读取操作"></a>File 读取操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">File file = <span class="keyword">new</span> File(fileName);  </div><div class="line">FileInputStream fis = <span class="keyword">new</span> FileInputStream(file);  </div><div class="line"><span class="keyword">int</span> length = fis.available(); </div><div class="line"><span class="keyword">byte</span> [] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[length]; </div><div class="line">fis.read(buffer);     </div><div class="line">res = EncodingUtils.getString(buffer, <span class="string">"UTF-8"</span>); </div><div class="line">fis.close();</div></pre></td></tr></table></figure>
+<h3 id="File-功能"><a href="#File-功能" class="headerlink" title="File 功能"></a>File 功能</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">File.getName();         <span class="comment">//获得文件或文件夹的名称：</span></div><div class="line">File.getParent();       <span class="comment">//获得文件或文件夹的父目录</span></div><div class="line">File.getAbsoultePath(); <span class="comment">//绝对路经</span></div><div class="line">File.getPath();	        <span class="comment">//相对路经 </span></div><div class="line">File.createNewFile();   <span class="comment">//建立文件  </span></div><div class="line">File.mkDir();           <span class="comment">//建立文件夹  </span></div><div class="line">File.isDirectory();     <span class="comment">//判断是文件或文件夹</span></div><div class="line">File.listFiles();       <span class="comment">//列出文件夹下的所有文件和文件夹名</span></div><div class="line">File.renameTo(dest);    <span class="comment">//修改文件夹和文件名</span></div><div class="line">File.delete();          <span class="comment">//删除文件夹或文件</span></div></pre></td></tr></table></figure>
+<h2 id="RandomAccessFile"><a href="#RandomAccessFile" class="headerlink" title="RandomAccessFile"></a>RandomAccessFile</h2><blockquote>
+<p>随机访问类一般可以用RandomAccessFile 来实现文件的随机访问。它可以用seek()方法来访问文件，并进行读写。RandomAccessFile是不属于InputStream和OutputStream类系的。实际上，除了实现DataInput和DataOutput接口之外(DataInputStream和DataOutputStream也实现了这两个接口)，它甚至都没有用InputStream和OutputStream已经准备好的功能，它是一个完全独立的类。</p>
+</blockquote>
+<p>RandomAccessFile的绝大多数功能，已经被JDK1.4的nio的“内存映射文件(memory-mapped files)”给取代了。</p>
+<h3 id="getFilePointer"><a href="#getFilePointer" class="headerlink" title="getFilePointer ()"></a>getFilePointer ()</h3><blockquote>
+<p>返回当前的移动的地标。</p>
+</blockquote>
+<h3 id="seek-long-offset"><a href="#seek-long-offset" class="headerlink" title="seek (long offset)"></a>seek (long offset)</h3><blockquote>
+<p>设置当前文件的移动标志，确定读取文件的起点。如果设置的长度大于文件长度，文件长度也不会被改变。</p>
+</blockquote>
+<h3 id="write-byte-b-int-off-int-len"><a href="#write-byte-b-int-off-int-len" class="headerlink" title="write (byte[] b, int off, int len)"></a>write (byte[] b, int off, int len)</h3><blockquote>
+<p>把指定的字节数组<code>b</code>从当前<code>off</code>标志处写入<code>len</code>个字节。</p>
+</blockquote>
+<h3 id="write-byte-b"><a href="#write-byte-b" class="headerlink" title="write (byte[] b)"></a>write (byte[] b)</h3><blockquote>
+<p>把指定的字节数组<code>b</code>字节从当前文件指针处开始写入到此文件。</p>
+</blockquote>
+<h3 id="read-byte-b-int-off-int-len"><a href="#read-byte-b-int-off-int-len" class="headerlink" title="read (byte[] b, int off, int len)"></a>read (byte[] b, int off, int len)</h3><blockquote>
+<p>从<code>off</code>游标处读取<code>len</code>的字节到字节组<code>b</code>里面。这个方法会一直阻塞直到字节读完。</p>
+</blockquote>
+<h3 id="read-byte-b"><a href="#read-byte-b" class="headerlink" title="read (byte[] b)"></a>read (byte[] b)</h3><blockquote>
+<p>读取字节到字节组<code>b</code>里面。这个方法会一直阻塞直到字节读完。</p>
+</blockquote>
+</uses-permission>
+    
+  </div>
+</article>
+
+</div>
+
+
+
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Blog
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tag
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'forsigner';
+    
+    var disqus_url = 'http://yoursite.com/2016/11/10/Android-浅析-文件读写/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//forsigner.disqus.com/count.js" async></script>
+
+
+
+    
+
+
+
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
