@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   
-    <meta name="keywords" content="Android,Android_基础知识,Ashmem," />
+    <meta name="keywords" content="Android,Ashmem,Android_基础知识," />
   
 
   <meta name="description" content="匿名共享内存子系统 Ashmem（Anonymous Shared Memory），它以驱动程序的形式实现在内核空间中。它有两个特点，一是能够辅助内存管理系统来有效地管理不再使用的内存块，二是它通过Binder进程间通信机制来实现进程间的内存共享。Android的Ashmem建立在Linux内核实现的共享内存的基础上封装了一层。">
@@ -113,7 +113,7 @@
 
 
   <div id="toc" class="toc-article">
-    <strong class="toc-title">Posts List</strong>
+    <strong class="toc-title">文章目录</strong>
     <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概括"><span class="toc-text">概括</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-接口分析"><span class="toc-text">Java 接口分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#构造函数"><span class="toc-text">构造函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读写函数"><span class="toc-text">读写函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加锁和解锁函数"><span class="toc-text">加锁和解锁函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#辅助内存管理"><span class="toc-text">辅助内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简析Ashmen进程间传递"><span class="toc-text">简析Ashmen进程间传递</span></a></li></ol>
   </div>
 
@@ -215,7 +215,7 @@
   <span id="cover" class="cover hide"></span>
   <div id="modal-dialog" class="modal-dialog hide-dialog">
     <div class="modal-header">
-      <span id="close" class="btn-close">Close</span>
+      <span id="close" class="btn-close">关闭</span>
     </div>
     <hr>
     <div class="modal-body">
