@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>设计模式 | Zhong&#39;s_blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="设计模式," />
+  
+
+  <meta name="description" content="每个模式都描述了一个在我们的环境中不断出现的问题，然后描述了该问题的解决方案的核心，通过这种方式，我们可以无数次地重用那些已有的解决方案，无需再重复相同的工作。即模式是在特定环境中解决问题的一种方案 。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设计模式">
+<meta property="og:url" content="http://yoursite.com/2016/11/18/设计模式/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="每个模式都描述了一个在我们的环境中不断出现的问题，然后描述了该问题的解决方案的核心，通过这种方式，我们可以无数次地重用那些已有的解决方案，无需再重复相同的工作。即模式是在特定环境中解决问题的一种方案 。">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-6305ce7d2d0f978d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-f6b0057066fc6d95.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-7289debb4b70f9ce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-b216111451cb0282.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-724bfb1c3282d42d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-a57a35921c8593c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-88a91d3825238f4f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-4938ded501ee23be.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-3273fc97efc2df15.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-1475d5a487cd6f50.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-e65d533bc53c4415.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-354fcb71ad2c20c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-b0017d0f5dbdb6b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2016-11-18T13:42:27.529Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="设计模式">
+<meta name="twitter:description" content="每个模式都描述了一个在我们的环境中不断出现的问题，然后描述了该问题的解决方案的核心，通过这种方式，我们可以无数次地重用那些已有的解决方案，无需再重复相同的工作。即模式是在特定环境中解决问题的一种方案 。">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1645265-6305ce7d2d0f978d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=028c63b1" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Tag</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Tag</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Blog
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tag
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#面向对象六原则"><span class="toc-text">面向对象六原则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#设计模式"><span class="toc-text">设计模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#单例模式"><span class="toc-text">单例模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Builder模式"><span class="toc-text">Builder模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原型模式"><span class="toc-text">原型模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#工厂模式"><span class="toc-text">工厂模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#抽象工厂模式"><span class="toc-text">抽象工厂模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#策略模式"><span class="toc-text">策略模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#状态模式"><span class="toc-text">状态模式</span></a></li></ol></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-设计模式" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">设计模式</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.11.18</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>钟华健</span>
+        </span>
+      
+
+      
+
+
+      
+        <span>
+          <i class="icon-comment"></i>
+          <a href="https://github.com/jasonzhong/2016/11/18/设计模式/#disqus_thread"></a>
+        </span>
+      
+
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="面向对象六原则"><a href="#面向对象六原则" class="headerlink" title="面向对象六原则"></a>面向对象六原则</h2><blockquote>
+<p>所有的设计模式都是基于一个准则来衡定的，这个准则总结起来就是面向对象六原则。</p>
+</blockquote>
+<ul>
+<li><strong>开闭原则</strong> : 软件实体应当对扩展开放，对修改关闭。</li>
+<li><strong>单一职责原则</strong> : 一个类应该仅有一个引起它变化的原因。</li>
+<li><strong>里氏替换原则</strong> : 子类可以替换父类并且出现在父类能够出现的任何地方。</li>
+<li><strong>依赖倒置原则</strong> : 高层次的模块不应该依赖于低层次的模块，他们都应该依赖于抽象。抽象不应该依赖于具体实现，具体实现应该依赖于抽象。</li>
+<li><strong>接口隔离原则</strong> : 使用多个专门的接口比使用单个接口要好的多。</li>
+<li><strong>最少知识原则</strong> : 一个对象应当对其他对象有尽可能少的了解。</li>
+</ul>
+<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><blockquote>
+<p>在理解设计模式前首先得认识下UML图的意思。</p>
+</blockquote>
+<ol>
+<li><p>关联：<br>在代码中的体现：成员变量<br><img src="http://upload-images.jianshu.io/upload_images/1645265-6305ce7d2d0f978d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-关联.png"></p>
+</li>
+<li><p>继承：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-f6b0057066fc6d95.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-继承.png"></p>
+</li>
+<li><p>聚合：<br>在代码中的体现：成员变量<br><img src="http://upload-images.jianshu.io/upload_images/1645265-7289debb4b70f9ce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-聚合.png"></p>
+</li>
+<li><p>实现：<br>在代码中的体现：接口实现<br><img src="http://upload-images.jianshu.io/upload_images/1645265-b216111451cb0282.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-实现.png"></p>
+</li>
+<li><p>依赖：<br>在代码中的体现：局部变量、方法的参数或者对静态方法的调用(关系弱)<br><img src="http://upload-images.jianshu.io/upload_images/1645265-724bfb1c3282d42d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-依赖.png"></p>
+</li>
+<li><p>组合：<br>在代码中的体现：成员变量(关系强)<br><img src="http://upload-images.jianshu.io/upload_images/1645265-a57a35921c8593c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-组合.png"></p>
+</li>
+</ol>
+<h3 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h3><blockquote>
+<p>确保这个类只有一个实例，而且能自行实例化，当然要看是使用饱汉还是饥汉模式。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-88a91d3825238f4f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-单例模式.png"></p>
+<p><strong>优点</strong>：减少内存、性能开销，避免资源重用，并且可以全局访问。<br><strong>缺点</strong>：扩展很难，当持有 context 之类的对象容易造成内存泄漏。</p>
+<h3 id="Builder模式"><a href="#Builder模式" class="headerlink" title="Builder模式"></a>Builder模式</h3><blockquote>
+<p>讲一个复杂对象的构建与表示分离，使同样的构建可以创建不同表示。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-4938ded501ee23be.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-Builder模式.png"></p>
+<p><strong>优点</strong>：建立良好的封装，创建独立，容易扩展。<br><strong>缺点</strong>：产生多余的builder对象以及director对象，消耗内存。</p>
+<h3 id="原型模式"><a href="#原型模式" class="headerlink" title="原型模式"></a>原型模式</h3><blockquote>
+<p>原型模式实际上就是对象拷贝，分为浅拷贝和深拷贝。利用原型模式可以解决构建复杂对象的资源消耗问题。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-3273fc97efc2df15.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-原型模式.png"></p>
+<p><strong>优点</strong>：在产生大量对象或者在创建对象时消耗时间过长的时候可以很好的优化性能。<br><strong>缺点</strong>：在内存中拷贝的时候要小心浅拷贝和深拷贝，避免发生混乱。</p>
+<h3 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h3><blockquote>
+<p>定义一个用于创建对象的接口，让子类决定实例化哪个类。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-1475d5a487cd6f50.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-工厂模式.png"></p>
+<p><strong>优点</strong>：为系统结构提供灵活的动态扩展机制.减速少工作量,方便维护。<br><strong>缺点</strong>：每次添加新产品时都会引入一个抽象层，导致类结构的复杂化。</p>
+<h3 id="抽象工厂模式"><a href="#抽象工厂模式" class="headerlink" title="抽象工厂模式"></a>抽象工厂模式</h3><blockquote>
+<p>为创建一组相关或相互依赖的对象提供一个接口，而且无需指定他们的具体类。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-e65d533bc53c4415.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-抽象工厂模式.png"></p>
+<p><strong>优点</strong>：分离接口与实现，并且没有工厂模式的那么多冗余抽象类。<br><strong>缺点</strong>：当然也有类文件过多的问题，不太容易扩展新产品类，每当增加新类就要改写接口，所有类都要重新修改一遍。</p>
+<h3 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h3><blockquote>
+<p>定义一系列的算法，并将每个算法封装，使他们可以相互替换。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-354fcb71ad2c20c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-策略模式.png"></p>
+<p><strong>优点</strong>：结构清晰，耦合度低，封装彻底数据也更为安全。<br><strong>缺点</strong>：子类会变得越来越繁多。</p>
+<h3 id="状态模式"><a href="#状态模式" class="headerlink" title="状态模式"></a>状态模式</h3><blockquote>
+<p>当一个对象的内在状态改变时允许改变其行为。</p>
+</blockquote>
+<p>UML 图：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-b0017d0f5dbdb6b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="设计模式-状态模式.png"></p>
+<p><strong>优点</strong>：提供一种更好的方式来组织特定状态的代码，消除 if-else 的丑陋结构。<br><strong>缺点</strong>：增加系统类和对象个数。</p>
+
+    
+  </div>
+</article>
+
+</div>
+
+
+
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Blog
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tag
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'forsigner';
+    
+    var disqus_url = 'http://yoursite.com/2016/11/18/设计模式/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//forsigner.disqus.com/count.js" async></script>
+
+
+
+    
+
+
+
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
