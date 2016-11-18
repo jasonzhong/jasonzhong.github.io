@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   
-    <meta name="keywords" content="Android,Android_基础知识,Binder," />
+    <meta name="keywords" content="Android,Binder,Android_基础知识," />
   
 
   <meta name="description" content="Binder 是 Android 系统中的一种 IPC 进程间通信结构。上一章通过文档初步认识了 Binder 是什么，本章开始照旧，从源码角度开始探索。Binder 的机制实现，这次从层次的角度来探索，通过服务端、客户端、驱动层等来详细分析。">
@@ -113,7 +113,7 @@
 
 
   <div id="toc" class="toc-article">
-    <strong class="toc-title">文章目录</strong>
+    <strong class="toc-title">Posts List</strong>
     <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务端"><span class="toc-text">服务端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#客户端"><span class="toc-text">客户端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#驱动层"><span class="toc-text">驱动层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原理"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现"><span class="toc-text">实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#主要数据结构体"><span class="toc-text">主要数据结构体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#主要方法"><span class="toc-text">主要方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ServiceManager"><span class="toc-text">ServiceManager</span></a></li></ol>
   </div>
 
@@ -216,7 +216,7 @@
   <span id="cover" class="cover hide"></span>
   <div id="modal-dialog" class="modal-dialog hide-dialog">
     <div class="modal-header">
-      <span id="close" class="btn-close">关闭</span>
+      <span id="close" class="btn-close">Close</span>
     </div>
     <hr>
     <div class="modal-body">
