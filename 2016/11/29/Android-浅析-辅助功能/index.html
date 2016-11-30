@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android 浅析 辅助功能 | Zhong&#39;s_blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Android,辅助功能," />
+  
+
+  <meta name="description" content="目前 Android 的权限收紧越来越厉害，对于一个需要提供很多功能的应用来说，让用户手动点击这么多权限框是很烦的，那么就需要辅助功能来帮助我们点击了，嘿嘿嘿。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 辅助功能">
+<meta property="og:url" content="http://yoursite.com/2016/11/29/Android-浅析-辅助功能/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="目前 Android 的权限收紧越来越厉害，对于一个需要提供很多功能的应用来说，让用户手动点击这么多权限框是很烦的，那么就需要辅助功能来帮助我们点击了，嘿嘿嘿。">
+<meta property="og:updated_time" content="2016-11-30T02:45:00.417Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 辅助功能">
+<meta name="twitter:description" content="目前 Android 的权限收紧越来越厉害，对于一个需要提供很多功能的应用来说，让用户手动点击这么多权限框是很烦的，那么就需要辅助功能来帮助我们点击了，嘿嘿嘿。">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=028c63b1" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Tag</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Tag</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Blog
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tag
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-AccessibilityService类"><span class="toc-text">Step 1 : AccessibilityService类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-accessibility-service-config-xml"><span class="toc-text">Step 2 : accessibility_service_config.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-3-onAccessibilityEvent-AccessibilityEvent-event"><span class="toc-text">Step 3 : onAccessibilityEvent(AccessibilityEvent event)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-查找元素"><span class="toc-text">Step 4 : 查找元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-5-点击元素"><span class="toc-text">Step 5 : 点击元素</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Android-浅析-辅助功能" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Android 浅析 辅助功能</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.11.29</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>钟华健</span>
+        </span>
+      
+
+      
+
+
+      
+        <span>
+          <i class="icon-comment"></i>
+          <a href="https://github.com/jasonzhong/2016/11/29/Android-浅析-辅助功能/#disqus_thread"></a>
+        </span>
+      
+
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>许多Android用户有不同的需求，需要他们以不同的方式与他们的Android设备进行交互。这些包括具有视觉，身体或年龄相关限制的用户，这些限制阻止他们完全看到或使用触摸屏，以及听力损失的用户可能无法感知到可听信息和警报。 Android提供了辅助功能和服务，可帮助这些用户更轻松地浏览其设备，包括文字转语音，触觉反馈，手势导航，轨迹球和方向键盘导航。 Android应用程序开发人员可以利用这些服务来使他们的应用程序更容易访问。 Android开发人员还可以构建自己的辅助功能服务，可以提供增强的可用性功能，如音频提示，物理反馈和其他导航模式。辅助功能服务可以为所有应用程序，一组应用程序或单个应用程序提供这些增强功能。</p>
+</blockquote>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="Step-1-AccessibilityService类"><a href="#Step-1-AccessibilityService类" class="headerlink" title="Step 1 : AccessibilityService类"></a>Step 1 : AccessibilityService类</h3><p>自定义一个<code>Service</code>然后继承<code>AccessibilityService</code>类。<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;service</div><div class="line">    android:name=".permission.PermissionAccessibilityService"</div><div class="line">    android:enabled="true"</div><div class="line">    android:exported="true"</div><div class="line">    android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"</div><div class="line">    android:process=":DefendService"&gt;</div><div class="line">    &lt;intent-filter&gt;</div><div class="line">        &lt;action android:name="android.accessibilityservice.AccessibilityService" /&gt;</div><div class="line">    &lt;/intent-filter&gt;</div><div class="line">    &lt;meta-data</div><div class="line">        android:name="android.accessibilityservice"</div><div class="line">        android:resource="@xml/accessibility_service_config"/&gt;</div><div class="line">&lt;/service&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="Step-2-accessibility-service-config-xml"><a href="#Step-2-accessibility-service-config-xml" class="headerlink" title="Step 2 : accessibility_service_config.xml"></a>Step 2 : accessibility_service_config.xml</h3><p>创建一个作为辅助功能开启说明类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;accessibility-service</div><div class="line">    xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span></div><div class="line">    android:accessibilityEventTypes=<span class="string">"typeAllMask"</span></div><div class="line">    android:accessibilityFeedbackType=<span class="string">"feedbackGeneric"</span></div><div class="line">    android:accessibilityFlags=<span class="string">""</span></div><div class="line">    android:canRetrieveWindowContent=<span class="string">"true"</span></div><div class="line">    android:description=<span class="string">"@string/accessibility_perm_tutorial_message"</span></div><div class="line">    android:notificationTimeout=<span class="string">"100"</span>/&gt;</div></pre></td></tr></table></figure></p>
+<p>几个属性说明：</p>
+<ol>
+<li>android:accessibilityEventTypes=”typeAllMask”<br>这个是用来设置响应事件的类型，typeAllMask 是响应所有类型的事件了。还有单击、长按、滑动等。</li>
+<li>android:accessibilityFeedbackType=”feedbackSpoken”<br>设置回馈给用户的方式，有语音播出和振动。可以配置一些TTS引擎，让它实现发音。</li>
+<li>android:notificationTimeout=”100”<br>响应时间的设置。</li>
+<li>android:packageNames=”com.example.android.apis”<br>可以指定响应某个应用的事件，这里因为要响应所有应用的事件，所以不填，默认就是响应所有应用的事件。比如我们写一个微信抢红包的辅助程序，就可以在这里填写微信的包名，便可以监听微信产生的事件了。</li>
+</ol>
+<h3 id="Step-3-onAccessibilityEvent-AccessibilityEvent-event"><a href="#Step-3-onAccessibilityEvent-AccessibilityEvent-event" class="headerlink" title="Step 3 : onAccessibilityEvent(AccessibilityEvent event)"></a>Step 3 : onAccessibilityEvent(AccessibilityEvent event)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span>  </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAccessibilityEvent</span><span class="params">(AccessibilityEvent event)</span> </span>&#123;  </div><div class="line">    <span class="keyword">int</span> eventType = event.getEventType();  </div><div class="line">    <span class="keyword">switch</span> (eventType) &#123;  </div><div class="line">    <span class="keyword">case</span> AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:  </div><div class="line">        <span class="comment">//.......  </span></div><div class="line">    &#125;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过在<code>event.getEventType()</code>方法里可以筛选出不同的事件：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Deprecated</span>  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_TEXT_LENGTH = <span class="number">500</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of clicking on a &#123;<span class="doctag">@link</span> android.view.View&#125; like </div><div class="line"> * &#123;<span class="doctag">@link</span> android.widget.Button&#125;, &#123;<span class="doctag">@link</span> android.widget.CompoundButton&#125;, etc. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_CLICKED = <span class="number">0x00000001</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of long clicking on a &#123;<span class="doctag">@link</span> android.view.View&#125; like </div><div class="line"> * &#123;<span class="doctag">@link</span> android.widget.Button&#125;, &#123;<span class="doctag">@link</span> android.widget.CompoundButton&#125;, etc. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_LONG_CLICKED = <span class="number">0x00000002</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of selecting an item usually in the context of an </div><div class="line"> * &#123;<span class="doctag">@link</span> android.widget.AdapterView&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_SELECTED = <span class="number">0x00000004</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of setting input focus of a &#123;<span class="doctag">@link</span> android.view.View&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_FOCUSED = <span class="number">0x00000008</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of changing the text of an &#123;<span class="doctag">@link</span> android.widget.EditText&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_TEXT_CHANGED = <span class="number">0x00000010</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of opening a &#123;<span class="doctag">@link</span> android.widget.PopupWindow&#125;, </div><div class="line"> * &#123;<span class="doctag">@link</span> android.view.Menu&#125;, &#123;<span class="doctag">@link</span> android.app.Dialog&#125;, etc. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_WINDOW_STATE_CHANGED = <span class="number">0x00000020</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event showing a &#123;<span class="doctag">@link</span> android.app.Notification&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_NOTIFICATION_STATE_CHANGED = <span class="number">0x00000040</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of a hover enter over a &#123;<span class="doctag">@link</span> android.view.View&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_HOVER_ENTER = <span class="number">0x00000080</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of a hover exit over a &#123;<span class="doctag">@link</span> android.view.View&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_HOVER_EXIT = <span class="number">0x00000100</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of starting a touch exploration gesture. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_TOUCH_EXPLORATION_GESTURE_START = <span class="number">0x00000200</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of ending a touch exploration gesture. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_TOUCH_EXPLORATION_GESTURE_END = <span class="number">0x00000400</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of changing the content of a window and more </div><div class="line"> * specifically the sub-tree rooted at the event's source. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_WINDOW_CONTENT_CHANGED = <span class="number">0x00000800</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of scrolling a view. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_SCROLLED = <span class="number">0x00001000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of changing the selection in an &#123;<span class="doctag">@link</span> android.widget.EditText&#125;. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_TEXT_SELECTION_CHANGED = <span class="number">0x00002000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of an application making an announcement. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_ANNOUNCEMENT = <span class="number">0x00004000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of gaining accessibility focus. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_ACCESSIBILITY_FOCUSED = <span class="number">0x00008000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of clearing accessibility focus. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED = <span class="number">0x00010000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of traversing the text of a view at a given movement granularity. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY = <span class="number">0x00020000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of beginning gesture detection. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_GESTURE_DETECTION_START = <span class="number">0x00040000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of ending gesture detection. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_GESTURE_DETECTION_END = <span class="number">0x00080000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of the user starting to touch the screen. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_TOUCH_INTERACTION_START = <span class="number">0x00100000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Represents the event of the user ending to touch the screen. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_TOUCH_INTERACTION_END = <span class="number">0x00200000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Change type for &#123;<span class="doctag">@link</span> #TYPE_WINDOW_CONTENT_CHANGED&#125; event: </div><div class="line"> * The type of change is not defined. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CONTENT_CHANGE_TYPE_UNDEFINED = <span class="number">0x00000000</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Change type for &#123;<span class="doctag">@link</span> #TYPE_WINDOW_CONTENT_CHANGED&#125; event: </div><div class="line"> * A node in the subtree rooted at the source node was added or removed. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CONTENT_CHANGE_TYPE_SUBTREE = <span class="number">0x00000001</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Change type for &#123;<span class="doctag">@link</span> #TYPE_WINDOW_CONTENT_CHANGED&#125; event: </div><div class="line"> * The node's text changed. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CONTENT_CHANGE_TYPE_TEXT = <span class="number">0x00000002</span>;  </div><div class="line"><span class="comment">/** </span></div><div class="line"> * Change type for &#123;<span class="doctag">@link</span> #TYPE_WINDOW_CONTENT_CHANGED&#125; event: </div><div class="line"> * The node's content description changed. </div><div class="line"> */  </div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION = <span class="number">0x00000004</span>;</div></pre></td></tr></table></figure></p>
+<p>通过这个事件我们可以区分不同的事件做区分了。</p>
+<h2 id="Step-4-查找元素"><a href="#Step-4-查找元素" class="headerlink" title="Step 4 : 查找元素"></a>Step 4 : 查找元素</h2><p>这里有两种方法可以查找到相应元素：</p>
+<ol>
+<li>通过节点View的Text内容来查找<code>findAccessibilityNodeInfosByText(&quot;查找内容&quot;)</code>，这种方式查找，就是像TextView、Button等View有文本内容的，可以使用这种方式快速的找到。</li>
+<li>通过节点View在xml布局中的id名称<code>findAccessibilityNodeInfosByViewId(&quot;@id/xxx&quot;)</code>，这个一般很难知道，但是在查找系统控件的时候还是可以做的，因为系统的控件的id是可以知道的，而且是统一的。</li>
+</ol>
+<h2 id="Step-5-点击元素"><a href="#Step-5-点击元素" class="headerlink" title="Step 5 : 点击元素"></a>Step 5 : 点击元素</h2><p>找到想要的View节点，调用方法模拟事件：</p>
+<ol>
+<li>点击事件：performAction(AccessibilityNodeInfo.ACTION_CLICK)</li>
+<li>滑动时间：performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)<br>…</li>
+</ol>
+
+    
+  </div>
+</article>
+
+</div>
+
+
+
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Blog
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tag
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'forsigner';
+    
+    var disqus_url = 'http://yoursite.com/2016/11/29/Android-浅析-辅助功能/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//forsigner.disqus.com/count.js" async></script>
+
+
+
+    
+
+
+
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
