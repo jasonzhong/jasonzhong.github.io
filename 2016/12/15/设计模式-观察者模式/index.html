@@ -7,7 +7,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>设计模式-单例模式 | Zhong&#39;s_blog</title>
+  <title>设计模式-观察者模式 | Zhong&#39;s_blog</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -15,16 +15,16 @@
     <meta name="keywords" content="设计模式," />
   
 
-  <meta name="description" content="确保这个类只有一个实例，而且能自行实例化，当然要看是使用饱汉还是饥汉模式。">
+  <meta name="description" content="定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="设计模式-单例模式">
-<meta property="og:url" content="http://yoursite.com/2016/11/18/设计模式-单例模式/index.html">
+<meta property="og:title" content="设计模式-观察者模式">
+<meta property="og:url" content="http://yoursite.com/2016/12/15/设计模式-观察者模式/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
-<meta property="og:description" content="确保这个类只有一个实例，而且能自行实例化，当然要看是使用饱汉还是饥汉模式。">
-<meta property="og:updated_time" content="2016-11-29T13:33:09.755Z">
+<meta property="og:description" content="定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。">
+<meta property="og:updated_time" content="2016-12-15T13:33:03.761Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="设计模式-单例模式">
-<meta name="twitter:description" content="确保这个类只有一个实例，而且能自行实例化，当然要看是使用饱汉还是饥汉模式。">
+<meta name="twitter:title" content="设计模式-观察者模式">
+<meta name="twitter:description" content="定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。">
 
   
 
@@ -120,14 +120,14 @@
 
 
 <div class="content content-post CENTER">
-   <article id="post-设计模式-单例模式" class="article article-type-post" itemprop="blogPost">
+   <article id="post-设计模式-观察者模式" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">设计模式-单例模式</h1>
+    <h1 class="post-title">设计模式-观察者模式</h1>
 
     <div class="article-meta">
       <span>
         <i class="icon-calendar"></i>
-        <span>2016.11.18</span>
+        <span>2016.12.15</span>
       </span>
 
       
@@ -143,7 +143,7 @@
       
         <span>
           <i class="icon-comment"></i>
-          <a href="https://github.com/jasonzhong/2016/11/18/设计模式-单例模式/#disqus_thread"></a>
+          <a href="https://github.com/jasonzhong/2016/12/15/设计模式-观察者模式/#disqus_thread"></a>
         </span>
       
 
@@ -156,10 +156,11 @@
 <p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
 </blockquote>
 <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
-<p>确保这个类只有一个实例，而且能自行实例化，当然要看是使用饱汉还是饥汉模式。</p>
+<p>定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。</p>
 </blockquote>
-<p><strong>优点</strong>：减少内存、性能开销，避免资源重用，并且可以全局访问。<br><strong>缺点</strong>：扩展很难，当持有 context 之类的对象容易造成内存泄漏。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance = <span class="keyword">null</span>;</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SingletonClass</span><span class="params">()</span> </span>&#123;&#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">synchronized</span>(Singleton.class) &#123;</div><div class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</div><div class="line">                    instance = <span class="keyword">new</span> Singleton();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> instance;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>优点</strong>：<br>第一、观察者模式在被观察者和观察者之间建立一个抽象的耦合。<br>由于被观察者和观察者没有紧密地耦合在一起，因此它们可以属于不同的抽象化层次。如果被观察者和观察者都被扔到一起，那么这个对象必然跨越抽象化和具体化层次。<br>第二、观察者模式支持广播通讯。被观察者会向所有的登记过的观察者发出通知。</p>
+<p><strong>缺点</strong>：<br>第一、如果一个被观察者对象有很多的直接和间接的观察者的话，将所有的观察者都通知到会花费很多时间。<br>第二、如果在被观察者之间有循环依赖的话，被观察者会触发它们之间进行循环调用，导致系统崩溃。在使用观察者模式是要特别注意这一点。<br>第三、如果对观察者的通知是通过另外的线程进行异步投递的话，系统必须保证投递是以自恰的方式进行的。<br>第四、虽然观察者模式可以随时使观察者知道所观察的对象发生了变化，但是观察者模式没有相应的机制使观察者知道所观察的对象是怎么发生变化的。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Coder</span> <span class="keyword">implements</span> <span class="title">Observer</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(Observable observable, Object data)</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"coder listener"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Leader</span> <span class="keyword">extends</span> <span class="title">Observable</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendTaskToAll</span><span class="params">()</span> </span>&#123;</div><div class="line">        setChanged();</div><div class="line">        notifyObservers();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</div><div class="line">    Leader leader = <span class="keyword">new</span> Leader();</div><div class="line">    Coder coder = <span class="keyword">new</span> Coder();</div><div class="line">    Coder coder1 = <span class="keyword">new</span> Coder();</div><div class="line">    leader.sendTaskToAll();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><a href="https://jasonzhong.github.io/2016/11/18/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" target="_blank" rel="external">设计模式 目录</a></p>
 
     
@@ -242,7 +243,7 @@
   <script>
     var disqus_shortname = 'forsigner';
     
-    var disqus_url = 'http://yoursite.com/2016/11/18/设计模式-单例模式/';
+    var disqus_url = 'http://yoursite.com/2016/12/15/设计模式-观察者模式/';
     
     (function(){
       var dsq = document.createElement('script');

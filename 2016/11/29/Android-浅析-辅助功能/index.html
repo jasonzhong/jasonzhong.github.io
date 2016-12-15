@@ -21,7 +21,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/11/29/Android-浅析-辅助功能/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
 <meta property="og:description" content="目前 Android 的权限收紧越来越厉害，对于一个需要提供很多功能的应用来说，让用户手动点击这么多权限框是很烦的，那么就需要辅助功能来帮助我们点击了，嘿嘿嘿。">
-<meta property="og:updated_time" content="2016-12-01T04:12:42.934Z">
+<meta property="og:updated_time" content="2016-12-15T12:47:06.453Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 浅析 辅助功能">
 <meta name="twitter:description" content="目前 Android 的权限收紧越来越厉害，对于一个需要提供很多功能的应用来说，让用户手动点击这么多权限框是很烦的，那么就需要辅助功能来帮助我们点击了，嘿嘿嘿。">
@@ -113,8 +113,8 @@
 
 
   <div id="toc" class="toc-article">
-    <strong class="toc-title">Posts List</strong>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-AccessibilityService类"><span class="toc-text">Step 1 : AccessibilityService类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-accessibility-service-config-xml"><span class="toc-text">Step 2 : accessibility_service_config.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-3-onAccessibilityEvent-AccessibilityEvent-event"><span class="toc-text">Step 3 : onAccessibilityEvent(AccessibilityEvent event)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-查找元素"><span class="toc-text">Step 4 : 查找元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-5-点击元素"><span class="toc-text">Step 5 : 点击元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#判断是否开启辅助功能"><span class="toc-text">判断是否开启辅助功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#附录-跳转到系统界面activity"><span class="toc-text">附录 跳转到系统界面activity</span></a></li></ol>
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-AccessibilityService类"><span class="toc-text">Step 1 : AccessibilityService类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-accessibility-service-config-xml"><span class="toc-text">Step 2 : accessibility_service_config.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-3-onAccessibilityEvent-AccessibilityEvent-event"><span class="toc-text">Step 3 : onAccessibilityEvent(AccessibilityEvent event)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-查找元素"><span class="toc-text">Step 4 : 查找元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-5-点击元素"><span class="toc-text">Step 5 : 点击元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#判断是否开启辅助功能"><span class="toc-text">判断是否开启辅助功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#附录-跳转到系统界面activity"><span class="toc-text">附录 跳转到系统界面activity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#彩蛋"><span class="toc-text">彩蛋</span></a></li></ol>
   </div>
 
 
@@ -328,10 +328,12 @@
 </tr>
 <tr>
 <td style="text-align:left">EXTRA_INPUT_METHOD_ID</td>
-<td style="text-align:left"></td>
 </tr>
 </tbody>
 </table>
+<h2 id="彩蛋"><a href="#彩蛋" class="headerlink" title="彩蛋"></a>彩蛋</h2><ol>
+<li>如果遇到action无效的情况，例如上滑无效，可以将里面的所有listview元素都滑动一遍，因为有可能是做了fragment，第一次的滑动滑到了下面的层级去了。</li>
+</ol>
 
     
   </div>
@@ -354,7 +356,7 @@
   <span id="cover" class="cover hide"></span>
   <div id="modal-dialog" class="modal-dialog hide-dialog">
     <div class="modal-header">
-      <span id="close" class="btn-close">Close</span>
+      <span id="close" class="btn-close">关闭</span>
     </div>
     <hr>
     <div class="modal-body">
