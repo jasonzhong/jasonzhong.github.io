@@ -1,21 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 
 
-  <html class="light page-post">
+
+  
 
 
+<html class="theme-next pisces use-motion">
 <head>
-  <meta charset="utf-8">
-  
-  <title>Android 浅析 SharedPreferences (二) 原理 | Zhong&#39;s_blog</title>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
 
   
-    <meta name="keywords" content="Android,Android_基础知识,SharedPreferences," />
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
   
 
-  <meta name="description" content="SharedPreferences 是 Android 的一个轻量级的存储类。这章将会详细看 SharedPreferences 是如何写入，如何获取的，并且会分析多线程下为什么 SharedPreferences 会写失败的问题。">
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Android_基础知识,SharedPreferences," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="SharedPreferences 是 Android 的一个轻量级的存储类。这章将会详细看 SharedPreferences 是如何写入，如何获取的，并且会分析多线程下为什么 SharedPreferences 会写失败的问题。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 浅析 SharedPreferences (二) 原理">
 <meta property="og:url" content="http://yoursite.com/2015/09/20/Android-浅析-SharedPreferences-二-原理/index.html">
@@ -26,133 +95,225 @@
 <meta name="twitter:title" content="Android 浅析 SharedPreferences (二) 原理">
 <meta name="twitter:description" content="SharedPreferences 是 Android 的一个轻量级的存储类。这章将会详细看 SharedPreferences 是如何写入，如何获取的，并且会分析多线程下为什么 SharedPreferences 会写失败的问题。">
 
-  
-
-  
-    <link rel="icon" href="/favicon.ico">
-  
-
-  <link href="/css/styles.css?v=028c63b1" rel="stylesheet">
 
 
-  
-    <link rel="stylesheet" href="/css/personal-style.css">
-  
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/09/20/Android-浅析-SharedPreferences-二-原理/"/>
+
+  <title> Android 浅析 SharedPreferences (二) 原理 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
 
   
 
-  
+
+
   <script type="text/javascript">
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
-      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(hm, s);
     })();
   </script>
 
 
-</head>
 
-<body>
+
+
+
 
 
   
-    <span id="toolbox-mobile" class="toolbox-mobile">Tag</span>
+  
+    
   
 
-  <div class="post-header CENTER">
-   
-  <div class="toolbox">
-    <a class="toolbox-entry" href="/">
-      <span class="toolbox-entry-text">Tag</span>
-      <i class="icon-angle-down"></i>
-      <i class="icon-home"></i>
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
     </a>
-    <ul class="list-toolbox">
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/archives/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Blog
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/tags/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Tag
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/about/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            About
-          </a>
-        </li>
-      
-    </ul>
   </div>
-
-
+  <p class="site-subtitle">Read The Funning Source Code</p>
 </div>
 
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
 
-  <div id="toc" class="toc-article">
-    <strong class="toc-title">文章目录</strong>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概括"><span class="toc-text">概括</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建原理"><span class="toc-text">创建原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ContextImpl"><span class="toc-text">ContextImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-1-getSharedPreferences"><span class="toc-text">Step 1.getSharedPreferences()</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Part-1-初始化映射对象"><span class="toc-text">Part 1.初始化映射对象</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Part-2-创建SharedPrefs文件"><span class="toc-text">Part 2.创建SharedPrefs文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SharedPreferencesImpl"><span class="toc-text">SharedPreferencesImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-2-SharedPreferencesImpl"><span class="toc-text">Step 2.SharedPreferencesImpl()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-3-makeBackupFile"><span class="toc-text">Step 3.makeBackupFile()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-4-startLoadFromDisk"><span class="toc-text">Step 4.startLoadFromDisk()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-5-loadFromDiskLocked"><span class="toc-text">Step 5.loadFromDiskLocked()</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Part-1-查看PrefsFile"><span class="toc-text">Part 1.查看PrefsFile</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Part-2-加载PrefsFile"><span class="toc-text">Part 2.加载PrefsFile</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ContextImpl-1"><span class="toc-text">ContextImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-6-getSharedPreferences"><span class="toc-text">Step 6.getSharedPreferences()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#获取原理"><span class="toc-text">获取原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SharedPreferencesImpl-1"><span class="toc-text">SharedPreferencesImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#getString"><span class="toc-text">getString()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改原理"><span class="toc-text">修改原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Activity"><span class="toc-text">Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SharedPreferencesImpl-2"><span class="toc-text">SharedPreferencesImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-1-edit"><span class="toc-text">Step 1.edit()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Activity-1"><span class="toc-text">Activity</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-2-editor-putString"><span class="toc-text">Step 2.editor.putString()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-3-editor-commit"><span class="toc-text">Step 3.editor.commit()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SharedPreferencesImpl-3"><span class="toc-text">SharedPreferencesImpl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-4-commit"><span class="toc-text">Step 4.commit()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-5-commitToMemory"><span class="toc-text">Step 5.commitToMemory()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-6-enqueueDiskWrite"><span class="toc-text">Step 6.enqueueDiskWrite()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Step-7-writeToFile"><span class="toc-text">Step 7.writeToFile()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结-1"><span class="toc-text">总结</span></a></li></ol></li></ol>
-  </div>
+<nav class="site-nav">
+  
 
-
-
-<div class="content content-post CENTER">
-   <article id="post-Android-浅析-SharedPreferences-二-原理" class="article article-type-post" itemprop="blogPost">
-  <header class="article-header">
-    <h1 class="post-title">Android 浅析 SharedPreferences (二) 原理</h1>
-
-    <div class="article-meta">
-      <span>
-        <i class="icon-calendar"></i>
-        <span>2015.09.20</span>
-      </span>
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
 
       
-        <span class="article-author">
-          <i class="icon-user"></i>
-          <span>钟华健</span>
-        </span>
-      
+    </ul>
+  
 
-      
+  
+</nav>
 
+ </div>
+    </header>
 
-      
-        <span>
-          <i class="icon-comment"></i>
-          <a href="https://github.com/jasonzhong/2015/09/20/Android-浅析-SharedPreferences-二-原理/#disqus_thread"></a>
-        </span>
-      
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
 
-    </div>
-  </header>
-
-  <div class="article-content">
+  <div id="posts" class="posts-expand">
     
-      <a id="more"></a>
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android 浅析 SharedPreferences (二) 原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2015-09-20T21:03:15+08:00" content="2015-09-20">
+              2015-09-20
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/09/20/Android-浅析-SharedPreferences-二-原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/09/20/Android-浅析-SharedPreferences-二-原理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
 <p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
 </blockquote>
@@ -193,139 +354,339 @@
 <p>做完后commit函数的职责就算完了，然后再广播监听者修改完成的消息。</p>
 <h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>对于修改的原理，在多进程情况下如果两个修改的时机接近那么就很容易导致一方写不进去的问题，是因为会被另一个进程将写入的数据覆盖。这个问题目前的解决方案是不同的进程尽量使用不同的SharedPreference进行存储。</p>
 
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Android-基础知识/" rel="tag">#Android_基础知识</a>
+          
+            <a href="/tags/SharedPreferences/" rel="tag">#SharedPreferences</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/20/Android-浅析-SharedPreferences-一-使用/" rel="next" title="Android 浅析 SharedPreferences (一) 使用">
+                <i class="fa fa-chevron-left"></i> Android 浅析 SharedPreferences (一) 使用
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/10/15/Android-浅析-ContentProvider-一-使用/" rel="prev" title="Android 浅析 ContentProvider (一) 使用">
+                Android 浅析 ContentProvider (一) 使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2015/09/20/Android-浅析-SharedPreferences-二-原理/"
+           data-title="Android 浅析 SharedPreferences (二) 原理" data-url="http://yoursite.com/2015/09/20/Android-浅析-SharedPreferences-二-原理/">
+      </div>
     
   </div>
-</article>
-
-</div>
 
 
-
-
-
-  <a id="backTop" class="back-top">
-    <i class="icon-angle-up"></i>
-  </a>
-
-
-
-
-  <div class="modal" id="modal">
-  <span id="cover" class="cover hide"></span>
-  <div id="modal-dialog" class="modal-dialog hide-dialog">
-    <div class="modal-header">
-      <span id="close" class="btn-close">关闭</span>
-    </div>
-    <hr>
-    <div class="modal-body">
-      <ul class="list-toolbox">
+        </div>
         
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/archives/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Blog
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/tags/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Tag
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/about/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              About
-            </a>
-          </li>
-        
-      </ul>
-
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
     </div>
   </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">34</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建原理"><span class="nav-number">3.</span> <span class="nav-text">创建原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ContextImpl"><span class="nav-number">3.1.</span> <span class="nav-text">ContextImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-1-getSharedPreferences"><span class="nav-number">3.1.1.</span> <span class="nav-text">Step 1.getSharedPreferences()</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Part-1-初始化映射对象"><span class="nav-number">3.1.1.1.</span> <span class="nav-text">Part 1.初始化映射对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Part-2-创建SharedPrefs文件"><span class="nav-number">3.1.1.2.</span> <span class="nav-text">Part 2.创建SharedPrefs文件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SharedPreferencesImpl"><span class="nav-number">3.2.</span> <span class="nav-text">SharedPreferencesImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-2-SharedPreferencesImpl"><span class="nav-number">3.2.1.</span> <span class="nav-text">Step 2.SharedPreferencesImpl()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-3-makeBackupFile"><span class="nav-number">3.2.2.</span> <span class="nav-text">Step 3.makeBackupFile()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-4-startLoadFromDisk"><span class="nav-number">3.2.3.</span> <span class="nav-text">Step 4.startLoadFromDisk()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-5-loadFromDiskLocked"><span class="nav-number">3.2.4.</span> <span class="nav-text">Step 5.loadFromDiskLocked()</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Part-1-查看PrefsFile"><span class="nav-number">3.2.4.1.</span> <span class="nav-text">Part 1.查看PrefsFile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Part-2-加载PrefsFile"><span class="nav-number">3.2.4.2.</span> <span class="nav-text">Part 2.加载PrefsFile</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ContextImpl-1"><span class="nav-number">3.3.</span> <span class="nav-text">ContextImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-6-getSharedPreferences"><span class="nav-number">3.3.1.</span> <span class="nav-text">Step 6.getSharedPreferences()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取原理"><span class="nav-number">4.</span> <span class="nav-text">获取原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SharedPreferencesImpl-1"><span class="nav-number">4.1.</span> <span class="nav-text">SharedPreferencesImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#getString"><span class="nav-number">4.1.1.</span> <span class="nav-text">getString()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改原理"><span class="nav-number">5.</span> <span class="nav-text">修改原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Activity"><span class="nav-number">5.1.</span> <span class="nav-text">Activity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SharedPreferencesImpl-2"><span class="nav-number">5.2.</span> <span class="nav-text">SharedPreferencesImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-1-edit"><span class="nav-number">5.2.1.</span> <span class="nav-text">Step 1.edit()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Activity-1"><span class="nav-number">5.3.</span> <span class="nav-text">Activity</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-2-editor-putString"><span class="nav-number">5.3.1.</span> <span class="nav-text">Step 2.editor.putString()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-3-editor-commit"><span class="nav-number">5.3.2.</span> <span class="nav-text">Step 3.editor.commit()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SharedPreferencesImpl-3"><span class="nav-number">5.4.</span> <span class="nav-text">SharedPreferencesImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-4-commit"><span class="nav-number">5.4.1.</span> <span class="nav-text">Step 4.commit()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-5-commitToMemory"><span class="nav-number">5.4.2.</span> <span class="nav-text">Step 5.commitToMemory()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-6-enqueueDiskWrite"><span class="nav-number">5.4.3.</span> <span class="nav-text">Step 6.enqueueDiskWrite()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-7-writeToFile"><span class="nav-number">5.4.4.</span> <span class="nav-text">Step 7.writeToFile()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-1"><span class="nav-number">5.5.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
 </div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
 
 
 
   
-      <div class="fexo-comments comments-post">
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
     
-  <section class="disqus-comments">
-    <div id="disqus_thread">
-      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    </div>
-  </section>
-
-  <script>
-    var disqus_shortname = 'forsigner';
-    
-    var disqus_url = 'http://yoursite.com/2015/09/20/Android-浅析-SharedPreferences-二-原理/';
-    
-    (function(){
-      var dsq = document.createElement('script');
-      dsq.type = 'text/javascript';
-      dsq.async = true;
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-  </script>
-
-  <script id="dsq-count-scr" src="//forsigner.disqus.com/count.js" async></script>
-
-
-
-    
-
-
-
-
-  </div>
-
   
 
   <script type="text/javascript">
-  function loadScript(url, callback) {
-    var script = document.createElement('script')
-    script.type = 'text/javascript';
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
 
-    if (script.readyState) { //IE
-      script.onreadystatechange = function() {
-        if (script.readyState == 'loaded' ||
-          script.readyState == 'complete') {
-          script.onreadystatechange = null;
-          callback();
-        }
-      };
-    } else { //Others
-      script.onload = function() {
-        callback();
-      };
-    }
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
 
-    script.src = url;
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
 
-  window.onload = function() {
-    loadScript('/js/bundle.js?235683', function() {
-      // load success
-    });
-  }
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
 </script>
+
 
 </body>
 </html>

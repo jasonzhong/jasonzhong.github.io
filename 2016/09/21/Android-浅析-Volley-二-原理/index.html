@@ -1,21 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 
 
-  <html class="light page-post">
+
+  
 
 
+<html class="theme-next pisces use-motion">
 <head>
-  <meta charset="utf-8">
-  
-  <title>Android 浅析 Volley (二) 原理 | Zhong&#39;s_blog</title>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
 
   
-    <meta name="keywords" content="Android,开源库,Volley," />
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
   
 
-  <meta name="description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,开源库,Volley," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 浅析 Volley (二) 原理">
 <meta property="og:url" content="http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/index.html">
@@ -32,133 +101,225 @@
 <meta name="twitter:description" content="Volley是 Google 推出的 Android 异步网络请求框架和图片加载框架，使得 Android 应用程序更容易，更快速的使用网络。本章开始以原理的方面入手，一步步探索 Volley 的架构建设，为什么他的易用性强等特点。">
 <meta name="twitter:image" content="http://ww3.sinaimg.cn/large/7669bef3gw1ezgdilrd3pj20f20e3ac8.jpg">
 
-  
-
-  
-    <link rel="icon" href="/favicon.ico">
-  
-
-  <link href="/css/styles.css?v=028c63b1" rel="stylesheet">
 
 
-  
-    <link rel="stylesheet" href="/css/personal-style.css">
-  
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/"/>
+
+  <title> Android 浅析 Volley (二) 原理 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
 
   
 
-  
+
+
   <script type="text/javascript">
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
-      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(hm, s);
     })();
   </script>
 
 
-</head>
 
-<body>
+
+
+
 
 
   
-    <span id="toolbox-mobile" class="toolbox-mobile">Tag</span>
+  
+    
   
 
-  <div class="post-header CENTER">
-   
-  <div class="toolbox">
-    <a class="toolbox-entry" href="/">
-      <span class="toolbox-entry-text">Tag</span>
-      <i class="icon-angle-down"></i>
-      <i class="icon-home"></i>
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
     </a>
-    <ul class="list-toolbox">
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/archives/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Blog
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/tags/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Tag
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="CIRCLE"
-            href="/about/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            About
-          </a>
-        </li>
-      
-    </ul>
   </div>
-
-
+  <p class="site-subtitle">Read The Funning Source Code</p>
 </div>
 
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
 
-  <div id="toc" class="toc-article">
-    <strong class="toc-title">文章目录</strong>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概括"><span class="toc-text">概括</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Volley初始化"><span class="toc-text">Volley初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Volley"><span class="toc-text">Volley</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Volley-newRequestQueue-…"><span class="toc-text">Volley.newRequestQueue(…)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RequestQueue"><span class="toc-text">RequestQueue</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RequestQueue-RequestQueue-…"><span class="toc-text">RequestQueue.RequestQueue(…)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RequestQueue-Start"><span class="toc-text">RequestQueue.Start()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RequestQueue-Stop"><span class="toc-text">RequestQueue.Stop()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Volley添加请求"><span class="toc-text">Volley添加请求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RequestQueue-1"><span class="toc-text">RequestQueue</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RequestQueue-add"><span class="toc-text">RequestQueue.add()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结-1"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Volley-类分析"><span class="toc-text">Volley 类分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#工具类"><span class="toc-text">工具类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#网络类"><span class="toc-text">网络类</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#HttpStack"><span class="toc-text">HttpStack</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#HurlStack"><span class="toc-text">HurlStack</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#BasicNetwork"><span class="toc-text">BasicNetwork</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Network"><span class="toc-text">Network</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存类"><span class="toc-text">缓存类</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Cache"><span class="toc-text">Cache</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Entry-get-String-key"><span class="toc-text">Entry get(String key)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-put-String-key-Entry-entry"><span class="toc-text">void put(String key, Entry entry)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-remove-String-key"><span class="toc-text">void remove(String key)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-clear"><span class="toc-text">void clear()</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Entry内部类"><span class="toc-text">Entry内部类</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#NoCache"><span class="toc-text">NoCache</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#DiskBasedCache"><span class="toc-text">DiskBasedCache</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#void-initialize"><span class="toc-text">void initialize()</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Entry-get-String-key-1"><span class="toc-text">Entry get(String key)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-put-String-key-Entry-entry-1"><span class="toc-text">void put(String key, Entry entry)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-pruneIfNeeded-int-neededSpace"><span class="toc-text">void pruneIfNeeded(int neededSpace)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-clear-1"><span class="toc-text">void clear()</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#void-remove-String-key-1"><span class="toc-text">void remove(String key)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#CacheHeader"><span class="toc-text">CacheHeader</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ByteArrayPool"><span class="toc-text">ByteArrayPool</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#PoolingByteArrayOutputStream"><span class="toc-text">PoolingByteArrayOutputStream</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Authenticator"><span class="toc-text">Authenticator</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#AndroidAuthenticator"><span class="toc-text">AndroidAuthenticator</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基础类"><span class="toc-text">基础类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#NetworkResponse"><span class="toc-text">NetworkResponse</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#成员变量"><span class="toc-text">成员变量</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#内部-Response-转换流程图"><span class="toc-text">内部 Response 转换流程图</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CacheDispatcher"><span class="toc-text">CacheDispatcher</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#CacheDispatcher-run"><span class="toc-text">CacheDispatcher.run()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CacheDispatcher-流程图"><span class="toc-text">CacheDispatcher 流程图</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#NetworkDispatcher"><span class="toc-text">NetworkDispatcher</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#NetworkDispatcher-run"><span class="toc-text">NetworkDispatcher.run()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#NetworkDispatcher-流程图"><span class="toc-text">NetworkDispatcher 流程图</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ResponseDelivery"><span class="toc-text">ResponseDelivery</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RetryPolicy"><span class="toc-text">RetryPolicy</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DefaultRetryPolicy"><span class="toc-text">DefaultRetryPolicy</span></a></li></ol></li></ol></li></ol>
-  </div>
+<nav class="site-nav">
+  
 
-
-
-<div class="content content-post CENTER">
-   <article id="post-Android-浅析-Volley-二-原理" class="article article-type-post" itemprop="blogPost">
-  <header class="article-header">
-    <h1 class="post-title">Android 浅析 Volley (二) 原理</h1>
-
-    <div class="article-meta">
-      <span>
-        <i class="icon-calendar"></i>
-        <span>2016.09.21</span>
-      </span>
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
 
       
-        <span class="article-author">
-          <i class="icon-user"></i>
-          <span>钟华健</span>
-        </span>
-      
+    </ul>
+  
 
-      
+  
+</nav>
 
+ </div>
+    </header>
 
-      
-        <span>
-          <i class="icon-comment"></i>
-          <a href="https://github.com/jasonzhong/2016/09/21/Android-浅析-Volley-二-原理/#disqus_thread"></a>
-        </span>
-      
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
 
-    </div>
-  </header>
-
-  <div class="article-content">
+  <div id="posts" class="posts-expand">
     
-      <a id="more"></a>
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android 浅析 Volley (二) 原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-21T21:38:27+08:00" content="2016-09-21">
+              2016-09-21
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/21/Android-浅析-Volley-二-原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/21/Android-浅析-Volley-二-原理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
 <p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
 </blockquote>
@@ -294,139 +455,339 @@
 </blockquote>
 <p>实现 RetryPolicy，Volley 默认的重试策略实现类。主要通过在 retry(…) 函数中判断重试次数是否达到上限确定是否继续重试。<br>其中mCurrentRetryCount变量表示已经重试次数。<br>mBackoffMultiplier表示每次重试之前的 timeout 该乘以的因子。<br>mCurrentTimeoutMs变量表示当前重试的 timeout 时间，会以mBackoffMultiplier作为因子累计前几次重试的 timeout。</p>
 
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/开源库/" rel="tag">#开源库</a>
+          
+            <a href="/tags/Volley/" rel="tag">#Volley</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/21/Android-浅析-Volley-一-使用/" rel="next" title="Android 浅析 Volley (一) 使用">
+                <i class="fa fa-chevron-left"></i> Android 浅析 Volley (一) 使用
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/21/Android-浅析-ButterKnife-一-使用/" rel="prev" title="Android 浅析 ButterKnife (一) 使用">
+                Android 浅析 ButterKnife (一) 使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/21/Android-浅析-Volley-二-原理/"
+           data-title="Android 浅析 Volley (二) 原理" data-url="http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/">
+      </div>
     
   </div>
-</article>
-
-</div>
 
 
-
-
-
-  <a id="backTop" class="back-top">
-    <i class="icon-angle-up"></i>
-  </a>
-
-
-
-
-  <div class="modal" id="modal">
-  <span id="cover" class="cover hide"></span>
-  <div id="modal-dialog" class="modal-dialog hide-dialog">
-    <div class="modal-header">
-      <span id="close" class="btn-close">关闭</span>
-    </div>
-    <hr>
-    <div class="modal-body">
-      <ul class="list-toolbox">
+        </div>
         
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/archives/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Blog
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/tags/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Tag
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="CIRCLE"
-              href="/about/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              About
-            </a>
-          </li>
-        
-      </ul>
-
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
     </div>
   </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">34</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Volley初始化"><span class="nav-number">3.</span> <span class="nav-text">Volley初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Volley"><span class="nav-number">3.1.</span> <span class="nav-text">Volley</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Volley-newRequestQueue-…"><span class="nav-number">3.1.1.</span> <span class="nav-text">Volley.newRequestQueue(…)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RequestQueue"><span class="nav-number">3.2.</span> <span class="nav-text">RequestQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RequestQueue-RequestQueue-…"><span class="nav-number">3.2.1.</span> <span class="nav-text">RequestQueue.RequestQueue(…)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RequestQueue-Start"><span class="nav-number">3.2.2.</span> <span class="nav-text">RequestQueue.Start()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RequestQueue-Stop"><span class="nav-number">3.2.3.</span> <span class="nav-text">RequestQueue.Stop()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Volley添加请求"><span class="nav-number">4.</span> <span class="nav-text">Volley添加请求</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RequestQueue-1"><span class="nav-number">4.1.</span> <span class="nav-text">RequestQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RequestQueue-add"><span class="nav-number">4.1.1.</span> <span class="nav-text">RequestQueue.add()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-1"><span class="nav-number">4.2.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Volley-类分析"><span class="nav-number">5.</span> <span class="nav-text">Volley 类分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#工具类"><span class="nav-number">5.1.</span> <span class="nav-text">工具类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#网络类"><span class="nav-number">5.1.1.</span> <span class="nav-text">网络类</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#HttpStack"><span class="nav-number">5.1.1.1.</span> <span class="nav-text">HttpStack</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HurlStack"><span class="nav-number">5.1.1.2.</span> <span class="nav-text">HurlStack</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#BasicNetwork"><span class="nav-number">5.1.1.3.</span> <span class="nav-text">BasicNetwork</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Network"><span class="nav-number">5.1.1.4.</span> <span class="nav-text">Network</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存类"><span class="nav-number">5.1.2.</span> <span class="nav-text">缓存类</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Cache"><span class="nav-number">5.1.2.1.</span> <span class="nav-text">Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Entry-get-String-key"><span class="nav-number">5.1.2.1.1.</span> <span class="nav-text">Entry get(String key)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-put-String-key-Entry-entry"><span class="nav-number">5.1.2.1.2.</span> <span class="nav-text">void put(String key, Entry entry)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-remove-String-key"><span class="nav-number">5.1.2.1.3.</span> <span class="nav-text">void remove(String key)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-clear"><span class="nav-number">5.1.2.1.4.</span> <span class="nav-text">void clear()</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Entry内部类"><span class="nav-number">5.1.2.1.5.</span> <span class="nav-text">Entry内部类</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#NoCache"><span class="nav-number">5.1.2.2.</span> <span class="nav-text">NoCache</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DiskBasedCache"><span class="nav-number">5.1.2.3.</span> <span class="nav-text">DiskBasedCache</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#void-initialize"><span class="nav-number">5.1.2.3.1.</span> <span class="nav-text">void initialize()</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Entry-get-String-key-1"><span class="nav-number">5.1.2.3.2.</span> <span class="nav-text">Entry get(String key)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-put-String-key-Entry-entry-1"><span class="nav-number">5.1.2.3.3.</span> <span class="nav-text">void put(String key, Entry entry)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-pruneIfNeeded-int-neededSpace"><span class="nav-number">5.1.2.3.4.</span> <span class="nav-text">void pruneIfNeeded(int neededSpace)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-clear-1"><span class="nav-number">5.1.2.3.5.</span> <span class="nav-text">void clear()</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#void-remove-String-key-1"><span class="nav-number">5.1.2.3.6.</span> <span class="nav-text">void remove(String key)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#CacheHeader"><span class="nav-number">5.1.2.3.7.</span> <span class="nav-text">CacheHeader</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ByteArrayPool"><span class="nav-number">5.1.2.4.</span> <span class="nav-text">ByteArrayPool</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PoolingByteArrayOutputStream"><span class="nav-number">5.1.2.5.</span> <span class="nav-text">PoolingByteArrayOutputStream</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Authenticator"><span class="nav-number">5.1.2.6.</span> <span class="nav-text">Authenticator</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#AndroidAuthenticator"><span class="nav-number">5.1.2.7.</span> <span class="nav-text">AndroidAuthenticator</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基础类"><span class="nav-number">5.2.</span> <span class="nav-text">基础类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NetworkResponse"><span class="nav-number">5.2.1.</span> <span class="nav-text">NetworkResponse</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#成员变量"><span class="nav-number">5.2.1.1.</span> <span class="nav-text">成员变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#内部-Response-转换流程图"><span class="nav-number">5.2.1.2.</span> <span class="nav-text">内部 Response 转换流程图</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CacheDispatcher"><span class="nav-number">5.2.2.</span> <span class="nav-text">CacheDispatcher</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#CacheDispatcher-run"><span class="nav-number">5.2.2.1.</span> <span class="nav-text">CacheDispatcher.run()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#CacheDispatcher-流程图"><span class="nav-number">5.2.2.2.</span> <span class="nav-text">CacheDispatcher 流程图</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NetworkDispatcher"><span class="nav-number">5.2.3.</span> <span class="nav-text">NetworkDispatcher</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#NetworkDispatcher-run"><span class="nav-number">5.2.3.1.</span> <span class="nav-text">NetworkDispatcher.run()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#NetworkDispatcher-流程图"><span class="nav-number">5.2.3.2.</span> <span class="nav-text">NetworkDispatcher 流程图</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ResponseDelivery"><span class="nav-number">5.2.4.</span> <span class="nav-text">ResponseDelivery</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RetryPolicy"><span class="nav-number">5.2.5.</span> <span class="nav-text">RetryPolicy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DefaultRetryPolicy"><span class="nav-number">5.2.6.</span> <span class="nav-text">DefaultRetryPolicy</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
 </div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
 
 
 
   
-      <div class="fexo-comments comments-post">
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
     
-  <section class="disqus-comments">
-    <div id="disqus_thread">
-      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    </div>
-  </section>
-
-  <script>
-    var disqus_shortname = 'forsigner';
-    
-    var disqus_url = 'http://yoursite.com/2016/09/21/Android-浅析-Volley-二-原理/';
-    
-    (function(){
-      var dsq = document.createElement('script');
-      dsq.type = 'text/javascript';
-      dsq.async = true;
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-  </script>
-
-  <script id="dsq-count-scr" src="//forsigner.disqus.com/count.js" async></script>
-
-
-
-    
-
-
-
-
-  </div>
-
   
 
   <script type="text/javascript">
-  function loadScript(url, callback) {
-    var script = document.createElement('script')
-    script.type = 'text/javascript';
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
 
-    if (script.readyState) { //IE
-      script.onreadystatechange = function() {
-        if (script.readyState == 'loaded' ||
-          script.readyState == 'complete') {
-          script.onreadystatechange = null;
-          callback();
-        }
-      };
-    } else { //Others
-      script.onload = function() {
-        callback();
-      };
-    }
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
 
-    script.src = url;
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
 
-  window.onload = function() {
-    loadScript('/js/bundle.js?235683', function() {
-      // load success
-    });
-  }
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
 </script>
+
 
 </body>
 </html>
