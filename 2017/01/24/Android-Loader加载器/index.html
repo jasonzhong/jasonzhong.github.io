@@ -1,0 +1,694 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,应用组件," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-Loader加载器">
+<meta property="og:url" content="http://yoursite.com/2017/01/24/Android-Loader加载器/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
+<meta property="og:updated_time" content="2017-01-26T08:13:46.747Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-Loader加载器">
+<meta name="twitter:description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/24/Android-Loader加载器/"/>
+
+  <title> Android-Loader加载器 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-Loader加载器
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-24T20:53:29+08:00" content="2017-01-24">
+              2017-01-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android应用组件/" itemprop="url" rel="index">
+                    <span itemprop="name">Android应用组件</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/01/24/Android-Loader加载器/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/24/Android-Loader加载器/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>一种能使在Activity或Fragment中异步加载数据更加容易的方法。通过它能在Activity或Fragment的生命周期间顺畅的加载数据。</p>
+</blockquote>
+<p>加载器特性：</p>
+<ol>
+<li>支持Activity和Fragment。</li>
+<li>支持异步加载数据。</li>
+<li>支持监视数据源的变动并在内容改变时传送新的结果。</li>
+<li>支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。</li>
+</ol>
+<h2 id="API-摘要"><a href="#API-摘要" class="headerlink" title="API 摘要"></a>API 摘要</h2><p>在应用中使用加载器时，会涉及到多个类和接口。 下表汇总了这些类和接口：<br>| 类/接口 | 说明 |<br>| :——: | :—— |<br>| LoaderManager | 一种与 Activity 或 Fragment 相关联的的抽象类，用于管理一个或多个 Loader 实例。 这有助于应用管理与 Activity 或 Fragment 生命周期相关联的、运行时间较长的操作。它最常见的用法是与 CursorLoader 一起使用，但应用可自由写入其自己的加载器，用于加载其他类型的数据。 每个 Activity 或片段中只有一个 LoaderManager。但一个 LoaderManager 可以有多个加载器。|<br>| LoaderManager.LoaderCallbacks | 一种回调接口，用于客户端与 LoaderManager 进行交互。例如，您可使用 onCreateLoader() 回调方法创建新的加载器。|<br>| Loader | 一种执行异步数据加载的抽象类。这是加载器的基类。 您通常会使用 CursorLoader，但您也可以实现自己的子类。加载器处于活动状态时，应监控其数据源并在内容变化时传递新结果。|<br>| AsyncTaskLoader | 提供 AsyncTask 来执行工作的抽象加载器。|<br>| CursorLoader | AsyncTaskLoader 的子类，它将查询 ContentResolver 并返回一个 Cursor。此类采用标准方式为查询游标实现 Loader 协议。它是以 AsyncTaskLoader 为基础而构建，在后台线程中执行游标查询，以免阻塞应用的 UI。使用此加载器是从 ContentProvider 异步加载数据的最佳方式，而不用通过片段或 Activity 的 API 来执行托管查询。|</p>
+<h3 id="API-使用"><a href="#API-使用" class="headerlink" title="API 使用"></a>API 使用</h3><h4 id="启动加载器"><a href="#启动加载器" class="headerlink" title="启动加载器"></a>启动加载器</h4><p>LoaderManager 可在 Activity 或 Fragment 内管理一个或多个 Loader 实例。每个 Activity 或片段中只有一个 LoaderManager。<br>一般会在<code>Activity</code>的<code>onCreate()</code>方法或<code>Fragment</code>的<code>onActivityCreated()</code>方法内初始化 Loader。操作如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Prepare the loader. Either re-connect with an existing one, or start a new one.</span></div><div class="line">getLoaderManager().initLoader(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">this</span>);</div><div class="line"></div><div class="line"><span class="comment">// source code</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> &lt;D&gt; <span class="function">Loader&lt;D&gt; <span class="title">initLoader</span><span class="params">(<span class="keyword">int</span> id, Bundle args, LoaderManager.LoaderCallbacks&lt;D&gt; callback)</span></span>;</div></pre></td></tr></table></figure></p>
+<p>参数解析：</p>
+<ul>
+<li>id：给予这个<code>loader</code>唯一的标识，可以是任何值。标识是作用在一个特定的<code>LoaderManager</code>实例。</li>
+<li>args：在构建时提供给<code>loader</code>随意的数据支持。如果一个<code>loader</code>已经存在(新的将不被创建)，这些参数将被忽略和最后一个数据将被继续使用。</li>
+<li>callback：连接着<code>LoaderManager</code>的接口，<code>LoaderManager</code>将调用此实现来报告加载器事件。</li>
+</ul>
+<p>无论何种情况，给定的<code>LoaderManager.LoaderCallbacks</code>实现均与加载器相关联，且将在加载器状态变化时调用。如果在调用时，调用程序处于启动状态，且请求的加载器已存在并生成了数据，则系统将立即调用<code>onLoadFinished()</code>(在<code>initLoader()</code>期间)，因此您必须为此做好准备。</p>
+<h4 id="重启加载器"><a href="#重启加载器" class="headerlink" title="重启加载器"></a>重启加载器</h4><p>当一个<code>loader</code>已经存在，它将使用含有指定ID的现有加载器。但有些情况，要舍弃这些旧数据并重新开始。要舍弃旧数据，可以使用 restartLoader()。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">getLoaderManager().restartLoader(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">this</span>);</div><div class="line"></div><div class="line"><span class="comment">// source code</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> &lt;D&gt; <span class="function">Loader&lt;D&gt; <span class="title">restartLoader</span><span class="params">(<span class="keyword">int</span> id, Bundle args, LoaderManager.LoaderCallbacks&lt;D&gt; callback)</span></span>;</div></pre></td></tr></table></figure></p>
+<p>参数如<code>initLoader</code>一样。</p>
+<h3 id="LoaderManager-回调"><a href="#LoaderManager-回调" class="headerlink" title="LoaderManager 回调"></a>LoaderManager 回调</h3><blockquote>
+<p><code>LoaderManager.LoaderCallbacks</code>是一个支持客户端与<code>LoaderManager</code>交互的回调接口。</p>
+</blockquote>
+<p>加载器(特别是 CursorLoader)在停止运行后，仍需保留其数据。这样，应用即可保留<code>Activity</code>或片段的<code>onStop()</code>和<code>onStart()</code>方法中的数据。当用户返回应用时，无需等待它重新加载这些数据。可使用<code>LoaderManager.LoaderCallbacks</code>方法了解何时创建新加载器，并告知应用何时停止使用加载器的数据。</p>
+<p>回调包括以下方法：</p>
+<ul>
+<li>onCreateLoader()：针对指定的 ID 进行实例化并返回新的 Loader。</li>
+<li>onLoadFinished()：将在先前创建的加载器完成加载时调用。</li>
+<li>onLoaderReset()：将在先前创建的加载器重置且其数据因此不可用时调用。</li>
+</ul>
+<h4 id="onCreateLoader"><a href="#onCreateLoader" class="headerlink" title="onCreateLoader:"></a>onCreateLoader:</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Instantiate and return a new Loader for the given ID.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> id The ID whose loader is to be created.</div><div class="line"> * <span class="doctag">@param</span> args Any arguments supplied by the caller.</div><div class="line"> * <span class="doctag">@return</span> Return a new Loader instance that is ready to start loading.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Loader&lt;D&gt; <span class="title">onCreateLoader</span><span class="params">(<span class="keyword">int</span> id, Bundle args)</span></span></div></pre></td></tr></table></figure>
+<h4 id="onLoadFinished"><a href="#onLoadFinished" class="headerlink" title="onLoadFinished:"></a>onLoadFinished:</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Called when a previously created loader has finished its load.  Note</div><div class="line"> * that normally an application is not allowed to commit fragment</div><div class="line"> * transactions while in this call, since it can happen after an</div><div class="line"> * activity's state is saved.  See &#123;<span class="doctag">@link</span> FragmentManager#beginTransaction()</div><div class="line"> * FragmentManager.openTransaction()&#125; for further discussion on this.</div><div class="line"> *</div><div class="line"> * This function is guaranteed to be called prior to the release of</div><div class="line"> * the last data that was supplied for this Loader.  At this point</div><div class="line"> * you should remove all use of the old data (since it will be released</div><div class="line"> * soon), but should not do your own release of the data since its Loader</div><div class="line"> * owns it and will take care of that.  The Loader will take care of</div><div class="line"> * management of its data so you don't have to.  In particular:</div><div class="line"> *</div><div class="line"> * The Loader will monitor for changes to the data, and report</div><div class="line"> * them to you through new calls here.  You should not monitor the</div><div class="line"> * data yourself.  For example, if the data is a &#123;<span class="doctag">@link</span> android.database.Cursor&#125;</div><div class="line"> * and you place it in a &#123;<span class="doctag">@link</span> android.widget.CursorAdapter&#125;, use</div><div class="line"> * the &#123;<span class="doctag">@link</span> android.widget.CursorAdapter#CursorAdapter(android.content.Context,</div><div class="line"> * android.database.Cursor, int)&#125; constructor without passing</div><div class="line"> * in either &#123;<span class="doctag">@link</span> android.widget.CursorAdapter#FLAG_AUTO_REQUERY&#125;</div><div class="line"> * or &#123;<span class="doctag">@link</span> android.widget.CursorAdapter#FLAG_REGISTER_CONTENT_OBSERVER&#125;</div><div class="line"> * (that is, use 0 for the flags argument).  This prevents the CursorAdapter</div><div class="line"> * from doing its own observing of the Cursor, which is not needed since</div><div class="line"> * when a change happens you will get a new Cursor throw another call</div><div class="line"> * here.</div><div class="line"> * The Loader will release the data once it knows the application</div><div class="line"> * is no longer using it.  For example, if the data is</div><div class="line"> * a &#123;<span class="doctag">@link</span> android.database.Cursor&#125; from a &#123;<span class="doctag">@link</span> android.content.CursorLoader&#125;,</div><div class="line"> * you should not call close() on it yourself.  If the Cursor is being placed in a</div><div class="line"> * &#123;<span class="doctag">@link</span> android.widget.CursorAdapter&#125;, you should use the</div><div class="line"> * &#123;<span class="doctag">@link</span> android.widget.CursorAdapter#swapCursor(android.database.Cursor)&#125;</div><div class="line"> * method so that the old Cursor is not closed.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> loader The Loader that has finished.</div><div class="line"> * <span class="doctag">@param</span> data The data generated by the Loader.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadFinished</span><span class="params">(Loader&lt;D&gt; loader, D data)</span></span>;</div></pre></td></tr></table></figure>
+<h4 id="onLoaderReset"><a href="#onLoaderReset" class="headerlink" title="onLoaderReset:"></a>onLoaderReset:</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Called when a previously created loader is being reset, and thus</div><div class="line"> * making its data unavailable.  The application should at this point</div><div class="line"> * remove any references it has to the Loader's data.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> loader The Loader that is being reset.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoaderReset</span><span class="params">(Loader&lt;D&gt; loader)</span></span>;</div></pre></td></tr></table></figure>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/应用组件/" rel="tag">#应用组件</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/15/设计模式-观察者模式/" rel="next" title="设计模式-观察者模式">
+                <i class="fa fa-chevron-left"></i> 设计模式-观察者模式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/24/Android-Loader加载器/"
+           data-title="Android-Loader加载器" data-url="http://yoursite.com/2017/01/24/Android-Loader加载器/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">35</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#API-摘要"><span class="nav-number">3.</span> <span class="nav-text">API 摘要</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#API-使用"><span class="nav-number">3.1.</span> <span class="nav-text">API 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#启动加载器"><span class="nav-number">3.1.1.</span> <span class="nav-text">启动加载器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#重启加载器"><span class="nav-number">3.1.2.</span> <span class="nav-text">重启加载器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LoaderManager-回调"><span class="nav-number">3.2.</span> <span class="nav-text">LoaderManager 回调</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#onCreateLoader"><span class="nav-number">3.2.1.</span> <span class="nav-text">onCreateLoader:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onLoadFinished"><span class="nav-number">3.2.2.</span> <span class="nav-text">onLoadFinished:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onLoaderReset"><span class="nav-number">3.2.3.</span> <span class="nav-text">onLoaderReset:</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
