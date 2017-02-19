@@ -1,0 +1,720 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,界面基础,控件," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本章将从深入的使用开始，介绍 RecyclerView 的进一步使用，同时从不同角度开始解析 RecyclerView。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-RecyclerView (二)">
+<meta property="og:url" content="http://yoursite.com/2017/02/17/Android-RecyclerView-二/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="本章将从深入的使用开始，介绍 RecyclerView 的进一步使用，同时从不同角度开始解析 RecyclerView。">
+<meta property="og:updated_time" content="2017-02-19T10:17:11.960Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-RecyclerView (二)">
+<meta name="twitter:description" content="本章将从深入的使用开始，介绍 RecyclerView 的进一步使用，同时从不同角度开始解析 RecyclerView。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/02/17/Android-RecyclerView-二/"/>
+
+  <title> Android-RecyclerView (二) | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-RecyclerView (二)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-17T17:45:06+08:00" content="2017-02-17">
+              2017-02-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-界面基础/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-界面基础</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/17/Android-RecyclerView-二/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/17/Android-RecyclerView-二/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>A flexible view for providing a limited window into a large data set.</p>
+</blockquote>
+<p>前面一章我们已经理解了RecyclerView的特性和简单的使用。总体来说可以上手写代码了。这章开始我们将会更加深入的学习RecyclerView。</p>
+<h2 id="ItemTouchHelper"><a href="#ItemTouchHelper" class="headerlink" title="ItemTouchHelper"></a>ItemTouchHelper</h2><blockquote>
+<p>This is a utility class to add swipe to dismiss and drag &amp; drop support to RecyclerView. 翻译：这是一个工具类来给予 RecyclerView 添加拖动排序与滑动删除的支持。</p>
+</blockquote>
+<h3 id="简单使用"><a href="#简单使用" class="headerlink" title="简单使用"></a>简单使用</h3><p>首先得要创建一个 ItemTouchHelper.Callback 的子类。这个接口主要是用于监听 “move” 和 “swipe” 事件。还有控制view被选中的状态以及重写默认动画的功能。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TagTouchHelperCallback</span> <span class="keyword">extends</span> <span class="title">ItemTouchHelper</span>.<span class="title">Callback</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isLongPressDragEnabled</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> <span class="keyword">true</span>;&#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isItemViewSwipeEnabled</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> <span class="keyword">false</span>;&#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMovementFlags</span><span class="params">(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN |</div><div class="line">                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;</div><div class="line">        <span class="keyword">int</span> swipeFlags = <span class="number">0</span>;</div><div class="line">        <span class="keyword">return</span> makeMovementFlags(dragFlags, swipeFlags);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onMove</span><span class="params">(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,</span></span></div><div class="line">                          RecyclerView.ViewHolder target) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSwiped</span><span class="params">(RecyclerView.ViewHolder viewHolder, <span class="keyword">int</span> direction)</span> </span>&#123;&#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clearView</span><span class="params">(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (viewHolder <span class="keyword">instanceof</span> ITodoTagTouchHelperViewHolder) &#123;</div><div class="line">            ITagTouchHelperViewHolder itemViewHolder = (ITagTouchHelperViewHolder) viewHolder;</div><div class="line">            itemViewHolder.onItemFinish();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">super</span>.clearView(recyclerView, viewHolder);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>isLongPressDragEnabled()</strong>: Returns whether ItemTouchHelper should start a drag and drop operation if an item is long pressed.</p>
+<p><strong>isItemViewSwipeEnabled()</strong>: Returns whether ItemTouchHelper should start a swipe operation if a pointer is swiped over the View.</p>
+<p><strong>getMovementFlags(…)</strong>: Should return a composite flag which defines the enabled move directions in each state(idle, swiping, dragging). 这函数可以指定支持的拖动和滑动的方向。在设定完支持的方向后通过makeMovementFlags(…)函数来构造返回的flag。</p>
+<p><strong>onMove(…)</strong>: Called when ItemTouchHelper wants to move the dragged item from its old position to the new position.当拖动项目从一个旧的地方到新的地方时被调用。</p>
+<p><strong>onSwiped(…)</strong>: Called when a ViewHolder is swiped by the user.当项目被滑动时调用。</p>
+<p>onMove()和onSwiped()是用于通知底层数据的更新。用法主要是通过接口传给外部去调用。<br>在上面<code>class TagTouchHelperCallback</code>类中传入我们的接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ItemTouchHelperAdapter</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onItemMove</span><span class="params">(<span class="keyword">int</span> fromPosition, <span class="keyword">int</span> toPosition)</span></span>;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onItemDismiss</span><span class="params">(<span class="keyword">int</span> position)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>通过继承接口来实现我们的方法功能：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RecyclerListAdapter</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">Adapter</span>&lt;<span class="title">ItemViewHolder</span>&gt; </span></div><div class="line">        <span class="keyword">implements</span> <span class="title">ItemTouchHelperAdapter</span> &#123;</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onItemDismiss</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">    mItems.remove(position);</div><div class="line">    notifyItemRemoved(position);</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onItemMove</span><span class="params">(<span class="keyword">int</span> from, <span class="keyword">int</span> to)</span> </span>&#123;</div><div class="line">    Collections.swap(mItems, from, to);</div><div class="line">    notifyItemMoved(from, to);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>通过调用<code>notifyItemRemoved()</code>和<code>notifyItemMoved()</code>函数 告知Adapter发生了改变。</p>
+<p>最后再将创建好的Helper绑定给我们的RecyclerView：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ItemTouchHelper.Callback callback = <span class="keyword">new</span> TagTouchHelperCallback(mTagControlAdapter);</div><div class="line">ItemTouchHelper itemTouchHelper = <span class="keyword">new</span> ItemTouchHelper(callback);</div><div class="line">itemTouchHelper.attachToRecyclerView(recyclerView);</div></pre></td></tr></table></figure></p>
+<h3 id="设定拖动事件"><a href="#设定拖动事件" class="headerlink" title="设定拖动事件"></a>设定拖动事件</h3><blockquote>
+<p>有时候我们需要点击某个固定的控件才开始拖动而不是马上就拖动，这样我们需要学习设定一个拖动的事件。</p>
+</blockquote>
+<p><strong>首先</strong>我们需要一个监听类：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ITagItemDragListener</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onStartDrag</span><span class="params">(RecyclerView.ViewHolder viewHolder)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里最关键的是参数<code>viewHolder</code>，它要传递接下来移动的控件到底是哪一个。</p>
+<p><strong>然后</strong>我们在<code>Adapter</code>的拖动控件里增加监听按键回调并且在你想要的时机调用<code>onStartDrag</code>事件：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">holder.rlItem.setOnTouchListener(<span class="keyword">new</span> View.OnTouchListener() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouch</span><span class="params">(View v, MotionEvent event)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (iTagItemDragListener != <span class="keyword">null</span> &amp;&amp; position != <span class="number">0</span> &amp;&amp;</div><div class="line">                MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) &#123;</div><div class="line">            iTagItemDragListener.onStartDrag(holder);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p><strong>最后</strong>就是调用<code>ItemTouchHelper</code>通知拖动开始：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStartDrag</span><span class="params">(RecyclerView.ViewHolder viewHolder)</span> </span>&#123;</div><div class="line">    itemTouchHelper.startDrag(viewHolder);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="拖动动画"><a href="#拖动动画" class="headerlink" title="拖动动画"></a>拖动动画</h3><blockquote>
+<p>我们有时候需要在拖动动画或者停止动画上做些自定义，这时候主要需要的就是得知事件监听了。</p>
+</blockquote>
+<p>在继承<code>ItemTouchHelper.Callback</code>后我们重载两个函数：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Called when the ViewHolder swiped or dragged by the ItemTouchHelper is changed.</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSelectedChanged</span><span class="params">(ViewHolder viewHolder, <span class="keyword">int</span> actionState)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Called by the ItemTouchHelper when the user interaction with an element is over and it also completed its animation.</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clearView</span><span class="params">(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)</span></span>;</div></pre></td></tr></table></figure></p>
+<p>onSelectedChanged：当item选中事件有更改的时候会发送通知。<br>clearView：当拖动或者滑动动画结束时进行通知。</p>
+<p>通过这两个函数大家可以自定义拖动或者滑动的动画效果了。</p>
+<h2 id="LayoutManager原理"><a href="#LayoutManager原理" class="headerlink" title="LayoutManager原理"></a>LayoutManager原理</h2><blockquote>
+<p>LayoutManager主要作用是，测量和摆放RecyclerView中itemView，以及当itemView对用户不可见时循环复用处理。 通过设置Layout Manager的属性，可以实现水平滚动、垂直滚动、方块表格等列表形式。其内部类Properties包含了所需要的大部分属性。</p>
+</blockquote>
+<p>我们知道<code>RecyclerView</code>的本质就是是一个<code>ViewGroup</code>，既然是一个<code>View</code>当然就包含了<code>onMeasure()</code>、<code>onLayout()</code>、<code>onDraw()</code> 这三个方法。在<code>RecyclerView</code>中，<code>onMeasure()</code>和<code>onLayout()</code>的工作统一交给了<code>LayoutManager</code>来完成，来达到更改<code>LayoutManager</code>就能够实现多种不同的效果。</p>
+<h3 id="onMeasure"><a href="#onMeasure" class="headerlink" title="onMeasure"></a>onMeasure</h3><p>在<code>RecyclerView</code>中onMeasure()的调用可以看到：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthSpec, <span class="keyword">int</span> heightSpec)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (mLayout.mAutoMeasure) &#123;</div><div class="line">        <span class="keyword">final</span> <span class="keyword">int</span> widthMode = MeasureSpec.getMode(widthSpec);</div><div class="line">        <span class="keyword">final</span> <span class="keyword">int</span> heightMode = MeasureSpec.getMode(heightSpec);</div><div class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> skipMeasure = widthMode == MeasureSpec.EXACTLY</div><div class="line">                &amp;&amp; heightMode == MeasureSpec.EXACTLY;</div><div class="line">        mLayout.onMeasure(mRecycler, mState, widthSpec, heightSpec);</div><div class="line">        </div><div class="line">        <span class="comment">// now we can get the width and height from the children.</span></div><div class="line">        mLayout.setMeasuredDimensionFromChildren(widthSpec, heightSpec);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        mLayout.onMeasure(mRecycler, mState, widthSpec, heightSpec);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中<code>mLayout</code>就是我们的<code>LayoutManager</code>。</p>
+<p>但是在LayoutManager里面却又看到的是调回RecyclerView的<code>defaultOnMeasure(...)</code>函数：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">defaultOnMeasure</span><span class="params">(<span class="keyword">int</span> widthSpec, <span class="keyword">int</span> heightSpec)</span> </span>&#123;</div><div class="line">    <span class="comment">// calling LayoutManager here is not pretty but that API is already public and it is better</span></div><div class="line">    <span class="comment">// than creating another method since this is internal.</span></div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> width = LayoutManager.chooseSize(widthSpec,</div><div class="line">            getPaddingLeft() + getPaddingRight(),</div><div class="line">            ViewCompat.getMinimumWidth(<span class="keyword">this</span>));</div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> height = LayoutManager.chooseSize(heightSpec,</div><div class="line">            getPaddingTop() + getPaddingBottom(),</div><div class="line">            ViewCompat.getMinimumHeight(<span class="keyword">this</span>));</div><div class="line"></div><div class="line">    setMeasuredDimension(width, height);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>里面的注释真是呵呵了。<br><code>chooseSize()</code>方法是直接根据测量值和模式返回了最适大小。<br>接下来就是调用各个子控件的onMeasure：<br><code>setMeasuredDimension()</code>：This method must be called by onMeasure(int, int) to store the measured width and measured height. Failing to do so will trigger an exception at measurement time.</p>
+<h3 id="onLayout"><a href="#onLayout" class="headerlink" title="onLayout"></a>onLayout</h3><p>在<code>RecyclerView</code>中onLayout()的调用可以看到：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span> </span>&#123;</div><div class="line">    dispatchLayout();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatchLayout</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (mState.mLayoutStep == State.STEP_START) &#123;</div><div class="line">        dispatchLayoutStep1();</div><div class="line">        dispatchLayoutStep2();</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mAdapterHelper.hasUpdates() || mLayout.getWidth() != getWidth() ||</div><div class="line">            mLayout.getHeight() != getHeight()) &#123;</div><div class="line">        <span class="comment">// First 2 steps are done in onMeasure but looks like we have to run again due to</span></div><div class="line">        <span class="comment">// changed size.</span></div><div class="line">        dispatchLayoutStep2();</div><div class="line">    &#125;</div><div class="line">    dispatchLayoutStep3();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dispatchLayoutStep2</span><span class="params">()</span> </span>&#123;</div><div class="line">    eatRequestLayout();</div><div class="line">    onEnterLayoutOrScroll();</div><div class="line">    </div><div class="line">    <span class="comment">// Step 2: Run layout</span></div><div class="line">    mLayout.onLayoutChildren(mRecycler, mState);</div><div class="line"></div><div class="line">    onExitLayoutOrScroll();</div><div class="line">    resumeRequestLayout(<span class="keyword">false</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在<code>onLayout</code>函数里我们看到跟着调用链一直下去最后还是到了<code>dispatchLayoutStep2()</code>这个关键函数，里面最值得注意的就是<code>onLayoutChildren(...)</code>这个函数。同样它是在我们定义的LayoutManager里面被定义的。</p>
+<p>这里我们拿<code>LinearLayoutManager.onLayoutChildren</code>为例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLayoutChildren</span><span class="params">(RecyclerView.Recycler recycler, RecyclerView.State state)</span> </span>&#123;</div><div class="line">    <span class="comment">// layout algorithm:</span></div><div class="line">    <span class="comment">// 1) by checking children and other variables, find an anchor coordinate and an anchor item position.</span></div><div class="line">    <span class="comment">// 2) fill towards start, stacking from bottom</span></div><div class="line">    <span class="comment">// 3) fill towards end, stacking from top</span></div><div class="line">    <span class="comment">// 4) scroll to fulfill requirements like stack from bottom.</span></div><div class="line">    <span class="comment">// create layout state</span></div><div class="line">    </div><div class="line">    fill(recycler, mLayoutState, state, <span class="keyword">false</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>里面函数很长，最核心的算法在前面注释里已经解释了，这里不做阐述。核心的函数fill(…)：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Fills the given layout, defined by the layoutState. This is fairly independent from the rest of the LinearLayoutManager and with little change, can be made publicly available as a helper class.</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">fill</span><span class="params">(RecyclerView.Recycler recycler, LayoutState layoutState,</span></span></div><div class="line">        RecyclerView.State state, <span class="keyword">boolean</span> stopOnFocusable) &#123;</div><div class="line">    <span class="keyword">while</span> ((layoutState.mInfinite || remainingSpace &gt; <span class="number">0</span>) &amp;&amp; layoutState.hasMore(state)) &#123;</div><div class="line">        layoutChunk(recycler, state, layoutState, layoutChunkResult);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (layoutState.mScrollingOffset != LayoutState.SCROLLING_OFFSET_NaN) &#123;</div><div class="line">            layoutState.mScrollingOffset += layoutChunkResult.mConsumed;</div><div class="line">            <span class="keyword">if</span> (layoutState.mAvailable &lt; <span class="number">0</span>) &#123;</div><div class="line">                layoutState.mScrollingOffset += layoutState.mAvailable;</div><div class="line">            &#125;</div><div class="line">            recycleByLayoutState(recycler, layoutState);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">layoutChunk</span><span class="params">(RecyclerView.Recycler recycler, RecyclerView.State state,</span></span></div><div class="line">            LayoutState layoutState, LayoutChunkResult result) &#123;</div><div class="line">    addView(view);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>fill(...)</code>：作用就是根据当前状态决定是应该从缓存池中取<code>itemview</code>填充 还是应该回收当前的<code>itemview</code>。<br><code>layoutChunk()</code>：负责从缓存池 recycler 中取 itemview，并调用<code>View.addView()</code>将获取到的 ItemView 添加到 RecyclerView 中去，并调用 itemview 自身的 layout 方法去布局 item 位置。</p>
+<h3 id="onDraw"><a href="#onDraw" class="headerlink" title="onDraw"></a>onDraw</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDraw</span><span class="params">(Canvas c)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onDraw(c);</div><div class="line"></div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> count = mItemDecorations.size();</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</div><div class="line">        mItemDecorations.get(i).onDraw(c, <span class="keyword">this</span>, mState);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这里除了调用系统的onDraw外还调用了mItemDecorations.get(i).onDraw()的draw，它是用来画分割线的。</p>
+<h2 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h2><blockquote>
+<p>RecyclerView 自带了一套很完整的缓存机制，用于复用item的便利。</p>
+</blockquote>
+<p>我们首先要关注的是一个叫<code>Recycler</code>的内部类：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// A Recycler is responsible for managing scrapped or detached item views for reuse.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Recycler</span> </span>&#123;</div><div class="line">	<span class="comment">// 未与RecyclerView分离的ViewHolder列表 。</span></div><div class="line">    <span class="keyword">final</span> ArrayList&lt;ViewHolder&gt; mAttachedScrap = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="comment">// 与RecyclerView分离的ViewHolder列表。</span></div><div class="line">    ArrayList&lt;ViewHolder&gt; mChangedScrap = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">    <span class="comment">// ViewHolder缓存列表。</span></div><div class="line">    <span class="keyword">final</span> ArrayList&lt;ViewHolder&gt; mCachedViews = <span class="keyword">new</span> ArrayList&lt;ViewHolder&gt;();</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;ViewHolder&gt;</div><div class="line">            mUnmodifiableAttachedScrap = Collections.unmodifiableList(mAttachedScrap);</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mRequestedCacheMax = DEFAULT_CACHE_SIZE;</div><div class="line">    <span class="keyword">int</span> mViewCacheMax = DEFAULT_CACHE_SIZE;</div><div class="line"></div><div class="line">    <span class="comment">// 提供复用ViewHolder池。</span></div><div class="line">    RecycledViewPool mRecyclerPool;</div><div class="line"></div><div class="line">    <span class="comment">// 开发者控制的ViewHolder缓存。</span></div><div class="line">    <span class="keyword">private</span> ViewCacheExtension mViewCacheExtension;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里用了三级缓存来创建了一个大型的缓存器。</p>
+<h3 id="第一级缓存"><a href="#第一级缓存" class="headerlink" title="第一级缓存"></a>第一级缓存</h3><p>当仍然依赖于RecyclerView的item(例如滑出视图但没被移除)在被标记移除的时候会被添加到<code>mAttachedScrap</code>中，在不再依赖是就会添加进<code>mCachedViews</code>中。</p>
+<h3 id="第二级缓存"><a href="#第二级缓存" class="headerlink" title="第二级缓存"></a>第二级缓存</h3><p><code>ViewCacheExtension</code>：当RecyclerView从第一级缓存中找不到时就会进入第二级缓存找，但这个<code>ViewCacheExtension</code>是个抽象类，主要方法需要开发者自己创建。</p>
+<h3 id="第三级缓存"><a href="#第三级缓存" class="headerlink" title="第三级缓存"></a>第三级缓存</h3><p><code>mRecyclerPool</code>：RecyclerView最核心的缓存池。RecyclerView 缓存的是 ViewHolder。而 ViewHolder 里面包含了一个 View 这也就是为什么在写 Adapter 的时候 必须继承一个固定的 ViewHolder 的原因。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// RecycledViewPool lets you share Views between multiple RecyclerViews.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RecycledViewPool</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_MAX_SCRAP = <span class="number">5</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Tracks both pooled holders, as well as create/bind timing metadata for the given type.</div><div class="line">     * Note that this tracks running averages of create/bind time across all RecyclerViews (and, indirectly, Adapters) that use this pool.</div><div class="line">     * 1) This enables us to track average create and bind times across multiple adapters. Even though create (and especially bind) may behave differently for different Adapter subclasses, sharing the pool is a strong signal that they'll perform similarly, per type.</div><div class="line">     * 2) If &#123;<span class="doctag">@link</span> #willBindInTime(int, long, long)&#125; returns false for one view, it will return false for all other views of its type for the same deadline. This prevents items constructed by &#123;<span class="doctag">@link</span> GapWorker&#125; prefetch from being bound to a lower priority prefetch.</div><div class="line">     */</div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ScrapData</span> </span>&#123;</div><div class="line">        ArrayList&lt;ViewHolder&gt; mScrapHeap = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">        <span class="keyword">int</span> mMaxScrap = DEFAULT_MAX_SCRAP;</div><div class="line">        <span class="keyword">long</span> mCreateRunningAverageNs = <span class="number">0</span>;</div><div class="line">        <span class="keyword">long</span> mBindRunningAverageNs = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    SparseArray&lt;ScrapData&gt; mScrap = <span class="keyword">new</span> SparseArray&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mAttachCount = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clear</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mScrap.size(); i++) &#123;</div><div class="line">            ScrapData data = mScrap.valueAt(i);</div><div class="line">            data.mScrapHeap.clear();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMaxRecycledViews</span><span class="params">(<span class="keyword">int</span> viewType, <span class="keyword">int</span> max)</span> </span>&#123;</div><div class="line">        ScrapData scrapData = getScrapDataForType(viewType);</div><div class="line">        scrapData.mMaxScrap = max;</div><div class="line">        <span class="keyword">final</span> ArrayList&lt;ViewHolder&gt; scrapHeap = scrapData.mScrapHeap;</div><div class="line">        <span class="keyword">if</span> (scrapHeap != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">while</span> (scrapHeap.size() &gt; max) &#123;</div><div class="line">                scrapHeap.remove(scrapHeap.size() - <span class="number">1</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// Returns the current number of Views held by the RecycledViewPool of the given view type.</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getRecycledViewCount</span><span class="params">(<span class="keyword">int</span> viewType)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> getScrapDataForType(viewType).mScrapHeap.size();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> ViewHolder <span class="title">getRecycledView</span><span class="params">(<span class="keyword">int</span> viewType)</span> </span>&#123;</div><div class="line">        <span class="keyword">final</span> ScrapData scrapData = mScrap.get(viewType);</div><div class="line">        <span class="keyword">if</span> (scrapData != <span class="keyword">null</span> &amp;&amp; !scrapData.mScrapHeap.isEmpty()) &#123;</div><div class="line">            <span class="keyword">final</span> ArrayList&lt;ViewHolder&gt; scrapHeap = scrapData.mScrapHeap;</div><div class="line">            <span class="keyword">return</span> scrapHeap.remove(scrapHeap.size() - <span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">int</span> <span class="title">size</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> count = <span class="number">0</span>;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mScrap.size(); i ++) &#123;</div><div class="line">            ArrayList&lt;ViewHolder&gt; viewHolders = mScrap.valueAt(i).mScrapHeap;</div><div class="line">            <span class="keyword">if</span> (viewHolders != <span class="keyword">null</span>) &#123;</div><div class="line">                count += viewHolders.size();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> count;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putRecycledView</span><span class="params">(ViewHolder scrap)</span> </span>&#123;</div><div class="line">        <span class="keyword">final</span> <span class="keyword">int</span> viewType = scrap.getItemViewType();</div><div class="line">        <span class="keyword">final</span> ArrayList scrapHeap = getScrapDataForType(viewType).mScrapHeap;</div><div class="line">        <span class="keyword">if</span> (mScrap.get(viewType).mMaxScrap &lt;= scrapHeap.size()) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (DEBUG &amp;&amp; scrapHeap.contains(scrap)) &#123;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"this scrap item already exists"</span>);</div><div class="line">        &#125;</div><div class="line">        scrap.resetInternal();</div><div class="line">        scrapHeap.add(scrap);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">long</span> <span class="title">runningAverage</span><span class="params">(<span class="keyword">long</span> oldAverage, <span class="keyword">long</span> newValue)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (oldAverage == <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">return</span> newValue;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> (oldAverage / <span class="number">4</span> * <span class="number">3</span>) + (newValue / <span class="number">4</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">factorInCreateTime</span><span class="params">(<span class="keyword">int</span> viewType, <span class="keyword">long</span> createTimeNs)</span> </span>&#123;</div><div class="line">        ScrapData scrapData = getScrapDataForType(viewType);</div><div class="line">        scrapData.mCreateRunningAverageNs = runningAverage(</div><div class="line">                scrapData.mCreateRunningAverageNs, createTimeNs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">factorInBindTime</span><span class="params">(<span class="keyword">int</span> viewType, <span class="keyword">long</span> bindTimeNs)</span> </span>&#123;</div><div class="line">        ScrapData scrapData = getScrapDataForType(viewType);</div><div class="line">        scrapData.mBindRunningAverageNs = runningAverage(</div><div class="line">                scrapData.mBindRunningAverageNs, bindTimeNs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">willCreateInTime</span><span class="params">(<span class="keyword">int</span> viewType, <span class="keyword">long</span> approxCurrentNs, <span class="keyword">long</span> deadlineNs)</span> </span>&#123;</div><div class="line">        <span class="keyword">long</span> expectedDurationNs = getScrapDataForType(viewType).mCreateRunningAverageNs;</div><div class="line">        <span class="keyword">return</span> expectedDurationNs == <span class="number">0</span> || (approxCurrentNs + expectedDurationNs &lt; deadlineNs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">willBindInTime</span><span class="params">(<span class="keyword">int</span> viewType, <span class="keyword">long</span> approxCurrentNs, <span class="keyword">long</span> deadlineNs)</span> </span>&#123;</div><div class="line">        <span class="keyword">long</span> expectedDurationNs = getScrapDataForType(viewType).mBindRunningAverageNs;</div><div class="line">        <span class="keyword">return</span> expectedDurationNs == <span class="number">0</span> || (approxCurrentNs + expectedDurationNs &lt; deadlineNs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">attach</span><span class="params">(Adapter adapter)</span> </span>&#123;</div><div class="line">        mAttachCount++;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">detach</span><span class="params">()</span> </span>&#123;</div><div class="line">        mAttachCount--;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Detaches the old adapter and attaches the new one.</div><div class="line">     * </div><div class="line">     * RecycledViewPool will clear its cache if it has only one adapter attached and the new adapter uses a different ViewHolder than the oldAdapter.</div><div class="line">     *</div><div class="line">     * <span class="doctag">@param</span> oldAdapter The previous adapter instance. Will be detached.</div><div class="line">     * <span class="doctag">@param</span> newAdapter The new adapter instance. Will be attached.</div><div class="line">     * <span class="doctag">@param</span> compatibleWithPrevious True if both oldAdapter and newAdapter are using the same</div><div class="line">     *                               ViewHolder and view types.</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onAdapterChanged</span><span class="params">(Adapter oldAdapter, Adapter newAdapter,</span></span></div><div class="line">            <span class="keyword">boolean</span> compatibleWithPrevious) &#123;</div><div class="line">        <span class="keyword">if</span> (oldAdapter != <span class="keyword">null</span>) &#123;</div><div class="line">            detach();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (!compatibleWithPrevious &amp;&amp; mAttachCount == <span class="number">0</span>) &#123;</div><div class="line">            clear();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (newAdapter != <span class="keyword">null</span>) &#123;</div><div class="line">            attach(newAdapter);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> ScrapData <span class="title">getScrapDataForType</span><span class="params">(<span class="keyword">int</span> viewType)</span> </span>&#123;</div><div class="line">        ScrapData scrapData = mScrap.get(viewType);</div><div class="line">        <span class="keyword">if</span> (scrapData == <span class="keyword">null</span>) &#123;</div><div class="line">            scrapData = <span class="keyword">new</span> ScrapData();</div><div class="line">            mScrap.put(viewType, scrapData);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> scrapData;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>作为一个比较值得看的缓存机制，直接贴代码，当作范例来读吧，不做过多解释。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过粗浅的分析了源码，这里学习的是怎么去思考一个view布局，还学到了比较优秀的缓存机制。 RecyclerView 固然比较优秀，但我们也可以模仿着为未来我们可能会写到自己的view做基础。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/界面基础/" rel="tag">#界面基础</a>
+          
+            <a href="/tags/控件/" rel="tag">#控件</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/14/Android-RecyclerView-一/" rel="next" title="Android-RecyclerView (一)">
+                <i class="fa fa-chevron-left"></i> Android-RecyclerView (一)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/02/17/Android-RecyclerView-二/"
+           data-title="Android-RecyclerView (二)" data-url="http://yoursite.com/2017/02/17/Android-RecyclerView-二/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ItemTouchHelper"><span class="nav-number">3.</span> <span class="nav-text">ItemTouchHelper</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单使用"><span class="nav-number">3.1.</span> <span class="nav-text">简单使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设定拖动事件"><span class="nav-number">3.2.</span> <span class="nav-text">设定拖动事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拖动动画"><span class="nav-number">3.3.</span> <span class="nav-text">拖动动画</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LayoutManager原理"><span class="nav-number">4.</span> <span class="nav-text">LayoutManager原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#onMeasure"><span class="nav-number">4.1.</span> <span class="nav-text">onMeasure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onLayout"><span class="nav-number">4.2.</span> <span class="nav-text">onLayout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onDraw"><span class="nav-number">4.3.</span> <span class="nav-text">onDraw</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存机制"><span class="nav-number">5.</span> <span class="nav-text">缓存机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一级缓存"><span class="nav-number">5.1.</span> <span class="nav-text">第一级缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二级缓存"><span class="nav-number">5.2.</span> <span class="nav-text">第二级缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第三级缓存"><span class="nav-number">5.3.</span> <span class="nav-text">第三级缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
