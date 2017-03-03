@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android,Android_基础知识,Broadcast," />
+  <meta name="keywords" content="Android,Broadcast,Android_基础知识," />
 
 
 
@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/09/18/Android-浅析-Broadcast-一-使用/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
 <meta property="og:description" content="Android Broadcast 是 android 四大组件之一，为应用程序提供在组件之间传播数据（Intent）的一种机制。通过Broadcast发送者和接收者来实现信息传播并且不需要知道对方的存在。用于接收系统或应用发出的广播消息。应用可以通过广播实现跨进程通信。">
-<meta property="og:updated_time" content="2016-09-22T08:02:09.801Z">
+<meta property="og:updated_time" content="2017-03-03T03:13:18.781Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 浅析 Broadcast (一) 使用">
 <meta name="twitter:description" content="Android Broadcast 是 android 四大组件之一，为应用程序提供在组件之间传播数据（Intent）的一种机制。通过Broadcast发送者和接收者来实现信息传播并且不需要知道对方的存在。用于接收系统或应用发出的广播消息。应用可以通过广播实现跨进程通信。">
@@ -284,6 +284,25 @@
           </span>
 
           
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-应用组件/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-应用组件</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
 
           
             
@@ -324,6 +343,68 @@
 <h3 id="Step-2-注册广播接收器"><a href="#Step-2-注册广播接收器" class="headerlink" title="Step 2. 注册广播接收器"></a>Step 2. 注册广播接收器</h3><h4 id="1-静态注册"><a href="#1-静态注册" class="headerlink" title="1.静态注册"></a>1.静态注册</h4><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;application &gt;</div><div class="line">    &lt;receiver android:name=".MyBroadcastReceiver"&gt;</div><div class="line">        &lt;intent-filter&gt;</div><div class="line">            &lt;action android:name="com.unknow.jason.broadcasttest.MY_BROADCAST"/&gt;</div><div class="line">        &lt;/intent-filter&gt;</div><div class="line">    &lt;/receiver&gt;</div><div class="line">&lt;/application&gt;</div></pre></td></tr></table></figure>
 <h4 id="2-动态注册"><a href="#2-动态注册" class="headerlink" title="2.动态注册"></a>2.动态注册</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">intentFilter = <span class="keyword">new</span> IntentFilter();</div><div class="line">intentFilter.addAction(<span class="string">"com.unknow.jason.broadcasttest.MY_BROADCAST"</span>);</div><div class="line"></div><div class="line">myBroadcastReceiver = <span class="keyword">new</span> MyBroadcastReceiver();</div><div class="line">registerReceiver(myBroadcastReceiver, intentFilter);</div><div class="line"></div><div class="line">unregisterReceiver(myBroadcastReceiver);</div></pre></td></tr></table></figure>
 <h3 id="Step-3-发送广播"><a href="#Step-3-发送广播" class="headerlink" title="Step 3. 发送广播"></a>Step 3. 发送广播</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.unknow.jason.broadcasttest.MY_BROADCAST"</span>);</div><div class="line">sendBroadcast(intent);</div></pre></td></tr></table></figure>
+<h2 id="详细使用"><a href="#详细使用" class="headerlink" title="详细使用"></a>详细使用</h2><h3 id="静态注册字段"><a href="#静态注册字段" class="headerlink" title="静态注册字段"></a>静态注册字段</h3><table>
+<thead>
+<tr>
+<th style="text-align:center">字段</th>
+<th style="text-align:left">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">android:banner</td>
+<td style="text-align:left">A Drawable resource providing an extended graphical banner for its associated item. 一个Drawable资源为其相关联的项目提供扩展的图形横幅。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:description</td>
+<td style="text-align:left">Descriptive text for the associated data. 为关联数据提供描述。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:directBootAware</td>
+<td style="text-align:left">Indicate if this component is aware of direct boot lifecycle, and can be safely run before the user has entered their credentials (such as a lock pattern or PIN). 指示此组件是否知道直接引导生命周期，并且可以在用户输入其凭据（例如锁定模式或PIN）之前安全运行。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:enabled</td>
+<td style="text-align:left">Specify whether the receiver is enabled or not (that is, can be instantiated by the system). 指定这个接收者是否被开启。是否被系统注册。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:exported</td>
+<td style="text-align:left">Flag indicating whether the given application component is available to other applications. 指示给定应用程序组件是否可用于其他应用程序的标志。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:icon</td>
+<td style="text-align:left">A Drawable resource providing a graphical representation of its associated item. 一个可绘制的资源，提供其关联项目的图形表示。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:label</td>
+<td style="text-align:left">A user-legible name for the given item. 给定项目的用户可读名称。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:logo</td>
+<td style="text-align:left">A Drawable resource providing an extended graphical logo for its associated item. 一个Drawable资源，为其相关联的项目提供扩展的图形标志。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:name</td>
+<td style="text-align:left">Required name of the class implementing the receiver, deriving from BroadcastReceiver. 实现接收器的类的所需名称，源自BroadcastReceiver。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:permission</td>
+<td style="text-align:left">Specify a permission that a client is required to have in order to use the associated object. 指定客户机必须具有的权限才能使用关联的对象。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:process</td>
+<td style="text-align:left">Specify a specific process that the associated code is to run in. 指定一个指定的进程让关联的代码在此上运行。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:roundIcon</td>
+<td style="text-align:left">A Drawable resource providing a graphical representation of its associated item. 一个可绘制的资源，提供其关联项目的图形表示。</td>
+</tr>
+<tr>
+<td style="text-align:center">android:singleUser</td>
+<td style="text-align:left">If set to true, a single instance of this component will run for all users. 如果设置为true，则此组件的单个实例将为所有用户运行。</td>
+</tr>
+</tbody>
+</table>
 <h2 id="主要类"><a href="#主要类" class="headerlink" title="主要类"></a>主要类</h2><h3 id="BroadcastReceiver"><a href="#BroadcastReceiver" class="headerlink" title="BroadcastReceiver"></a>BroadcastReceiver</h3><blockquote>
 <p>Base class for code that will receive intents sent by sendBroadcast().<br>翻译：基础类可以接受来自sendBroadcast()发出的intents。</p>
 </blockquote>
@@ -369,9 +450,9 @@
           
             <a href="/tags/Android/" rel="tag">#Android</a>
           
-            <a href="/tags/Android-基础知识/" rel="tag">#Android_基础知识</a>
-          
             <a href="/tags/Broadcast/" rel="tag">#Broadcast</a>
+          
+            <a href="/tags/Android-基础知识/" rel="tag">#Android_基础知识</a>
           
         </div>
       
@@ -519,7 +600,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1-创建接收类"><span class="nav-number">3.1.</span> <span class="nav-text">Step 1. 创建接收类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2-注册广播接收器"><span class="nav-number">3.2.</span> <span class="nav-text">Step 2. 注册广播接收器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-静态注册"><span class="nav-number">3.2.1.</span> <span class="nav-text">1.静态注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-动态注册"><span class="nav-number">3.2.2.</span> <span class="nav-text">2.动态注册</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3-发送广播"><span class="nav-number">3.3.</span> <span class="nav-text">Step 3. 发送广播</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主要类"><span class="nav-number">4.</span> <span class="nav-text">主要类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BroadcastReceiver"><span class="nav-number">4.1.</span> <span class="nav-text">BroadcastReceiver</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安全性"><span class="nav-number">4.1.1.</span> <span class="nav-text">安全性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接收者的生命周期"><span class="nav-number">4.1.2.</span> <span class="nav-text">接收者的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程的生命周期"><span class="nav-number">4.1.3.</span> <span class="nav-text">进程的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onReceive"><span class="nav-number">4.1.4.</span> <span class="nav-text">onReceive()</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1-创建接收类"><span class="nav-number">3.1.</span> <span class="nav-text">Step 1. 创建接收类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2-注册广播接收器"><span class="nav-number">3.2.</span> <span class="nav-text">Step 2. 注册广播接收器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-静态注册"><span class="nav-number">3.2.1.</span> <span class="nav-text">1.静态注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-动态注册"><span class="nav-number">3.2.2.</span> <span class="nav-text">2.动态注册</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3-发送广播"><span class="nav-number">3.3.</span> <span class="nav-text">Step 3. 发送广播</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详细使用"><span class="nav-number">4.</span> <span class="nav-text">详细使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态注册字段"><span class="nav-number">4.1.</span> <span class="nav-text">静态注册字段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主要类"><span class="nav-number">5.</span> <span class="nav-text">主要类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BroadcastReceiver"><span class="nav-number">5.1.</span> <span class="nav-text">BroadcastReceiver</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安全性"><span class="nav-number">5.1.1.</span> <span class="nav-text">安全性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接收者的生命周期"><span class="nav-number">5.1.2.</span> <span class="nav-text">接收者的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程的生命周期"><span class="nav-number">5.1.3.</span> <span class="nav-text">进程的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onReceive"><span class="nav-number">5.1.4.</span> <span class="nav-text">onReceive()</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
