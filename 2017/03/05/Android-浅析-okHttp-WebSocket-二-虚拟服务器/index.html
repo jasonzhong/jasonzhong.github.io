@@ -1,0 +1,697 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,开源库,okHttp," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="MockWebServer, okhttp 的虚拟服务端，通过它可以在测试的时候搭建本地服务端。学习它的方法可以理解本的的服务端的搭建构造。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 okHttp WebSocket (二) MockWebServer">
+<meta property="og:url" content="http://yoursite.com/2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="MockWebServer, okhttp 的虚拟服务端，通过它可以在测试的时候搭建本地服务端。学习它的方法可以理解本的的服务端的搭建构造。">
+<meta property="og:updated_time" content="2017-03-23T12:14:55.606Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 浅析 okHttp WebSocket (二) MockWebServer">
+<meta name="twitter:description" content="MockWebServer, okhttp 的虚拟服务端，通过它可以在测试的时候搭建本地服务端。学习它的方法可以理解本的的服务端的搭建构造。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/"/>
+
+  <title> Android 浅析 okHttp WebSocket (二) MockWebServer | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android 浅析 okHttp WebSocket (二) MockWebServer
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-05T17:37:05+08:00" content="2017-03-05">
+              2017-03-05
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-网络基础/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-网络基础</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>MockWebServer, okhttp 的虚拟服务端，通过它可以在测试的时候搭建本地服务端。学习它的方法可以理解本的的服务端的搭建构造。</p>
+</blockquote>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><blockquote>
+<p>首先我们再来详细了解 MockWebServer 的用法，加深我们对服务器的认识。</p>
+</blockquote>
+<h3 id="官方例子"><a href="#官方例子" class="headerlink" title="官方例子"></a>官方例子</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">    <span class="comment">// Create a MockWebServer. These are lean enough that you can create a new instance for every unit test.</span></div><div class="line">    MockWebServer server = <span class="keyword">new</span> MockWebServer();</div><div class="line"></div><div class="line">    <span class="comment">// Schedule some responses.</span></div><div class="line">    server.enqueue(<span class="keyword">new</span> MockResponse().setBody(<span class="string">"hello, world!"</span>));</div><div class="line">    server.enqueue(<span class="keyword">new</span> MockResponse().setBody(<span class="string">"sup, bra?"</span>));</div><div class="line">    server.enqueue(<span class="keyword">new</span> MockResponse().setBody(<span class="string">"yo dog"</span>));</div><div class="line"></div><div class="line">    <span class="comment">// Start the server.</span></div><div class="line">    server.start();</div><div class="line"></div><div class="line">    <span class="comment">// Ask the server for its URL. You'll need this to make HTTP requests.</span></div><div class="line">    HttpUrl baseUrl = server.url(<span class="string">"/v1/chat/"</span>);</div><div class="line"></div><div class="line">    <span class="comment">// Exercise your application code, which should make those HTTP requests.</span></div><div class="line">    <span class="comment">// Responses are returned in the same order that they are enqueued.</span></div><div class="line">    Chat chat = <span class="keyword">new</span> Chat(baseUrl);</div><div class="line"></div><div class="line">    chat.loadMore();</div><div class="line">    assertEquals(<span class="string">"hello, world!"</span>, chat.messages());</div><div class="line"></div><div class="line">    chat.loadMore();</div><div class="line">    chat.loadMore();</div><div class="line">    assertEquals(<span class="string">""</span></div><div class="line">        + <span class="string">"hello, world!\n"</span></div><div class="line">        + <span class="string">"sup, bra?\n"</span></div><div class="line">        + <span class="string">"yo dog"</span>, chat.messages());</div><div class="line"></div><div class="line">    <span class="comment">// Optional: confirm that your app made the HTTP requests you were expecting.</span></div><div class="line">    RecordedRequest request1 = server.takeRequest();</div><div class="line">    assertEquals(<span class="string">"/v1/chat/messages/"</span>, request1.getPath());</div><div class="line">    assertNotNull(request1.getHeader(<span class="string">"Authorization"</span>));</div><div class="line"></div><div class="line">    RecordedRequest request2 = server.takeRequest();</div><div class="line">    assertEquals(<span class="string">"/v1/chat/messages/2"</span>, request2.getPath());</div><div class="line"></div><div class="line">    RecordedRequest request3 = server.takeRequest();</div><div class="line">    assertEquals(<span class="string">"/v1/chat/messages/3"</span>, request3.getPath());</div><div class="line"></div><div class="line">    <span class="comment">// Shut down the server. Instances cannot be reused.</span></div><div class="line">    server.shutdown();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这段代码写的非常清楚，主要疑惑的地方在于<code>Chat</code>类，这个是需要自己去定义生成的。生成一个能够发送这个请求的类和接受请求结果。<br>我们可以简单的利用Volley来实现一个<code>chat</code>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">Volley.newRequestQueue(context)</div><div class="line">    .add(<span class="keyword">new</span> StringRequest(baseUrl.url().toString(), <span class="keyword">new</span> com.android.volley.Response.Listener&lt;String&gt;() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(String response)</span> </span>&#123;</div><div class="line">        &#125;</div><div class="line">    &#125;, <span class="keyword">new</span> com.android.volley.Response.ErrorListener() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onErrorResponse</span><span class="params">(VolleyError error)</span> </span>&#123;</div><div class="line">        &#125;</div><div class="line">    &#125;));</div></pre></td></tr></table></figure></p>
+<h3 id="MockResponse"><a href="#MockResponse" class="headerlink" title="MockResponse"></a>MockResponse</h3><p><code>MockResponse</code>默认是状态码200，body为空，所有的协议内容都可以定制：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">MockResponse response = <span class="keyword">new</span> MockResponse()</div><div class="line">    .addHeader(<span class="string">"Content-Type"</span>, <span class="string">"application/json; charset=utf-8"</span>)</div><div class="line">    .addHeader(<span class="string">"Cache-Control"</span>, <span class="string">"no-cache"</span>)</div><div class="line">    .setBody(<span class="string">"&#123;&#125;"</span>);</div><div class="line"></div><div class="line"><span class="comment">// 可以通过这个指令来模仿网速很慢的情况。</span></div><div class="line">response.throttleBody(<span class="number">1024</span>, <span class="number">1</span>, TimeUnit.SECONDS);</div></pre></td></tr></table></figure></p>
+<h3 id="Dispatcher"><a href="#Dispatcher" class="headerlink" title="Dispatcher"></a>Dispatcher</h3><p><code>Dispatcher</code>通过dispatcher可以定制不同的url回传不同的内容。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> Dispatcher dispatcher = <span class="keyword">new</span> Dispatcher() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> MockResponse <span class="title">dispatch</span><span class="params">(RecordedRequest request)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (request.getPath().equals(<span class="string">"/v1/login/auth/"</span>))&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> MockResponse().setResponseCode(<span class="number">200</span>);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (request.getPath().equals(<span class="string">"v1/check/version/"</span>))&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> MockResponse().setResponseCode(<span class="number">200</span>).setBody(<span class="string">"version=9"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (request.getPath().equals(<span class="string">"/v1/profile/info"</span>)) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> MockResponse().setResponseCode(<span class="number">200</span>).setBody(</div><div class="line">            	<span class="string">"&#123;\\\"info\\\":&#123;\\\"name\":\"Lucas Albuquerque\",\"age\":\"21\",\"gender\":\"male\"&#125;&#125;"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> MockResponse().setResponseCode(<span class="number">404</span>);</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line">server.setDispatcher(dispatcher);</div></pre></td></tr></table></figure></p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>通过简单而全面的例子了解了<code>MockWebServer</code>的应用。接下来通过一步步深入我们来详尽的了解虚拟服务器。</p>
+<h2 id="QueueDispatcher"><a href="#QueueDispatcher" class="headerlink" title="QueueDispatcher"></a>QueueDispatcher</h2><blockquote>
+<p>Default dispatcher that processes a script of responses.它是一个基于队列的调度系统。它也是处理响应脚本的默认调度程序。</p>
+</blockquote>
+<p>QueueDispatcher 的核心数据结构是使用了<code>BlockingQueue</code>实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">protected</span> <span class="keyword">final</span> BlockingQueue&lt;MockResponse&gt; responseQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;();</div></pre></td></tr></table></figure></p>
+<p>利用<code>BlockingQueue</code>可以省略很多线程等待的操作。</p>
+<p>结束的标记是<code>private static final MockResponse DEAD_LETTER = new MockResponse().setStatus(&quot;HTTP/1.1 &quot; + 503 + &quot; shutting down&quot;);</code>，注意：在关机时启动，释放等待<code>dispatch</code>的线程。由于在返回此响应之前关闭连接，因此不会发送此响应。</p>
+<h2 id="MockResponse-1"><a href="#MockResponse-1" class="headerlink" title="MockResponse"></a>MockResponse</h2><blockquote>
+<p>A scripted response to be replayed by the mock web server. 一个脚本响应用来回复对虚拟服务器的请求。</p>
+</blockquote>
+<p>默认的情况下会对请求者回复<code>&quot;HTTP/1.1 200 OK&quot;</code>。<br>MockResponse 里面的作用基本上都是用来设置响应值，例如头部，内容等等，在里面比较关注的是设置了WebSocket的参数：<code>public MockResponse withWebSocketUpgrade(WebSocketListener listener)</code>。注意的是设置了这个参数会把所有先前设置的状态或内容改变。</p>
+<h3 id="SocketPolicy"><a href="#SocketPolicy" class="headerlink" title="SocketPolicy"></a>SocketPolicy</h3><blockquote>
+<p>对传入的套接字做什么的类型类。</p>
+</blockquote>
+<p>在使用<code>DISCONNECT_AT_END</code>，<code>SHUTDOWN_INPUT_AT_END</code>和<code>SHUTDOWN_OUTPUT_AT_END</code>之类的值（响应后关闭套接字，以及后续请求）时，请务必小心。 客户端已解除阻止，并在收到完整响应正文后立即自由继续。 如果并且当客户端使用池套接字发出后续请求时，服务器可能没有时间关闭套接字。 在第二次请求之前或期间，套接字将在不确定的点关闭。 它可以在客户端开始发送请求正文后关闭。 如果请求主体不可重试，则客户端可能使请求失败，使得客户端行为是非确定性的。 在客户端中添加延迟，以提高服务器在执行后续请求之前关闭套接字的机会。</p>
+<p>MockResponse 大致的用法就如前面提到的那样。里面封装了一套<code>Buffer body</code>，当客户端发起请求是将<code>body</code>传回过去。如果是使用WebSocket的方法则会通过listener的方式回调。</p>
+<h2 id="MockWebServer"><a href="#MockWebServer" class="headerlink" title="MockWebServer"></a>MockWebServer</h2><blockquote>
+<p>这个是MockWebServer的核心处理类。主要就是负责开启一个虚拟的服务器来工作。</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/开源库/" rel="tag">#开源库</a>
+          
+            <a href="/tags/okHttp/" rel="tag">#okHttp</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/05/Android-浅析-okHttp-WebSocket-一-使用/" rel="next" title="Android 浅析 okHttp WebSocket (一) 使用">
+                <i class="fa fa-chevron-left"></i> Android 浅析 okHttp WebSocket (一) 使用
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/19/设计模式-代理模式/" rel="prev" title="设计模式-代理模式">
+                设计模式-代理模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/"
+           data-title="Android 浅析 okHttp WebSocket (二) MockWebServer" data-url="http://yoursite.com/2017/03/05/Android-浅析-okHttp-WebSocket-二-虚拟服务器/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#官方例子"><span class="nav-number">3.1.</span> <span class="nav-text">官方例子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MockResponse"><span class="nav-number">3.2.</span> <span class="nav-text">MockResponse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dispatcher"><span class="nav-number">3.3.</span> <span class="nav-text">Dispatcher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">3.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#QueueDispatcher"><span class="nav-number">4.</span> <span class="nav-text">QueueDispatcher</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MockResponse-1"><span class="nav-number">5.</span> <span class="nav-text">MockResponse</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SocketPolicy"><span class="nav-number">5.1.</span> <span class="nav-text">SocketPolicy</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MockWebServer"><span class="nav-number">6.</span> <span class="nav-text">MockWebServer</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

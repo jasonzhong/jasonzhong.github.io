@@ -1,0 +1,1179 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,网络基础," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="A URLConnection with support for HTTP-specific features.支持HTTP特定功能的URLConnection。目前Android的访问网络无论用什么框架，绝大部分底层也是用HttpURLConnection实现，在此基础上添加自己的封装。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 浅析 HttpURLConnection">
+<meta property="og:url" content="http://yoursite.com/2017/01/26/Android-浅析-HttpURLConnection/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="A URLConnection with support for HTTP-specific features.支持HTTP特定功能的URLConnection。目前Android的访问网络无论用什么框架，绝大部分底层也是用HttpURLConnection实现，在此基础上添加自己的封装。">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-9582dd2ecd4708fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-6ec67f4857531d54.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-26cca95d3c9eb1ec.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1645265-20d2046467cdb89c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-02-21T12:03:19.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-浅析-HttpURLConnection">
+<meta name="twitter:description" content="A URLConnection with support for HTTP-specific features.支持HTTP特定功能的URLConnection。目前Android的访问网络无论用什么框架，绝大部分底层也是用HttpURLConnection实现，在此基础上添加自己的封装。">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1645265-9582dd2ecd4708fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/26/Android-浅析-HttpURLConnection/"/>
+
+  <title> Android-浅析-HttpURLConnection | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-浅析-HttpURLConnection
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-26T17:34:34+08:00" content="2017-01-26">
+              2017-01-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-网络基础/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-网络基础</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/01/26/Android-浅析-HttpURLConnection/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/26/Android-浅析-HttpURLConnection/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>HttpURLConnection是一种多用途、轻量极的HTTP客户端，使用它来进行HTTP操作可以适用于大多数的应用程序。</p>
+</blockquote>
+<p>HttpURLConnection相对于HttpClient的优点：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">HttpURLConnection</th>
+<th style="text-align:center">HttpClient</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Android SDK的标准实现</td>
+<td style="text-align:center">apache的开源实现</td>
+</tr>
+<tr>
+<td style="text-align:center">支持GZIP压缩</td>
+<td style="text-align:center">也支持，但要自己写代码处理</td>
+</tr>
+<tr>
+<td style="text-align:center">支持系统级连接池，即打开的连接不会直接关闭，在一段时间内所有程序可共用</td>
+<td style="text-align:center">不如官方直接系统底层支持好</td>
+</tr>
+<tr>
+<td style="text-align:center">在系统层面做了缓存策略处理，加快重复请求的速度</td>
+<td style="text-align:center">无</td>
+</tr>
+</tbody>
+</table>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>使用这个类应该跟从以下步骤:</p>
+<h3 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1"></a>Step 1</h3><p>Obtain a new HttpURLConnection by calling URL.openConnection() and casting the result to HttpURLConnection. 获得一个新的HttpURLConnection类应该调用<code>URL.openConnection()</code>并且将结果强转成<code>HttpURLConnection</code>类。</p>
+<h3 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2"></a>Step 2</h3><p>Prepare the request. The primary property of a request is its URI. Request headers may also include metadata such as credentials, preferred content types, and session cookies.准备一个<code>request</code>。这个request主要属性是它的URI。Request的头部将会包含一些元数据例如凭证，首选内容类型和会话Cookie。</p>
+<h3 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3"></a>Step 3</h3><p>Optionally upload a request body. Instances must be configured with setDoOutput(true) if they include a request body. Transmit data by writing to the stream returned by getOutputStream().可选上传的request内容。如果它包含一个request内容，实例必须配置为<code>setDoOutput(true)</code>。通过写入getOutputStream()返回的流来传输数据。</p>
+<h3 id="Step-4"><a href="#Step-4" class="headerlink" title="Step 4"></a>Step 4</h3><p>Read the response. Response headers typically include metadata such as the response body’s content type and length, modified dates and session cookies. The response body may be read from the stream returned by getInputStream(). If the response has no body, that method returns an empty stream.读取响应。响应标头通常包括元数据，例如响应正文的内容类型和长度，修改日期和会话Cookie。 响应主体可以从getInputStream()返回的流中读取。 如果响应没有正文，那么该方法将返回一个空流。</p>
+<h3 id="Step-5"><a href="#Step-5" class="headerlink" title="Step 5"></a>Step 5</h3><p>Disconnect. Once the response body has been read, the HttpURLConnection should be closed by calling disconnect(). Disconnecting releases the resources held by a connection so they may be closed or reused.断开链接。一旦响应内容被读取，<code>HttpURLConnection</code>应该要被关闭用<code>disconnect()</code>函数。断开连接释放连接持有的资源，以便它们可以被关闭或重用。</p>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">URL url = <span class="keyword">new</span> URL(<span class="string">"http://www.android.com/"</span>);</div><div class="line">HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();</div><div class="line"><span class="keyword">try</span> &#123;</div><div class="line">  InputStream in = <span class="keyword">new</span> BufferedInputStream(urlConnection.getInputStream());</div><div class="line">  readStream(in);</div><div class="line">&#125; <span class="keyword">finally</span> &#123;</div><div class="line">  urlConnection.disconnect();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">类型</th>
+<th style="text-align:left">键值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">HTTP_ACCEPTED</td>
+<td style="text-align:left">HTTP Status-Code 202: Accepted.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_BAD_GATEWAY</td>
+<td style="text-align:left">HTTP Status-Code 502: Bad Gateway.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_BAD_METHOD</td>
+<td style="text-align:left">HTTP Status-Code 405: Method Not Allowed.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_BAD_REQUEST</td>
+<td style="text-align:left">HTTP Status-Code 400: Bad Request.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_CLIENT_TIMEOUT</td>
+<td style="text-align:left">HTTP Status-Code 408: Request Time-Out.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_CONFLICT</td>
+<td style="text-align:left">HTTP Status-Code 409: Conflict.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_CREATED</td>
+<td style="text-align:left">HTTP Status-Code 201: Created.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_ENTITY_TOO_LARGE</td>
+<td style="text-align:left">HTTP Status-Code 413: Request Entity Too Large.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_FORBIDDEN</td>
+<td style="text-align:left">HTTP Status-Code 403: Forbidden.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_GATEWAY_TIMEOUT</td>
+<td style="text-align:left">HTTP Status-Code 504: Gateway Timeout.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_GONE</td>
+<td style="text-align:left">HTTP Status-Code 410: Gone.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_INTERNAL_ERROR</td>
+<td style="text-align:left">HTTP Status-Code 500: Internal Server Error.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_LENGTH_REQUIRED</td>
+<td style="text-align:left">HTTP Status-Code 411: Length Required.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_MOVED_PERM</td>
+<td style="text-align:left">HTTP Status-Code 301: Moved Permanently.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_MOVED_TEMP</td>
+<td style="text-align:left">HTTP Status-Code 302: Temporary Redirect.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_MULT_CHOICE</td>
+<td style="text-align:left">HTTP Status-Code 300: Multiple Choices.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NOT_ACCEPTABLE</td>
+<td style="text-align:left">HTTP Status-Code 406: Not Acceptable.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NOT_AUTHORITATIVE</td>
+<td style="text-align:left">HTTP Status-Code 203: Non-Authoritative Information.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NOT_FOUND</td>
+<td style="text-align:left">HTTP Status-Code 404: Not Found.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NOT_IMPLEMENTED</td>
+<td style="text-align:left">HTTP Status-Code 501: Not Implemented.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NOT_MODIFIED</td>
+<td style="text-align:left">HTTP Status-Code 304: Not Modified.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_NO_CONTENT</td>
+<td style="text-align:left">HTTP Status-Code 204: No Content.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_OK</td>
+<td style="text-align:left">HTTP Status-Code 200: OK.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_PARTIAL</td>
+<td style="text-align:left">HTTP Status-Code 206: Partial Content.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_PAYMENT_REQUIRED</td>
+<td style="text-align:left">HTTP Status-Code 402: Payment Required.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_PRECON_FAILED</td>
+<td style="text-align:left">HTTP Status-Code 412: Precondition Failed.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_PROXY_AUTH</td>
+<td style="text-align:left">HTTP Status-Code 407: Proxy Authentication Required.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_REQ_TOO_LONG</td>
+<td style="text-align:left">HTTP Status-Code 414: Request-URI Too Large.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_RESET</td>
+<td style="text-align:left">HTTP Status-Code 205: Reset Content.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_SEE_OTHER</td>
+<td style="text-align:left">HTTP Status-Code 303: See Other.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_SERVER_ERROR</td>
+<td style="text-align:left">This constant was deprecated in API level 1. it is misplaced and shouldn’t have existed.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_UNAUTHORIZED</td>
+<td style="text-align:left">HTTP Status-Code 401: Unauthorized.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_UNAVAILABLE</td>
+<td style="text-align:left">HTTP Status-Code 503: Service Unavailable.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_UNSUPPORTED_TYPE</td>
+<td style="text-align:left">HTTP Status-Code 415: Unsupported Media Type.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_USE_PROXY</td>
+<td style="text-align:left">HTTP Status-Code 305: Use Proxy.</td>
+</tr>
+<tr>
+<td style="text-align:center">HTTP_VERSION</td>
+<td style="text-align:left">HTTP Status-Code 505: HTTP Version Not Supported.</td>
+</tr>
+</tbody>
+</table>
+<p>针对链接的属性一些定义：<br><img src="http://upload-images.jianshu.io/upload_images/1645265-9582dd2ecd4708fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="通用首部字段"><br><img src="http://upload-images.jianshu.io/upload_images/1645265-6ec67f4857531d54.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="请求首部字段"><br><img src="http://upload-images.jianshu.io/upload_images/1645265-26cca95d3c9eb1ec.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="响应首部字段"><br><img src="http://upload-images.jianshu.io/upload_images/1645265-20d2046467cdb89c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="实体首部字段"></p>
+<h2 id="详细使用"><a href="#详细使用" class="headerlink" title="详细使用"></a>详细使用</h2><h3 id="Get操作"><a href="#Get操作" class="headerlink" title="Get操作"></a>Get操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">requestGet</span><span class="params">(HashMap&lt;String, String&gt; paramsMap)</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        String baseUrl = <span class="string">"https://baidu.com/"</span>;</div><div class="line">        StringBuilder tempParams = <span class="keyword">new</span> StringBuilder();</div><div class="line">        <span class="keyword">int</span> pos = <span class="number">0</span>;</div><div class="line">        <span class="keyword">for</span> (String key : paramsMap.keySet()) &#123;</div><div class="line">            <span class="keyword">if</span> (pos &gt; <span class="number">0</span>) &#123;</div><div class="line">                tempParams.append(<span class="string">"&amp;"</span>);</div><div class="line">            &#125;</div><div class="line">            tempParams.append(String.format(<span class="string">"%s=%s"</span>, key, URLEncoder.encode(paramsMap.get(key),<span class="string">"utf-8"</span>)));</div><div class="line">            pos++;</div><div class="line">        &#125;</div><div class="line">        String requestUrl = baseUrl + tempParams.toString();</div><div class="line">        <span class="comment">// 新建一个URL对象</span></div><div class="line">        URL url = <span class="keyword">new</span> URL(requestUrl);</div><div class="line">        <span class="comment">// 打开一个HttpURLConnection连接</span></div><div class="line">        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();</div><div class="line">        <span class="comment">// 设置连接主机超时时间</span></div><div class="line">        urlConn.setConnectTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// 设置从主机读取数据超时</span></div><div class="line">        urlConn.setReadTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// 设置是否使用缓存  默认是true</span></div><div class="line">        urlConn.setUseCaches(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 设置为Post请求</span></div><div class="line">        urlConn.setRequestMethod(<span class="string">"GET"</span>);</div><div class="line">        <span class="comment">// urlConn设置请求头信息</span></div><div class="line">        <span class="comment">// 设置请求中的媒体类型信息。</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>);</div><div class="line">        <span class="comment">// 设置客户端与服务连接类型</span></div><div class="line">        urlConn.addRequestProperty(<span class="string">"Connection"</span>, <span class="string">"Keep-Alive"</span>);</div><div class="line">        <span class="comment">// 开始连接</span></div><div class="line">        urlConn.connect();</div><div class="line">        <span class="comment">// 判断请求是否成功</span></div><div class="line">        <span class="keyword">if</span> (urlConn.getResponseCode() == <span class="number">200</span>) &#123;</div><div class="line">            <span class="comment">// 获取返回的数据</span></div><div class="line">            String result = streamToString(urlConn.getInputStream());</div><div class="line">            Log.e(TAG, <span class="string">"Get方式请求成功，result---&gt;"</span> + result);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Log.e(TAG, <span class="string">"Get方式请求失败"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 关闭连接</span></div><div class="line">        urlConn.disconnect();</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        Log.e(TAG, e.toString());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Post操作"><a href="#Post操作" class="headerlink" title="Post操作"></a>Post操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">requestPost</span><span class="params">(HashMap&lt;String, String&gt; paramsMap)</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        String baseUrl = <span class="string">"https://baidu.com/"</span>;</div><div class="line">        <span class="comment">// 合成参数</span></div><div class="line">        StringBuilder tempParams = <span class="keyword">new</span> StringBuilder();</div><div class="line">        <span class="keyword">int</span> pos = <span class="number">0</span>;</div><div class="line">        <span class="keyword">for</span> (String key : paramsMap.keySet()) &#123;</div><div class="line">            <span class="keyword">if</span> (pos &gt; <span class="number">0</span>) &#123;</div><div class="line">                tempParams.append(<span class="string">"&amp;"</span>);</div><div class="line">            &#125;</div><div class="line">            tempParams.append(String.format(<span class="string">"%s=%s"</span>, key,  URLEncoder.encode(paramsMap.get(key),<span class="string">"utf-8"</span>)));</div><div class="line">            pos++;</div><div class="line">        &#125;</div><div class="line">        String params =tempParams.toString();</div><div class="line">        <span class="comment">// 请求的参数转换为byte数组</span></div><div class="line">        <span class="keyword">byte</span>[] postData = params.getBytes();</div><div class="line">        <span class="comment">// 新建一个URL对象</span></div><div class="line">        URL url = <span class="keyword">new</span> URL(baseUrl);</div><div class="line">        <span class="comment">// 打开一个HttpURLConnection连接</span></div><div class="line">        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();</div><div class="line">        <span class="comment">// 设置连接超时时间</span></div><div class="line">        urlConn.setConnectTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// 设置从主机读取数据超时</span></div><div class="line">        urlConn.setReadTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// Post请求必须设置允许输出 默认false</span></div><div class="line">        urlConn.setDoOutput(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 设置请求允许输入 默认是true</span></div><div class="line">        urlConn.setDoInput(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// Post请求不能使用缓存</span></div><div class="line">        urlConn.setUseCaches(<span class="keyword">false</span>);</div><div class="line">        <span class="comment">// 设置为Post请求</span></div><div class="line">        urlConn.setRequestMethod(<span class="string">"POST"</span>);</div><div class="line">        <span class="comment">// 设置本次连接是否自动处理重定向</span></div><div class="line">        urlConn.setInstanceFollowRedirects(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 配置请求Content-Type</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>);</div><div class="line">        <span class="comment">// 开始连接</span></div><div class="line">        urlConn.connect();</div><div class="line">        <span class="comment">// 发送请求参数</span></div><div class="line">        DataOutputStream dos = <span class="keyword">new</span> DataOutputStream(urlConn.getOutputStream());</div><div class="line">        dos.write(postData);</div><div class="line">        dos.flush();</div><div class="line">        dos.close();</div><div class="line">        <span class="comment">// 判断请求是否成功</span></div><div class="line">        <span class="keyword">if</span> (urlConn.getResponseCode() == <span class="number">200</span>) &#123;</div><div class="line">            <span class="comment">// 获取返回的数据</span></div><div class="line">            String result = streamToString(urlConn.getInputStream());</div><div class="line">            Log.e(TAG, <span class="string">"Post方式请求成功，result---&gt;"</span> + result);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Log.e(TAG, <span class="string">"Post方式请求失败"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 关闭连接</span></div><div class="line">        urlConn.disconnect();</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        Log.e(TAG, e.toString());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="download操作"><a href="#download操作" class="headerlink" title="download操作"></a>download操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">downloadFile</span><span class="params">(String fileUrl)</span></span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="comment">// 新建一个URL对象</span></div><div class="line">        URL url = <span class="keyword">new</span> URL(fileUrl);</div><div class="line">        <span class="comment">// 打开一个HttpURLConnection连接</span></div><div class="line">        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();</div><div class="line">        <span class="comment">// 设置连接主机超时时间</span></div><div class="line">        urlConn.setConnectTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// 设置从主机读取数据超时</span></div><div class="line">        urlConn.setReadTimeout(<span class="number">5</span> * <span class="number">1000</span>);</div><div class="line">        <span class="comment">// 设置是否使用缓存  默认是true</span></div><div class="line">        urlConn.setUseCaches(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 设置为Post请求</span></div><div class="line">        urlConn.setRequestMethod(<span class="string">"GET"</span>);</div><div class="line">        <span class="comment">// urlConn设置请求头信息</span></div><div class="line">        <span class="comment">// 设置请求中的媒体类型信息。</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>);</div><div class="line">        <span class="comment">// 设置客户端与服务连接类型</span></div><div class="line">        urlConn.addRequestProperty(<span class="string">"Connection"</span>, <span class="string">"Keep-Alive"</span>);</div><div class="line">        <span class="comment">// 开始连接</span></div><div class="line">        urlConn.connect();</div><div class="line">        <span class="comment">// 判断请求是否成功</span></div><div class="line">        <span class="keyword">if</span> (urlConn.getResponseCode() == <span class="number">200</span>) &#123;</div><div class="line">            String filePath=<span class="string">""</span>;</div><div class="line">            File  descFile = <span class="keyword">new</span> File(filePath);</div><div class="line">            FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(descFile);;</div><div class="line">            <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</div><div class="line">            <span class="keyword">int</span> len;</div><div class="line">            InputStream inputStream = urlConn.getInputStream();</div><div class="line">            <span class="keyword">while</span> ((len = inputStream.read(buffer)) != -<span class="number">1</span>) &#123;</div><div class="line">                <span class="comment">// 写到本地</span></div><div class="line">                fos.write(buffer, <span class="number">0</span>, len);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Log.e(TAG, <span class="string">"文件下载失败"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 关闭连接</span></div><div class="line">        urlConn.disconnect();</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        Log.e(TAG, e.toString());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="上传操作"><a href="#上传操作" class="headerlink" title="上传操作"></a>上传操作</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">upLoadFile</span><span class="params">(String filePath, HashMap&lt;String, String&gt; paramsMap)</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        String baseUrl = <span class="string">"https://baidu.com/uploadFile"</span>;</div><div class="line">        File file = <span class="keyword">new</span> File(filePath);</div><div class="line">        <span class="comment">// 新建url对象</span></div><div class="line">        URL url = <span class="keyword">new</span> URL(baseUrl);</div><div class="line">        <span class="comment">// 通过HttpURLConnection对象,向网络地址发送请求</span></div><div class="line">        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();</div><div class="line">        <span class="comment">// 设置该连接允许读取</span></div><div class="line">        urlConn.setDoOutput(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 设置该连接允许写入</span></div><div class="line">        urlConn.setDoInput(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">// 设置不能适用缓存</span></div><div class="line">        urlConn.setUseCaches(<span class="keyword">false</span>);</div><div class="line">        <span class="comment">// 设置连接超时时间</span></div><div class="line">        urlConn.setConnectTimeout(<span class="number">5</span> * <span class="number">1000</span>);   <span class="comment">// 设置连接超时时间</span></div><div class="line">        <span class="comment">// 设置读取超时时间</span></div><div class="line">        urlConn.setReadTimeout(<span class="number">5</span> * <span class="number">1000</span>);   <span class="comment">// 读取超时</span></div><div class="line">        <span class="comment">// 设置连接方法post</span></div><div class="line">        urlConn.setRequestMethod(<span class="string">"POST"</span>);</div><div class="line">        <span class="comment">// 设置维持长连接</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"connection"</span>, <span class="string">"Keep-Alive"</span>);</div><div class="line">        <span class="comment">// 设置文件字符集</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"Accept-Charset"</span>, <span class="string">"UTF-8"</span>);</div><div class="line">        <span class="comment">// 设置文件类型</span></div><div class="line">        urlConn.setRequestProperty(<span class="string">"Content-Type"</span>, <span class="string">"multipart/form-data; boundary="</span> + <span class="string">"*****"</span>);</div><div class="line">        String name = file.getName();</div><div class="line">        DataOutputStream requestStream = <span class="keyword">new</span> DataOutputStream(urlConn.getOutputStream());</div><div class="line">        requestStream.writeBytes(<span class="string">"--"</span> + <span class="string">"*****"</span> + <span class="string">"\r\n"</span>);</div><div class="line">        <span class="comment">// 发送文件参数信息</span></div><div class="line">        StringBuilder tempParams = <span class="keyword">new</span> StringBuilder();</div><div class="line">        tempParams.append(<span class="string">"Content-Disposition: form-data; name=\""</span> + name + <span class="string">"\"; filename=\""</span> + name + <span class="string">"\"; "</span>);</div><div class="line">        <span class="keyword">int</span> pos = <span class="number">0</span>;</div><div class="line">        <span class="keyword">int</span> size = paramsMap.size();</div><div class="line">        <span class="keyword">for</span> (String key : paramsMap.keySet()) &#123;</div><div class="line">            tempParams.append( String.format(<span class="string">"%s=\"%s\""</span>, key, paramsMap.get(key), <span class="string">"utf-8"</span>));</div><div class="line">            <span class="keyword">if</span> (pos &lt; size-<span class="number">1</span>) &#123;</div><div class="line">                tempParams.append(<span class="string">"; "</span>);</div><div class="line">            &#125;</div><div class="line">            pos++;</div><div class="line">        &#125;</div><div class="line">        tempParams.append(<span class="string">"\r\n"</span>);</div><div class="line">        tempParams.append(<span class="string">"Content-Type: application/octet-stream\r\n"</span>);</div><div class="line">        tempParams.append(<span class="string">"\r\n"</span>);</div><div class="line">        String params = tempParams.toString();</div><div class="line">        requestStream.writeBytes(params);</div><div class="line">        <span class="comment">//发送文件数据</span></div><div class="line">        FileInputStream fileInput = <span class="keyword">new</span> FileInputStream(file);</div><div class="line">        <span class="keyword">int</span> bytesRead;</div><div class="line">        <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</div><div class="line">        DataInputStream in = <span class="keyword">new</span> DataInputStream(<span class="keyword">new</span> FileInputStream(file));</div><div class="line">        <span class="keyword">while</span> ((bytesRead = in.read(buffer)) != -<span class="number">1</span>) &#123;</div><div class="line">            requestStream.write(buffer, <span class="number">0</span>, bytesRead);</div><div class="line">        &#125;</div><div class="line">        requestStream.writeBytes(<span class="string">"\r\n"</span>);</div><div class="line">        requestStream.flush();</div><div class="line">        requestStream.writeBytes(<span class="string">"--"</span> + <span class="string">"*****"</span> + <span class="string">"--"</span> + <span class="string">"\r\n"</span>);</div><div class="line">        requestStream.flush();</div><div class="line">        fileInput.close();</div><div class="line">        <span class="keyword">int</span> statusCode = urlConn.getResponseCode();</div><div class="line">        <span class="keyword">if</span> (statusCode == <span class="number">200</span>) &#123;</div><div class="line">            <span class="comment">// 获取返回的数据</span></div><div class="line">            String result = streamToString(urlConn.getInputStream());</div><div class="line">            Log.e(TAG, <span class="string">"上传成功，result---&gt;"</span> + result);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Log.e(TAG, <span class="string">"上传失败"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">        Log.e(TAG, e.toString());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="Request部分"><a href="#Request部分" class="headerlink" title="Request部分"></a>Request部分</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">Header</th>
+<th style="text-align:left">解释</th>
+<th style="text-align:left">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Accept</td>
+<td style="text-align:left">指定客户端能够接收的内容类型</td>
+<td style="text-align:left">Accept: text/plain, text/html</td>
+</tr>
+<tr>
+<td style="text-align:center">Accept-Charset</td>
+<td style="text-align:left">浏览器可以接受的字符编码集。</td>
+<td style="text-align:left">Accept-Charset: iso-8859-5</td>
+</tr>
+<tr>
+<td style="text-align:center">Accept-Encoding</td>
+<td style="text-align:left">指定浏览器可以支持的web服务器返回内容压缩编码类型。</td>
+<td style="text-align:left">Accept-Encoding: compress, gzip</td>
+</tr>
+<tr>
+<td style="text-align:center">Accept-Language</td>
+<td style="text-align:left">浏览器可接受的语言</td>
+<td style="text-align:left">Accept-Language: en,zh</td>
+</tr>
+<tr>
+<td style="text-align:center">Accept-Ranges</td>
+<td style="text-align:left">可以请求网页实体的一个或者多个子范围字段</td>
+<td style="text-align:left">Accept-Ranges: bytes</td>
+</tr>
+<tr>
+<td style="text-align:center">Authorization</td>
+<td style="text-align:left">HTTP授权的授权证书</td>
+<td style="text-align:left">Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==</td>
+</tr>
+<tr>
+<td style="text-align:center">Cache-Control</td>
+<td style="text-align:left">指定请求和响应遵循的缓存机制</td>
+<td style="text-align:left">Cache-Control: no-cache</td>
+</tr>
+<tr>
+<td style="text-align:center">Connection</td>
+<td style="text-align:left">表示是否需要持久连接。（HTTP 1.1默认进行持久连接）</td>
+<td style="text-align:left">Connection: close</td>
+</tr>
+<tr>
+<td style="text-align:center">Cookie</td>
+<td style="text-align:left">HTTP请求发送时，会把保存在该请求域名下的所有cookie值一起发送给web服务器。</td>
+<td style="text-align:left">Cookie: $Version=1; Skin=new;</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Length</td>
+<td style="text-align:left">请求的内容长度</td>
+<td style="text-align:left">Content-Length: 348</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Type</td>
+<td style="text-align:left">请求的与实体对应的MIME信息</td>
+<td style="text-align:left">Content-Type: application/x-www-form-urlencoded</td>
+</tr>
+<tr>
+<td style="text-align:center">Date</td>
+<td style="text-align:left">请求发送的日期和时间</td>
+<td style="text-align:left">Date: Tue, 15 Nov 2010 08:12:31 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">Expect</td>
+<td style="text-align:left">请求的特定的服务器行为</td>
+<td style="text-align:left">Expect: 100-continue</td>
+</tr>
+<tr>
+<td style="text-align:center">From</td>
+<td style="text-align:left">发出请求的用户的Email</td>
+<td style="text-align:left">From: user@email.com</td>
+</tr>
+<tr>
+<td style="text-align:center">Host</td>
+<td style="text-align:left">指定请求的服务器的域名和端口号</td>
+<td style="text-align:left">Host: www.zcmhi.com</td>
+</tr>
+<tr>
+<td style="text-align:center">If-Match</td>
+<td style="text-align:left">只有请求内容与实体相匹配才有效</td>
+<td style="text-align:left">If-Match: “737060cd8c284d8af7ad3082f209582d”</td>
+</tr>
+<tr>
+<td style="text-align:center">If-Modified-Since</td>
+<td style="text-align:left">如果请求的部分在指定时间之后被修改则请求成功，未被修改则返回304代码</td>
+<td style="text-align:left">If-Modified-Since: Sat, 29 Oct 2010 19:43:31 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">If-None-Match</td>
+<td style="text-align:left">如果内容未改变返回304代码，参数为服务器先前发送的Etag，与服务器回应的Etag比较判断是否改变</td>
+<td style="text-align:left">If-None-Match: “737060cd8c284d8af7ad3082f209582d”</td>
+</tr>
+<tr>
+<td style="text-align:center">If-Range</td>
+<td style="text-align:left">如果实体未改变，服务器发送客户端丢失的部分，否则发送整个实体。参数也为Etag</td>
+<td style="text-align:left">If-Range: “737060cd8c284d8af7ad3082f209582d”</td>
+</tr>
+<tr>
+<td style="text-align:center">If-Unmodified-Since</td>
+<td style="text-align:left">只在实体在指定时间之后未被修改才请求成功</td>
+<td style="text-align:left">If-Unmodified-Since: Sat, 29 Oct 2010 19:43:31 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">Max-Forwards</td>
+<td style="text-align:left">限制信息通过代理和网关传送的时间</td>
+<td style="text-align:left">Max-Forwards: 10</td>
+</tr>
+<tr>
+<td style="text-align:center">Pragma</td>
+<td style="text-align:left">用来包含实现特定的指令</td>
+<td style="text-align:left">Pragma: no-cache</td>
+</tr>
+<tr>
+<td style="text-align:center">Proxy-Authorization</td>
+<td style="text-align:left">连接到代理的授权证书</td>
+<td style="text-align:left">Proxy-Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==</td>
+</tr>
+<tr>
+<td style="text-align:center">Range</td>
+<td style="text-align:left">只请求实体的一部分，指定范围</td>
+<td style="text-align:left">Range: bytes=500-999</td>
+</tr>
+<tr>
+<td style="text-align:center">Referer</td>
+<td style="text-align:left">先前网页的地址，当前请求网页紧随其后,即来路</td>
+<td style="text-align:left">Referer: <a href="http://www.zcmhi.com/archives/71.html" target="_blank" rel="external">http://www.zcmhi.com/archives/71.html</a></td>
+</tr>
+<tr>
+<td style="text-align:center">TE</td>
+<td style="text-align:left">客户端愿意接受的传输编码，并通知服务器接受接受尾加头信息</td>
+<td style="text-align:left">TE: trailers,deflate;q=0.5</td>
+</tr>
+<tr>
+<td style="text-align:center">Upgrade</td>
+<td style="text-align:left">向服务器指定某种传输协议以便服务器进行转换（如果支持）</td>
+<td style="text-align:left">Upgrade: HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11</td>
+</tr>
+<tr>
+<td style="text-align:center">User-Agent</td>
+<td style="text-align:left">User-Agent的内容包含发出请求的用户信息</td>
+<td style="text-align:left">User-Agent: Mozilla/5.0 (Linux; X11)</td>
+</tr>
+<tr>
+<td style="text-align:center">Via</td>
+<td style="text-align:left">通知中间网关或代理服务器地址，通信协议</td>
+<td style="text-align:left">Via: 1.0 fred, 1.1 nowhere.com</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Responses-部分"><a href="#Responses-部分" class="headerlink" title="Responses 部分"></a>Responses 部分</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">Header</th>
+<th style="text-align:left">解释</th>
+<th style="text-align:left">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Accept-Ranges</td>
+<td style="text-align:left">表明服务器是否支持指定范围请求及哪种类型的分段请求</td>
+<td style="text-align:left">Accept-Ranges: bytes</td>
+</tr>
+<tr>
+<td style="text-align:center">Age</td>
+<td style="text-align:left">从原始服务器到代理缓存形成的估算时间（以秒计，非负）</td>
+<td style="text-align:left">Age: 12</td>
+</tr>
+<tr>
+<td style="text-align:center">Allow</td>
+<td style="text-align:left">对某网络资源的有效的请求行为，不允许则返回405</td>
+<td style="text-align:left">Allow: GET, HEAD</td>
+</tr>
+<tr>
+<td style="text-align:center">Cache-Control</td>
+<td style="text-align:left">告诉所有的缓存机制是否可以缓存及哪种类型</td>
+<td style="text-align:left">Cache-Control: no-cache</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Encoding</td>
+<td style="text-align:left">web服务器支持的返回内容压缩编码类型。</td>
+<td style="text-align:left">Content-Encoding: gzip</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Language</td>
+<td style="text-align:left">响应体的语言</td>
+<td style="text-align:left">Content-Language: en,zh</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Length</td>
+<td style="text-align:left">响应体的长度</td>
+<td style="text-align:left">Content-Length: 348</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Location</td>
+<td style="text-align:left">请求资源可替代的备用的另一地址</td>
+<td style="text-align:left">Content-Location: /index.htm</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-MD5</td>
+<td style="text-align:left">返回资源的MD5校验值</td>
+<td style="text-align:left">Content-MD5: Q2hlY2sgSW50ZWdyaXR5IQ==</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Range</td>
+<td style="text-align:left">在整个返回体中本部分的字节位置</td>
+<td style="text-align:left">Content-Range: bytes 21010-47021/47022</td>
+</tr>
+<tr>
+<td style="text-align:center">Content-Type</td>
+<td style="text-align:left">返回内容的MIME类型</td>
+<td style="text-align:left">Content-Type: text/html; charset=utf-8</td>
+</tr>
+<tr>
+<td style="text-align:center">Date</td>
+<td style="text-align:left">原始服务器消息发出的时间</td>
+<td style="text-align:left">Date: Tue, 15 Nov 2010 08:12:31 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">ETag</td>
+<td style="text-align:left">请求变量的实体标签的当前值</td>
+<td style="text-align:left">ETag: “737060cd8c284d8af7ad3082f209582d”</td>
+</tr>
+<tr>
+<td style="text-align:center">Expires</td>
+<td style="text-align:left">响应过期的日期和时间</td>
+<td style="text-align:left">Expires: Thu, 01 Dec 2010 16:00:00 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">Last-Modified</td>
+<td style="text-align:left">请求资源的最后修改时间</td>
+<td style="text-align:left">Last-Modified: Tue, 15 Nov 2010 12:45:26 GMT</td>
+</tr>
+<tr>
+<td style="text-align:center">Location</td>
+<td style="text-align:left">用来重定向接收方到非请求URL的位置来完成请求或标识新的资源</td>
+<td style="text-align:left">Location: <a href="http://www.zcmhi.com/archives/94.html" target="_blank" rel="external">http://www.zcmhi.com/archives/94.html</a></td>
+</tr>
+<tr>
+<td style="text-align:center">Pragma</td>
+<td style="text-align:left">包括实现特定的指令，它可应用到响应链上的任何接收方</td>
+<td style="text-align:left">Pragma: no-cache</td>
+</tr>
+<tr>
+<td style="text-align:center">Proxy-Authenticate</td>
+<td style="text-align:left">它指出认证方案和可应用到代理的该URL上的参数</td>
+<td style="text-align:left">Proxy-Authenticate: Basic</td>
+</tr>
+<tr>
+<td style="text-align:center">refresh</td>
+<td style="text-align:left">应用于重定向或一个新的资源被创造，在5秒之后重定向（由网景提出，被大部分浏览器支持）</td>
+<td style="text-align:left">Refresh: 5; url=<a href="http://www.zcmhi.com/archives/94.html" target="_blank" rel="external">http://www.zcmhi.com/archives/94.html</a></td>
+</tr>
+<tr>
+<td style="text-align:center">Retry-After</td>
+<td style="text-align:left">如果实体暂时不可取，通知客户端在指定时间之后再次尝试</td>
+<td style="text-align:left">Retry-After: 120</td>
+</tr>
+<tr>
+<td style="text-align:center">Server</td>
+<td style="text-align:left">web服务器软件名称</td>
+<td style="text-align:left">Server: Apache/1.3.27 (Unix) (Red-Hat/Linux)</td>
+</tr>
+<tr>
+<td style="text-align:center">Set-Cookie</td>
+<td style="text-align:left">设置Http Cookie</td>
+<td style="text-align:left">Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1</td>
+</tr>
+<tr>
+<td style="text-align:center">Trailer</td>
+<td style="text-align:left">指出头域在分块传输编码的尾部存在</td>
+<td style="text-align:left">Trailer: Max-Forwards</td>
+</tr>
+<tr>
+<td style="text-align:center">Transfer-Encoding</td>
+<td style="text-align:left">文件传输编码</td>
+<td style="text-align:left">Transfer-Encoding:chunked</td>
+</tr>
+<tr>
+<td style="text-align:center">Vary</td>
+<td style="text-align:left">告诉下游代理是使用缓存响应还是从原始服务器请求</td>
+<td style="text-align:left">Vary: *</td>
+</tr>
+<tr>
+<td style="text-align:center">Via</td>
+<td style="text-align:left">告知代理客户端响应是通过哪里发送的</td>
+<td style="text-align:left">Via: 1.0 fred, 1.1 nowhere.com (Apache/1.1)</td>
+</tr>
+<tr>
+<td style="text-align:center">Warning</td>
+<td style="text-align:left">警告实体可能存在的问题</td>
+<td style="text-align:left">Warning: 199 Miscellaneous warning</td>
+</tr>
+<tr>
+<td style="text-align:center">WWW-Authenticate</td>
+<td style="text-align:left">表明客户端请求实体应该使用的授权方案</td>
+<td style="text-align:left">WWW-Authenticate: Basic</td>
+</tr>
+</tbody>
+</table>
+<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ol>
+<li>HttpURLConnection的connect()函数，实际上只是建立了一个与服务器的tcp连接，并没有实际发送http请求。 无论是post还是get，http请求实际上直到HttpURLConnection的getInputStream()这个函数里面才正式发送出去。</li>
+<li>在用POST方式发送URL请求时，URL请求参数的设定顺序是重中之重，对connection对象的一切配置(那一堆set函数) 都必须要在connect()函数执行之前完成。而对outputStream的写操作，又必须要在inputStream的读操作之前。这些顺序实际上是由http请求的格式决定的。</li>
+<li>http请求实际上由两部分组成，一个是http头，所有关于此次http请求的配置都在http头里面定义， 一个是正文content。connect()函数会根据HttpURLConnection对象的配置值生成http头部信息，因此在调用connect函数之前，就必须把所有的配置准备好。</li>
+<li>在http头后面紧跟着的是http请求的正文，正文的内容是通过outputStream流写入的，实际上outputStream不是一个网络流，充其量是个字符串流，往里面写入的东西不会立即发送到网络， 而是存在于内存缓冲区中，待outputStream流关闭时，根据输入的内容生成http正文。至此，http请求的东西已经全部准备就绪。在getInputStream()函数调用的时候，就会把准备好的http请求 正式发送到服务器了，然后返回一个输入流，用于读取服务器对于此次http请求的返回信息。由于http 请求在getInputStream的时候已经发送出去了(包括http头和正文)，因此在getInputStream()函数 之后对connection对象进行设置(对http头的信息进行修改)或者写入outputStream(对正文进行修改)都是没有意义的了，执行这些操作会导致异常的发生。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/网络基础/" rel="tag">#网络基础</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/24/Android-Loader加载器/" rel="next" title="Android-Loader加载器">
+                <i class="fa fa-chevron-left"></i> Android-Loader加载器
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/13/Android-SparseArray/" rel="prev" title="Android SparseArray">
+                Android SparseArray <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/26/Android-浅析-HttpURLConnection/"
+           data-title="Android-浅析-HttpURLConnection" data-url="http://yoursite.com/2017/01/26/Android-浅析-HttpURLConnection/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1"><span class="nav-number">3.1.</span> <span class="nav-text">Step 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2"><span class="nav-number">3.2.</span> <span class="nav-text">Step 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3"><span class="nav-number">3.3.</span> <span class="nav-text">Step 3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4"><span class="nav-number">3.4.</span> <span class="nav-text">Step 4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-5"><span class="nav-number">3.5.</span> <span class="nav-text">Step 5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#例子"><span class="nav-number">3.6.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#返回值"><span class="nav-number">4.</span> <span class="nav-text">返回值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详细使用"><span class="nav-number">5.</span> <span class="nav-text">详细使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Get操作"><span class="nav-number">5.1.</span> <span class="nav-text">Get操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Post操作"><span class="nav-number">5.2.</span> <span class="nav-text">Post操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#download操作"><span class="nav-number">5.3.</span> <span class="nav-text">download操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上传操作"><span class="nav-number">5.4.</span> <span class="nav-text">上传操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Request部分"><span class="nav-number">6.</span> <span class="nav-text">Request部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Responses-部分"><span class="nav-number">7.</span> <span class="nav-text">Responses 部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意点"><span class="nav-number">8.</span> <span class="nav-text">注意点</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

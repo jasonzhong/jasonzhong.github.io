@@ -86,13 +86,13 @@
 
 <meta name="description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android-Loader加载器">
+<meta property="og:title" content="Android Loader加载器">
 <meta property="og:url" content="http://yoursite.com/2017/01/24/Android-Loader加载器/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
 <meta property="og:description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
-<meta property="og:updated_time" content="2017-01-26T08:16:09.107Z">
+<meta property="og:updated_time" content="2017-04-19T07:30:50.961Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android-Loader加载器">
+<meta name="twitter:title" content="Android Loader加载器">
 <meta name="twitter:description" content="是一种能使在activity或fragment中异步加载数据更加容易的方法。特性：支持Activity和Fragment；支持异步加载数据；支持监视数据源的变动并在内容改变时传送新的结果；支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。">
 
 
@@ -116,7 +116,7 @@
 
   <link rel="canonical" href="http://yoursite.com/2017/01/24/Android-Loader加载器/"/>
 
-  <title> Android-Loader加载器 | Zhong's_blog </title>
+  <title> Android Loader加载器 | Zhong's_blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -266,7 +266,7 @@
             
             
               
-                Android-Loader加载器
+                Android Loader加载器
               
             
           </h1>
@@ -345,7 +345,37 @@
 <li>支持监视数据源的变动并在内容改变时传送新的结果。</li>
 <li>支持在配置改变而被重新创建后，能自动重连到上一个加载器的游标，不必重新查询数据。</li>
 </ol>
-<h2 id="API-摘要"><a href="#API-摘要" class="headerlink" title="API 摘要"></a>API 摘要</h2><p>在应用中使用加载器时，会涉及到多个类和接口。 下表汇总了这些类和接口：<br>| 类/接口 | 说明 |<br>| :——: | :—— |<br>| LoaderManager | 一种与 Activity 或 Fragment 相关联的的抽象类，用于管理一个或多个 Loader 实例。 这有助于应用管理与 Activity 或 Fragment 生命周期相关联的、运行时间较长的操作。它最常见的用法是与 CursorLoader 一起使用，但应用可自由写入其自己的加载器，用于加载其他类型的数据。 每个 Activity 或片段中只有一个 LoaderManager。但一个 LoaderManager 可以有多个加载器。|<br>| LoaderManager.LoaderCallbacks | 一种回调接口，用于客户端与 LoaderManager 进行交互。例如，您可使用 onCreateLoader() 回调方法创建新的加载器。|<br>| Loader | 一种执行异步数据加载的抽象类。这是加载器的基类。 您通常会使用 CursorLoader，但您也可以实现自己的子类。加载器处于活动状态时，应监控其数据源并在内容变化时传递新结果。|<br>| AsyncTaskLoader | 提供 AsyncTask 来执行工作的抽象加载器。|<br>| CursorLoader | AsyncTaskLoader 的子类，它将查询 ContentResolver 并返回一个 Cursor。此类采用标准方式为查询游标实现 Loader 协议。它是以 AsyncTaskLoader 为基础而构建，在后台线程中执行游标查询，以免阻塞应用的 UI。使用此加载器是从 ContentProvider 异步加载数据的最佳方式，而不用通过片段或 Activity 的 API 来执行托管查询。|</p>
+<h2 id="API-摘要"><a href="#API-摘要" class="headerlink" title="API 摘要"></a>API 摘要</h2><p>在应用中使用加载器时，会涉及到多个类和接口。 下表汇总了这些类和接口：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">类/接口</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">LoaderManager</td>
+<td style="text-align:left">一种与 Activity 或 Fragment 相关联的的抽象类，用于管理一个或多个 Loader 实例。 这有助于应用管理与 Activity 或 Fragment 生命周期相关联的、运行时间较长的操作。它最常见的用法是与 CursorLoader 一起使用，但应用可自由写入其自己的加载器，用于加载其他类型的数据。 每个 Activity 或片段中只有一个 LoaderManager。但一个 LoaderManager 可以有多个加载器。</td>
+</tr>
+<tr>
+<td style="text-align:center">LoaderManager.LoaderCallbacks</td>
+<td style="text-align:left">一种回调接口，用于客户端与 LoaderManager 进行交互。例如，您可使用 onCreateLoader() 回调方法创建新的加载器。</td>
+</tr>
+<tr>
+<td style="text-align:center">Loader</td>
+<td style="text-align:left">一种执行异步数据加载的抽象类。这是加载器的基类。 您通常会使用 CursorLoader，但您也可以实现自己的子类。加载器处于活动状态时，应监控其数据源并在内容变化时传递新结果。</td>
+</tr>
+<tr>
+<td style="text-align:center">AsyncTaskLoader</td>
+<td style="text-align:left">提供 AsyncTask 来执行工作的抽象加载器。</td>
+</tr>
+<tr>
+<td style="text-align:center">CursorLoader</td>
+<td style="text-align:left">AsyncTaskLoader 的子类，它将查询 ContentResolver 并返回一个 Cursor。此类采用标准方式为查询游标实现 Loader 协议。它是以 AsyncTaskLoader 为基础而构建，在后台线程中执行游标查询，以免阻塞应用的 UI。使用此加载器是从 ContentProvider 异步加载数据的最佳方式，而不用通过片段或 Activity 的 API 来执行托管查询。</td>
+</tr>
+</tbody>
+</table>
 <h3 id="API-使用"><a href="#API-使用" class="headerlink" title="API 使用"></a>API 使用</h3><h4 id="启动加载器"><a href="#启动加载器" class="headerlink" title="启动加载器"></a>启动加载器</h4><p>LoaderManager 可在 Activity 或 Fragment 内管理一个或多个 Loader 实例。每个 Activity 或片段中只有一个 LoaderManager。<br>一般会在<code>Activity</code>的<code>onCreate()</code>方法或<code>Fragment</code>的<code>onActivityCreated()</code>方法内初始化 Loader。操作如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Prepare the loader. Either re-connect with an existing one, or start a new one.</span></div><div class="line">getLoaderManager().initLoader(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">this</span>);</div><div class="line"></div><div class="line"><span class="comment">// source code</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> &lt;D&gt; <span class="function">Loader&lt;D&gt; <span class="title">initLoader</span><span class="params">(<span class="keyword">int</span> id, Bundle args, LoaderManager.LoaderCallbacks&lt;D&gt; callback)</span></span>;</div></pre></td></tr></table></figure></p>
 <p>参数解析：</p>
 <ul>
@@ -409,8 +439,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/01/26/Android-浅析-HttpURLConnection/" rel="prev" title="Android-浅析-HttpURLConnection">
-                Android-浅析-HttpURLConnection <i class="fa fa-chevron-right"></i>
+              <a href="/2017/01/26/Android-浅析-HttpURLConnection/" rel="prev" title="Android 浅析 HttpURLConnection">
+                Android 浅析 HttpURLConnection <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -438,7 +468,7 @@
   <div class="comments" id="comments">
     
       <div class="ds-thread" data-thread-key="2017/01/24/Android-Loader加载器/"
-           data-title="Android-Loader加载器" data-url="http://yoursite.com/2017/01/24/Android-Loader加载器/">
+           data-title="Android Loader加载器" data-url="http://yoursite.com/2017/01/24/Android-Loader加载器/">
       </div>
     
   </div>
@@ -483,7 +513,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-count">42</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -491,7 +521,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -500,7 +530,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
