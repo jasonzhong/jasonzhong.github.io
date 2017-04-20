@@ -1,0 +1,696 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Android_基础知识,Hook," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Hook 技术无论对安全还是恶意软件都是十分重要，其本质就是劫持函数调用。通过Hook技术实现对目标程序的远程注入，也可以用来修改自身一些缺陷的代码。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-Hook-机制-基础">
+<meta property="og:url" content="http://yoursite.com/2017/04/19/Android-Hook-机制-基础/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="Hook 技术无论对安全还是恶意软件都是十分重要，其本质就是劫持函数调用。通过Hook技术实现对目标程序的远程注入，也可以用来修改自身一些缺陷的代码。">
+<meta property="og:updated_time" content="2017-04-20T07:22:13.490Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-Hook-机制-基础">
+<meta name="twitter:description" content="Hook 技术无论对安全还是恶意软件都是十分重要，其本质就是劫持函数调用。通过Hook技术实现对目标程序的远程注入，也可以用来修改自身一些缺陷的代码。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/19/Android-Hook-机制-基础/"/>
+
+  <title> Android-Hook-机制-基础 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-Hook-机制-基础
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-04-19T21:00:36+08:00" content="2017-04-19">
+              2017-04-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/04/19/Android-Hook-机制-基础/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/04/19/Android-Hook-机制-基础/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>Hook 技术无论对安全还是恶意软件都是十分重要，其本质就是劫持函数调用。通过Hook技术实现对目标程序的远程注入，也可以用来修改自身一些缺陷的代码。Hook的功能，使它能够将自身的代码“融入”被勾住（Hook）的程序的进程中，成为目标进程的一个部分。因为在Android系统中使用了沙箱机制，普通用户程序的进程空间都是独立的，程序的运行彼此间都不受干扰，这就使我们希望通过一个程序改变其他程序的某些行为的想法不能直接实现，但是Hook的出现给我们开拓了解决此类问题的道路。当然，根据Hook对象与Hook后处理的事件方式不同，Hook还分为不同的种类，如消息Hook、API Hook等。</p>
+</blockquote>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>首先我们先来实现一个简单的例子，接着再来详细分析：<br>这个例子主要是hook startactivity的调用，让其在调用前输出一段日志。</p>
+<h3 id="Step-1-创建-Instrumentation-类"><a href="#Step-1-创建-Instrumentation-类" class="headerlink" title="Step 1 创建 Instrumentation 类"></a>Step 1 创建 Instrumentation 类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EvilInstrumentation</span> <span class="keyword">extends</span> <span class="title">Instrumentation</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">"EvilInstrumentation"</span>;</div><div class="line">    </div><div class="line">    <span class="comment">// ActivityThread中原始的对象, 保存起来</span></div><div class="line">    Instrumentation mBase;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">EvilInstrumentation</span><span class="params">(Instrumentation base)</span> </span>&#123;</div><div class="line">        mBase = base;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> ActivityResult <span class="title">execStartActivity</span><span class="params">(</span></span></div><div class="line">            Context who, IBinder contextThread, IBinder token, Activity target,</div><div class="line">            Intent intent, <span class="keyword">int</span> requestCode, Bundle options) &#123;</div><div class="line">        </div><div class="line">        <span class="comment">// Hook之前, 可以输出你想要的!</span></div><div class="line">        System.out.println(<span class="string">"xxxx: 执行了startActivity, 参数如下: "</span> + <span class="string">"who = ["</span> + who + <span class="string">"], "</span> +</div><div class="line">                <span class="string">"contextThread = ["</span> + contextThread + <span class="string">"], token = ["</span> + token + <span class="string">"], "</span> +</div><div class="line">                <span class="string">"target = ["</span> + target + <span class="string">"], intent = ["</span> + intent +</div><div class="line">                <span class="string">"], requestCode = ["</span> + requestCode + <span class="string">"], options = ["</span> + options + <span class="string">"]"</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// 开始调用原始的方法, 调不调用随你,但是不调用的话, 所有的startActivity都失效了.</span></div><div class="line">        <span class="comment">// 由于这个方法是隐藏的,因此需要使用反射调用;首先找到这个方法</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Method execStartActivity = Instrumentation.class.getDeclaredMethod(</div><div class="line">                    <span class="string">"execStartActivity"</span>,</div><div class="line">                    Context.class, IBinder.class, IBinder.class, Activity.class,</div><div class="line">                    Intent.class, <span class="keyword">int</span>.class, Bundle.class);</div><div class="line">            execStartActivity.setAccessible(<span class="keyword">true</span>);</div><div class="line">            <span class="keyword">return</span> (ActivityResult) execStartActivity.invoke(mBase, who,</div><div class="line">                    contextThread, token, target, intent, requestCode, options);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            <span class="comment">// rom修改了 需要手动适配</span></div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"do not support!!! pls adapt it"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Step-2-创建-HookHelper-类"><a href="#Step-2-创建-HookHelper-类" class="headerlink" title="Step 2 创建 HookHelper 类"></a>Step 2 创建 HookHelper 类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HookHelper</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">attachContext</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">        <span class="comment">// 先获取到当前的ActivityThread对象</span></div><div class="line">        Class&lt;?&gt; activityThreadClass = Class.forName(<span class="string">"android.app.ActivityThread"</span>);</div><div class="line">        Method currentActivityThreadMethod = activityThreadClass.getDeclaredMethod(<span class="string">"currentActivityThread"</span>);</div><div class="line">        currentActivityThreadMethod.setAccessible(<span class="keyword">true</span>);</div><div class="line">        <span class="comment">//currentActivityThread是一个static函数所以可以直接invoke，不需要带实例参数</span></div><div class="line">        Object currentActivityThread = currentActivityThreadMethod.invoke(<span class="keyword">null</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// 拿到原始的 mInstrumentation字段</span></div><div class="line">        Field mInstrumentationField = activityThreadClass.getDeclaredField(<span class="string">"mInstrumentation"</span>);</div><div class="line">        mInstrumentationField.setAccessible(<span class="keyword">true</span>);</div><div class="line">        Instrumentation mInstrumentation = (Instrumentation) mInstrumentationField.get(currentActivityThread);</div><div class="line">        </div><div class="line">        <span class="comment">// 创建代理对象</span></div><div class="line">        Instrumentation evilInstrumentation = <span class="keyword">new</span> EvilInstrumentation(mInstrumentation);</div><div class="line">        </div><div class="line">        <span class="comment">// 偷梁换柱</span></div><div class="line">        mInstrumentationField.set(currentActivityThread, evilInstrumentation);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Step-3-找到适合实际调用"><a href="#Step-3-找到适合实际调用" class="headerlink" title="Step 3 找到适合实际调用"></a>Step 3 找到适合实际调用</h3><p>我们选择在程序一开始调用主Activity的时候就调用<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        ButterKnife.bind(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context newBase)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.attachBaseContext(newBase);</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            HookHelper.attachContext();</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>ok, 当你再次调用新的activity的时候就会输出一句话了，接下来我们详细分析下它的工作原理。</p>
+<h2 id="详细解析"><a href="#详细解析" class="headerlink" title="详细解析"></a>详细解析</h2><h3 id="Instrumentation"><a href="#Instrumentation" class="headerlink" title="Instrumentation"></a>Instrumentation</h3><blockquote>
+<p>Base class for implementing application instrumentation code. When running with instrumentation turned on, this class will be instantiated for you before any of the application code, allowing you to monitor all of the interaction the system has with the application. An Instrumentation implementation is described to the system through an AndroidManifest.xml <code>&lt;instrumentation&gt;</code> tag. 实施应用程序代码的基础类。 当开启<code>instrumentation</code>运行时，此类将在任何应用程序代码之前为您实例化，从而允许您监视系统与应用程序的所有交互。 通过AndroidManifest.xml的<code>instrumentation</code>向系统描述了Instrumentation实现。</p>
+</blockquote>
+<p>使用Instrumentation，可以在主程序启动之前，创建模拟的系统对象，如Context；控制应用程序的多个生命周期；发送UI事件给应用程序；在执行期间检查程序状态。 Instrumentation框架通过将主程序和测试程序运行在同一个进程来实现这些功能。</p>
+<p>Instrumentation 有很多方法可以归我们使用，例如 execStartActivity(…) 就是调用 Activity的方法。我们通过创建一个我们的Instrumentation类继承它，并且覆写父类的方法来实现我们想要做的事。</p>
+<p>在 Step 1 的时候我们就生成了一个<code>Instrumentation</code>，并且让它覆写了父类的<code>execStartActivity</code>方法。</p>
+<h3 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h3><blockquote>
+<p>A Field provides information about, and dynamic access to, a single field of a class or an interface. The reflected field may be a class (static) field or an instance field. A Field permits widening conversions to occur during a get or set access operation, but throws an IllegalArgumentException if a narrowing conversion would occur. 字段提供有关类或接口的单个字段的信息和动态访问。 反射的字段可以是类（静态）字段或实例字段。 A字段允许在获取或设置访问操作期间扩展转换，但如果发生缩小转换，则会引发IllegalArgumentException。</p>
+</blockquote>
+<p>Field 是反射技术用到的一个类，通过它可以将反射过来的类的内部函数、变量随意使用。</p>
+<p>Field 包含了四个常用方法：</p>
+<ul>
+<li>getFields()</li>
+<li>getField(String)</li>
+<li>getDeclaredFields()</li>
+<li>getDeclaredField(String)</li>
+</ul>
+<p>在 Step 2 的时候我们通过反射技术拿到了 系统里进程的<code>Instrumentation</code>，通过替换成我们自己的<code>Instrumentation</code>来警醒hook注入。</p>
+<h3 id="Hook-关键点"><a href="#Hook-关键点" class="headerlink" title="Hook 关键点"></a>Hook 关键点</h3><p>Hook 的最关键的步骤其实是找到Hook点，只有找到这个点才能进行接下来的注入。所以细心找到这个关键点非常重要。<br>寻找Hook点，原则是静态变量或者单例对象，尽量Hook pulic的对象和方法，非public不保证每个版本都一样，需要适配。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>看了Hook 机制的基本使用和细节详解，差不多有个大致了解了，其实Hook 很简单，分为三步：</p>
+<ol>
+<li>寻找 Hook点，原则是静态变量或者单例对象，尽量Hook pulic的对象和方法。</li>
+<li>找到合理的代理方法，例如动态代理或者静态代理。</li>
+<li>就是用代理的对象替换原有的对象进行工作。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Android-基础知识/" rel="tag">#Android_基础知识</a>
+          
+            <a href="/tags/Hook/" rel="tag">#Hook</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/19/设计模式-代理模式/" rel="next" title="设计模式-代理模式">
+                <i class="fa fa-chevron-left"></i> 设计模式-代理模式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/04/19/Android-Hook-机制-基础/"
+           data-title="Android-Hook-机制-基础" data-url="http://yoursite.com/2017/04/19/Android-Hook-机制-基础/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">43</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">3.</span> <span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1-创建-Instrumentation-类"><span class="nav-number">3.1.</span> <span class="nav-text">Step 1 创建 Instrumentation 类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2-创建-HookHelper-类"><span class="nav-number">3.2.</span> <span class="nav-text">Step 2 创建 HookHelper 类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3-找到适合实际调用"><span class="nav-number">3.3.</span> <span class="nav-text">Step 3 找到适合实际调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详细解析"><span class="nav-number">4.</span> <span class="nav-text">详细解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Instrumentation"><span class="nav-number">4.1.</span> <span class="nav-text">Instrumentation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Field"><span class="nav-number">4.2.</span> <span class="nav-text">Field</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hook-关键点"><span class="nav-number">4.3.</span> <span class="nav-text">Hook 关键点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
