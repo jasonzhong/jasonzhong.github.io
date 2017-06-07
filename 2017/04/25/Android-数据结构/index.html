@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/04/25/Android-数据结构/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
 <meta property="og:description" content="整理和学习数据结构，为我们的数据结构知识树梳理清楚。">
-<meta property="og:updated_time" content="2017-04-26T02:29:03.461Z">
+<meta property="og:updated_time" content="2017-06-07T03:06:06.730Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android-数据结构">
 <meta name="twitter:description" content="整理和学习数据结构，为我们的数据结构知识树梳理清楚。">
@@ -338,7 +338,13 @@
 <h2 id="SparseArray"><a href="#SparseArray" class="headerlink" title="SparseArray"></a>SparseArray</h2><blockquote>
 <p>SparseArrays map integers to Objects. Unlike a normal array of Objects, there can be gaps in the indices. It is intended to be more memory efficient than using a HashMap to map Integers to Objects, both because it avoids auto-boxing keys and its data structure doesn’t rely on an extra entry object for each mapping.<br>翻译：SparseArrays 将 integers 映射到 Objects。与正常的数组不同，它允许在数组中有间隙。它的目的是比一般使用 HashMap 对内存的使用更加优化。因为它每个键值对避免了自动拆包键值和它的数据结构不依赖额外的条目封装。</p>
 </blockquote>
-<p>核心：折半查找函数，存储方式为稀疏矩阵。通过数组数据结构来保存映射，然后利用折半查找来找到对象。<br>优点：</p>
+<p>核心：</p>
+<ol>
+<li>存储方式：稀疏矩阵。</li>
+<li>查找方式：折半查找函数。</li>
+</ol>
+<p>通过数组数据结构来保存映射，然后利用折半查找来找到对象。</p>
+<p>优点：</p>
 <ol>
 <li>减少了对内存的使用，并且数据结构不会依赖于外部对象映射。</li>
 </ol>
@@ -353,7 +359,12 @@
 <h2 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h2><blockquote>
 <p>Resizable-array implementation of the List interface. Implements all optional list operations, and permits all elements, including null. In addition to implementing the List interface, this class provides methods to manipulate the size of the array that is used internally to store the list. (This class is roughly equivalent to Vector, except that it is unsynchronized.)<br>翻译：List接口的可调整大小的数组实现。 实现所有可选列表操作，并允许所有元素，包括null。 除了实现List接口之外，该类还提供了一些方法来操作在内部使用来存储列表的数组的大小。 (这个类大致相当于Vector，除了它是不同步的。)</p>
 </blockquote>
-<p>核心：存储方式为数组实现，并无优化查找方式。<br>优点：</p>
+<p>核心：</p>
+<ol>
+<li>存储方式：数组实现。</li>
+<li>查找方式：并无优化查找方式。</li>
+</ol>
+<p>优点：</p>
 <ol>
 <li>基于数组实现，对于遍历来说方便于查找和添加。</li>
 </ol>
@@ -364,6 +375,24 @@
 <li>在增长的时候把原容器内容拷贝到新容器在大数据的情况下会耗时长，而且浪费旧的容器内存。</li>
 </ol>
 <p><strong><a href="https://jasonzhong.github.io/2017/04/25/Android-ArrayList/" target="_blank" rel="external">ArrayList详解</a></strong></p>
+<h2 id="LinkedList"><a href="#LinkedList" class="headerlink" title="LinkedList"></a>LinkedList</h2><blockquote>
+<p>Doubly-linked list implementation of the List and Deque interfaces. Implements all optional list operations, and permits all elements (including null).<br>翻译：双向连接链表实现了<code>List</code>和<code>Deque</code>的接口，实现了所有可选列表操作并允许所有元素包括null。</p>
+</blockquote>
+<p>核心：</p>
+<ol>
+<li>存储方式：链表实现。</li>
+<li>查找方式：从头沿着指针方向查找。</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>对于增加、删除、移动效率都非常高。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>因为是链表，如果链表过大，查找将会非常耗时。</li>
+<li>非线程安全，多线程情况下容易出问题。</li>
+</ol>
+<p><strong><a href="https://jasonzhong.github.io/2017/04/25/Android-ArrayList/" target="_blank" rel="external">LinkedList详解</a></strong></p>
 
       
     </div>
@@ -479,7 +508,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">45</span>
+              <span class="site-state-item-count">46</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -536,7 +565,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SparseArray"><span class="nav-number">2.</span> <span class="nav-text">SparseArray</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ArrayList"><span class="nav-number">3.</span> <span class="nav-text">ArrayList</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SparseArray"><span class="nav-number">2.</span> <span class="nav-text">SparseArray</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ArrayList"><span class="nav-number">3.</span> <span class="nav-text">ArrayList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LinkedList"><span class="nav-number">4.</span> <span class="nav-text">LinkedList</span></a></li></ol></div>
             
           </div>
         </section>

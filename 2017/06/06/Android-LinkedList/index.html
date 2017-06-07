@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="设计模式," />
+  <meta name="keywords" content="Android,数据结构," />
 
 
 
@@ -84,16 +84,16 @@
 
 
 
-<meta name="description" content="将一个复杂对象的构建与表示分离，使同样的构建可以创建不同表示。">
+<meta name="description" content="LinkedList 是 android.util 包里的一个工具。实现一个链表。由这个类定义的链表也可以像栈或队列一样被使用。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="设计模式-builder模式">
-<meta property="og:url" content="http://yoursite.com/2016/11/22/设计模式-builder模式/index.html">
+<meta property="og:title" content="Android-LinkedList">
+<meta property="og:url" content="http://yoursite.com/2017/06/06/Android-LinkedList/index.html">
 <meta property="og:site_name" content="Zhong's_blog">
-<meta property="og:description" content="将一个复杂对象的构建与表示分离，使同样的构建可以创建不同表示。">
-<meta property="og:updated_time" content="2016-11-22T11:28:37.457Z">
+<meta property="og:description" content="LinkedList 是 android.util 包里的一个工具。实现一个链表。由这个类定义的链表也可以像栈或队列一样被使用。">
+<meta property="og:updated_time" content="2017-06-07T03:05:15.344Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="设计模式-builder模式">
-<meta name="twitter:description" content="将一个复杂对象的构建与表示分离，使同样的构建可以创建不同表示。">
+<meta name="twitter:title" content="Android-LinkedList">
+<meta name="twitter:description" content="LinkedList 是 android.util 包里的一个工具。实现一个链表。由这个类定义的链表也可以像栈或队列一样被使用。">
 
 
 
@@ -114,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/11/22/设计模式-builder模式/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/06/06/Android-LinkedList/"/>
 
-  <title> 设计模式-builder模式 | Zhong's_blog </title>
+  <title> Android-LinkedList | Zhong's_blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -266,7 +266,7 @@
             
             
               
-                设计模式-builder模式
+                Android-LinkedList
               
             
           </h1>
@@ -278,19 +278,38 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-11-22T17:26:30+08:00" content="2016-11-22">
-              2016-11-22
+            <time itemprop="dateCreated" datetime="2017-06-06T20:00:30+08:00" content="2017-06-06">
+              2017-06-06
             </time>
           </span>
 
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-数据结构/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-数据结构</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
           
 
           
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/11/22/设计模式-builder模式/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/22/设计模式-builder模式/" itemprop="commentsCount"></span>
+                <a href="/2017/06/06/Android-LinkedList/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/06/06/Android-LinkedList/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -317,11 +336,22 @@
 <p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
 </blockquote>
 <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
-<p>将一个复杂对象的构建与表示分离，使同样的构建可以创建不同表示。</p>
+<p>LinkedList is an implementation of List, backed by a doubly-linked list. All optional operations including adding, removing, and replacing elements are supported. All elements are permitted, including null. This class is primarily useful if you need queue-like behavior. It may also be useful as a list if you expect your lists to contain zero or one element, but still require the ability to scale to slightly larger numbers of elements.</p>
 </blockquote>
-<p><strong>优点</strong>：建立良好的封装，创建独立，容易扩展。<br><strong>缺点</strong>：产生多余的builder对象以及director对象，消耗内存。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = Client.class.getSimpleName();</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mPermissionType = <span class="number">0</span>;</div><div class="line">    <span class="keyword">private</span> Context mContext = <span class="keyword">null</span>;</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Client</span><span class="params">(Builder builder)</span> </span>&#123;</div><div class="line">        mContext = builder.mContext;</div><div class="line">        mPermissionType = builder.permissionType;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</div><div class="line">        <span class="keyword">private</span> <span class="keyword">int</span> permissionType = <span class="number">0</span>;</div><div class="line">        <span class="keyword">private</span> Context mContext = <span class="keyword">null</span>;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Builder</span><span class="params">()</span> </span>&#123;&#125;</div><div class="line">        <span class="function"><span class="keyword">public</span> Builder <span class="title">setContext</span><span class="params">(Context context)</span> </span>&#123;</div><div class="line">            mContext = context;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><a href="https://jasonzhong.github.io/2016/11/18/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" target="_blank" rel="external">设计模式 目录</a></p>
+<p>LinkedList的数据结构是双向列表,列表中的每个节点都包含了对前一个和后一个元素的引用。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Link</span>&lt;<span class="title">ET</span>&gt; </span>&#123;</div><div class="line">    ET data;</div><div class="line"></div><div class="line">    Link&lt;ET&gt; previous, next;</div><div class="line"></div><div class="line">    Link(ET o, Link&lt;ET&gt; p, Link&lt;ET&gt; n) &#123;</div><div class="line">        data = o;</div><div class="line">        previous = p;</div><div class="line">        next = n;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">LinkedList&lt;String&gt; lList = <span class="keyword">new</span> LinkedList&lt;String&gt;(); </div><div class="line">lList.add(<span class="string">"1"</span>); </div><div class="line">lList.add(<span class="string">"2"</span>); </div><div class="line">lList.add(<span class="string">"3"</span>); </div><div class="line">lList.add(<span class="string">"4"</span>); </div><div class="line">lList.add(<span class="string">"5"</span>);</div><div class="line">                                                                                                                                                                                                                 </div><div class="line">System.out.println(<span class="string">"第一个元素是 :"</span> + lList.getFirst()); </div><div class="line">System.out.println(<span class="string">"最后一个元素是 :"</span> + lList.getLast());</div></pre></td></tr></table></figure>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LinkedList&lt;T&gt; lList = <span class="keyword">new</span> LinkedList&lt;T&gt;();</div></pre></td></tr></table></figure>
+<h3 id="添加元素"><a href="#添加元素" class="headerlink" title="添加元素"></a>添加元素</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(Object element)</span></span></div><div class="line"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> index, Object element)</span></div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">addFirst</span><span class="params">(Object element)</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">addLast</span><span class="params">(Object element)</span></div></pre></td></tr></table></figure>
+<h3 id="删除元素"><a href="#删除元素" class="headerlink" title="删除元素"></a>删除元素</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> E <span class="title">remove</span><span class="params">(<span class="keyword">int</span> location)</span></span></div><div class="line"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">remove</span><span class="params">(Object object)</span></div></pre></td></tr></table></figure>
+<h3 id="查找元素"><a href="#查找元素" class="headerlink" title="查找元素"></a>查找元素</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">LinkedList&lt;String&gt; lList = <span class="keyword">new</span> LinkedList&lt;String&gt;(); </div><div class="line">lList.add(<span class="string">"1"</span>); </div><div class="line">lList.add(<span class="string">"2"</span>); </div><div class="line">lList.add(<span class="string">"3"</span>); </div><div class="line">lList.add(<span class="string">"4"</span>); </div><div class="line">lList.add(<span class="string">"5"</span>); </div><div class="line">lList.add(<span class="string">"2"</span>); </div><div class="line">System.out.println(lList.indexOf(<span class="string">"2"</span>)); </div><div class="line">System.out.println(lList.lastIndexOf(<span class="string">"2"</span>));</div></pre></td></tr></table></figure>
+<h2 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ol>
+<li>对于增加、删除、移动效率都非常高。因为改动只需要针对链表的前后节点。</li>
+<li>因为是链表，对于内存来说是不连续的，空间利用率较高。</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>因为是链表结构，在查询上只能从头往后查找，对于效率来说十分低下。</li>
+<li>因为是链表，对于内存来说是不连续的，在优化内存分配上不太友好。</li>
+</ol>
 
       
     </div>
@@ -344,7 +374,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/设计模式/" rel="tag">#设计模式</a>
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/数据结构/" rel="tag">#数据结构</a>
           
         </div>
       
@@ -353,17 +385,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/11/18/设计模式-单例模式/" rel="next" title="设计模式-单例模式">
-                <i class="fa fa-chevron-left"></i> 设计模式-单例模式
+              <a href="/2017/04/25/Android-ArrayList/" rel="next" title="Android-ArrayList">
+                <i class="fa fa-chevron-left"></i> Android-ArrayList
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/11/29/设计模式-责任链模式/" rel="prev" title="设计模式-责任链模式">
-                设计模式-责任链模式 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -389,8 +417,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/11/22/设计模式-builder模式/"
-           data-title="设计模式-builder模式" data-url="http://yoursite.com/2016/11/22/设计模式-builder模式/">
+      <div class="ds-thread" data-thread-key="2017/06/06/Android-LinkedList/"
+           data-title="Android-LinkedList" data-url="http://yoursite.com/2017/06/06/Android-LinkedList/">
       </div>
     
   </div>
@@ -492,7 +520,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">3.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加元素"><span class="nav-number">3.2.</span> <span class="nav-text">添加元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除元素"><span class="nav-number">3.3.</span> <span class="nav-text">删除元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查找元素"><span class="nav-number">3.4.</span> <span class="nav-text">查找元素</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特性"><span class="nav-number">4.</span> <span class="nav-text">特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优点"><span class="nav-number">4.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点"><span class="nav-number">4.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
