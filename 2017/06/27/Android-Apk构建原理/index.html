@@ -1,0 +1,748 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Apk构建," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Android Apk 的构建原理对于学习 Android 来说十分重要，在工作上很多疑难的问题有时候都跟构建有关，并且也为我们接下来学习Apk的安装启动作为铺垫。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-Apk构建原理">
+<meta property="og:url" content="http://yoursite.com/2017/06/27/Android-Apk构建原理/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="Android Apk 的构建原理对于学习 Android 来说十分重要，在工作上很多疑难的问题有时候都跟构建有关，并且也为我们接下来学习Apk的安装启动作为铺垫。">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/android%20apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/android%20apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B2.png?raw=true">
+<meta property="og:updated_time" content="2017-06-30T09:02:17.916Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-Apk构建原理">
+<meta name="twitter:description" content="Android Apk 的构建原理对于学习 Android 来说十分重要，在工作上很多疑难的问题有时候都跟构建有关，并且也为我们接下来学习Apk的安装启动作为铺垫。">
+<meta name="twitter:image" content="https://github.com/jasonzhong/PicturePool/blob/master/android%20apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/06/27/Android-Apk构建原理/"/>
+
+  <title> Android-Apk构建原理 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-Apk构建原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-06-27T19:45:34+08:00" content="2017-06-27">
+              2017-06-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-Apk构建/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-Apk构建</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/06/27/Android-Apk构建原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/06/27/Android-Apk构建原理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>Android 构建系统编译应用资源和源代码，然后将它们打包成可供您测试、部署、签署和分发的 APK。Android Studio 使用 Gradle 这一高级构建工具包来自动化执行和管理构建流程，同时也允许您定义灵活的自定义构建配置。每个构建配置均可自行定义一组代码和资源，同时对所有应用版本共有的部分加以重复利用。Android Plugin for Gradle 与这个构建工具包协作，共同提供专用于构建和测试 Android 应用的流程和可配置设置。</p>
+</blockquote>
+<p>我们先来看一张完整的构建图：<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/android%20apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B.png?raw=true" alt="android apk打包流程"></p>
+<p><img src="https://github.com/jasonzhong/PicturePool/blob/master/android%20apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B2.png?raw=true" alt="android apk打包流程2"><br>两张流程图，一张是简图帮助理解，一张是完整图。</p>
+<p>在理解构建流程之前，我们首先要了解构建过程中各个工具的意义和主要功能。</p>
+<h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">名字</th>
+<th style="text-align:center">功能</th>
+<th style="text-align:center">详细介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">aapt</td>
+<td style="text-align:center">Android资源打包工具</td>
+<td style="text-align:center">可以查看，创建， 更新ZIP格式的文档附件(zip, jar, apk)。也可将资源文件编译成二进制文件。</td>
+</tr>
+<tr>
+<td style="text-align:center">aidl</td>
+<td style="text-align:center">Android接口描述语言转化为.java文件的工具</td>
+<td style="text-align:center">将android中我们用到的接口类描述语言，例如跨进程的aidl文件转化为java文件。</td>
+</tr>
+<tr>
+<td style="text-align:center">javac</td>
+<td style="text-align:center">Java Compiler</td>
+<td style="text-align:center">java语言编程编译器。全称javacompilation。javac工具读由java语言编写的类和接口的定义，并将它们编译成字节代码的class文件。javac 可以隐式编译一些没有在命令行中提及的源文件。</td>
+</tr>
+<tr>
+<td style="text-align:center">dex</td>
+<td style="text-align:center">转化.class文件为Davik VM能识别的.dex文件</td>
+<td style="text-align:center">把所有的字节码文件转成Android DEX文件(classes.dex)。它是Android平台上可执行文件的类型。dx工具的主要工作是将Java字节码转成成Dalvik字节码、压缩常量池、消除冗余信息等。</td>
+</tr>
+<tr>
+<td style="text-align:center">apkbuilder</td>
+<td style="text-align:center">生成apk包</td>
+<td style="text-align:center">将所有没有编译的资源(如images等)、编译过的资源和.dex文件都会打包到最终的.apk文件中。</td>
+</tr>
+<tr>
+<td style="text-align:center">jarsigner</td>
+<td style="text-align:center">jar文件的签名工具</td>
+<td style="text-align:center">工具利用密钥仓库中的信息来产生或校验 Java 存档 (JAR) 文件的数字签名</td>
+</tr>
+<tr>
+<td style="text-align:center">zipalign</td>
+<td style="text-align:center">字节码对齐工具</td>
+<td style="text-align:center">它能够对打包的应用程序进行优化。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="具体流程"><a href="#具体流程" class="headerlink" title="具体流程"></a>具体流程</h2><h3 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1."></a>Step 1.</h3><blockquote>
+<p>使用aapt工具生成R.java文件</p>
+</blockquote>
+<p>将<strong>Resource文件</strong>(就是工程中res中的文件)、<strong>Assets文件</strong>(相当于另外一种资源，这种资源Android系统并不像对res中的文件那样优化它)、<strong>AndroidManifest.xml</strong>文件(包名就是从这里读取的，因为生成R.java文件需要包名)、<strong>Android基础类库</strong>(Android.jar文件)打包成资源(一般在Android工程的bin目录可以看到一个叫resources.ap_的文件就是它了)、R.java文件(在gen目录中，大家应该很熟悉了)。</p>
+<h3 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2."></a>Step 2.</h3><blockquote>
+<p>处理AIDL文件，生成对应的.java文件</p>
+</blockquote>
+<p>将源码文件、aidl文件、framework.aidl等应用到aidl的描述语言文件转化为java文件。</p>
+<h3 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3."></a>Step 3.</h3><blockquote>
+<p>编译Java文件，生成对应的.class文件</p>
+</blockquote>
+<p>将源码文件(包括R.java和AIDL生成的.java文件)、库文件(.jar文件)编译为.class文件。</p>
+<h3 id="Step-4"><a href="#Step-4" class="headerlink" title="Step 4."></a>Step 4.</h3><blockquote>
+<p>把.class文件转化成Davik VM支持的.dex文件</p>
+</blockquote>
+<p>将任何第三方的libraries和.class文件都会被转换成.dex文件。dex工具生成可供Android系统Dalvik虚拟机执行的classes.dex文件。</p>
+<h3 id="Step-5"><a href="#Step-5" class="headerlink" title="Step 5."></a>Step 5.</h3><blockquote>
+<p>打包生成APK文件</p>
+</blockquote>
+<p>所有没有编译的资源(如images等)、编译过的资源和.dex文件都会被apkbuilder工具打包到最终的.apk文件中。</p>
+<h3 id="Step-6"><a href="#Step-6" class="headerlink" title="Step 6."></a>Step 6.</h3><blockquote>
+<p>对APK文件进行签名</p>
+</blockquote>
+<p>一旦APK文件生成，它必须被签名才能被安装在设备上。在开发过程中，主要用到的就是两种签名的keystore。一种是用于调试的debug.keystore，它主要用于调试，在Eclipse或者Android Studio中直接run以后跑在手机上的就是使用的debug.keystore。另一种就是用于发布正式版本的keystore。</p>
+<h3 id="Step-7"><a href="#Step-7" class="headerlink" title="Step 7."></a>Step 7.</h3><blockquote>
+<p>对签名后的APK文件进行对齐处理</p>
+</blockquote>
+<p>如果你发布的apk是正式版的话，就必须用到的工具zipalign对APK进行对齐处理。对齐的主要过程是将APK包中所有的资源文件距离文件起始偏移为4字节整数倍，这样通过内存映射访问apk文件时的速度会更快。对齐的作用就是减少运行时内存的使用。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Apk构建/" rel="tag">#Apk构建</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/07/Android-算法/" rel="next" title="Android-算法">
+                <i class="fa fa-chevron-left"></i> Android-算法
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/30/Android-Res资源打包原理/" rel="prev" title="Android-Res资源打包原理 (一)">
+                Android-Res资源打包原理 (一) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/06/27/Android-Apk构建原理/"
+           data-title="Android-Apk构建原理" data-url="http://yoursite.com/2017/06/27/Android-Apk构建原理/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">50</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#工具"><span class="nav-number">3.</span> <span class="nav-text">工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体流程"><span class="nav-number">4.</span> <span class="nav-text">具体流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1"><span class="nav-number">4.1.</span> <span class="nav-text">Step 1.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2"><span class="nav-number">4.2.</span> <span class="nav-text">Step 2.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3"><span class="nav-number">4.3.</span> <span class="nav-text">Step 3.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4"><span class="nav-number">4.4.</span> <span class="nav-text">Step 4.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-5"><span class="nav-number">4.5.</span> <span class="nav-text">Step 5.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-6"><span class="nav-number">4.6.</span> <span class="nav-text">Step 6.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-7"><span class="nav-number">4.7.</span> <span class="nav-text">Step 7.</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
