@@ -1,0 +1,718 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,性能优化," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Android 的优化是很重要的，在开发的时候一味往前跑，往往会忽略对内存的严谨使用。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-性能优化-内存优化">
+<meta property="og:url" content="http://yoursite.com/2017/07/24/Android-性能优化-内存优化/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="Android 的优化是很重要的，在开发的时候一味往前跑，往往会忽略对内存的严谨使用。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20adb%20ps.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20adb%20dumpsys.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor3.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20mat.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20LeakCanary.jpg?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20save.png?raw=true">
+<meta property="og:updated_time" content="2017-07-27T13:24:28.506Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-性能优化-内存优化">
+<meta name="twitter:description" content="Android 的优化是很重要的，在开发的时候一味往前跑，往往会忽略对内存的严谨使用。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。">
+<meta name="twitter:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20adb%20ps.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/07/24/Android-性能优化-内存优化/"/>
+
+  <title> Android-性能优化-内存优化 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-性能优化-内存优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-07-24T15:08:27+08:00" content="2017-07-24">
+              2017-07-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-性能优化/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-性能优化</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/07/24/Android-性能优化-内存优化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/07/24/Android-性能优化-内存优化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>Android 的优化是很重要的，在开发的时候一味往前跑，优先把功能做出来往往会对很多代码妥协。目前Android 手机的性能确实越来越好，从一两百M到现在4G、6G的大内存，但是分配给每个应用的内存还是有限的，所以我们对内存的优化还是要继续下去，一个是为了避免OOM的问题，还有就是减少不必要的内存开销，尽量做到完美嘛。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。</p>
+</blockquote>
+<h2 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h2><h3 id="内存分类"><a href="#内存分类" class="headerlink" title="内存分类"></a>内存分类</h3><p>Android 的内存是指手机的RAM，包括五部分：寄存器、堆、栈、静态存储区/方法区、常量池。</p>
+<ol>
+<li>寄存器(Registers)：速度最快的存储场所，因为寄存器位于处理器内部，所以在程序中我们无法控制。</li>
+<li>堆(Heap)：在堆上分配内存的过程称作内存动态分配过程。在java中堆用于存放由new创建的对象和数组。堆中分配的内存，由java虚拟机自动垃圾回收器(GC)来管理。堆是不连续的内存区域（因为系统是用链表来存储空闲内存地址，自然不是连续的），堆大小受限于计算机系统中有效的虚拟内存。</li>
+<li>栈(Stack)：存放基本类型的对象和引用，但是对象本身不存放在栈中而是存放在堆中。在Java中除了基本类型，都是引用类型。在函数执行的时候，函数内部的局部变量就会在栈上创建，函数执行结束的时候这些存储单元会被自动释放。栈内存分配运算内置于处理器的指令集中是一块连续的内存区域，效率很高，速度快，但是大小是操作系统预定好的所以分配的内存容量有限。</li>
+<li>静态存储区/方法区(Static Field)：指在固定的位置上存放应用程序运行时一直存在的数据，java在内存中专门划分了一个静态存储区域来管理一些特殊的数据变量如静态的数据变量。</li>
+<li>常量池(Constant Pool)：专门存放常量的区域。JVM虚拟机为每个已经被转载的类型维护一个常量池。常量池就是该类型所有用到地常量的一个有序集合包括直接常量(基本类型，String)和对其他类型、字段和方法的符号引用。<br>/*</li>
+</ol>
+<h3 id="沙箱模型"><a href="#沙箱模型" class="headerlink" title="沙箱模型"></a>沙箱模型</h3><p>应用程序进程之间，应用程序与操作系统之间的安全性由Linux操作系统的标准进程级安全机制实现。在默认状态下，应用程序之间无法交互，运行在进程沙箱内的应用程序没有被分配权限，无法访问系统或资源。因此，无论是直接运行于操作系统之上的应用程序，还是运行于Dalvik虚拟机的应用程序都得到同样的安全隔离与保护，被限制在各自“沙箱”内的应用程序互不干扰。对于Android来说每个应用都是在Dalvik虚拟机上运行，各个应用间都是相互隔离。那么就存在了内存的分配不是无限的，每个应用最高分配内存都是固定的而且是越少越好的形式分配。对于应用来说内存的优化就显得十分重要了。</p>
+<h2 id="内存优化方法"><a href="#内存优化方法" class="headerlink" title="内存优化方法"></a>内存优化方法</h2><p>内存优化我们要做两点，首先要问有没有内存问题，然后这个问题要怎么解决。</p>
+<h3 id="第一步：有没有内存问题"><a href="#第一步：有没有内存问题" class="headerlink" title="第一步：有没有内存问题"></a>第一步：有没有内存问题</h3><p>查找有没有内存问题的第一步是查看内存，直观的能看到内存到底是涨还是跌，才好分析内存是否健康。</p>
+<ol>
+<li>adb shell ps</li>
+<li>adb shell dumpsys meminfo {package name}</li>
+<li>Android Monitor / Memory</li>
+<li>MAT</li>
+<li>LeakCanary</li>
+</ol>
+<p>这五个方法大致可以看出有没有内存问题，接下来详细解说下这几个方法。</p>
+<h4 id="adb-shell-ps"><a href="#adb-shell-ps" class="headerlink" title="adb shell ps"></a>adb shell ps</h4><p>这个方法我们是通过手机连接电脑，在电脑上再通过 adb 的形式获取的。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20adb%20ps.png?raw=true" alt="adb shell ps"></p>
+<p>这里的几个字段的意思分别为：<br>USER:  进程当前用户。<br>PID:   Process ID，进程ID。<br>PPID:  Process Parent ID，进程的父进程ID。<br>VSIZE: Virtual Size，进程的虚拟内存大小。<br>RSS:   Resident Set Size，实际驻留”在内存中”的内存大小。<br>WCHAN: 休眠进程在内核中的地址。<br>PC:    Program Counter。<br>NAME:  进程名。</p>
+<p>通过看 RSS 的字段我们就可以看出内存的大小，通过不断的测试我们的功能再看内存，就可以发现那个地方的内存有暴涨，当然这个方法比较难发现问题，不建议使用。</p>
+<h4 id="adb-shell-dumpsys-meminfo"><a href="#adb-shell-dumpsys-meminfo" class="headerlink" title="adb shell dumpsys meminfo"></a>adb shell dumpsys meminfo</h4><p>这个方法也是通过连接电脑来使用 adb 形式来获取内存的。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20adb%20dumpsys.png?raw=true" alt="adb shell dumpsys meminfo"></p>
+<p>这里的几个字段的意思分别为：<br>Naitve Heap Size: 从mallinfo usmblks获得，代表最大总共分配空间。<br>Native Heap Alloc: 从mallinfo uorblks获得，总共分配空间。<br>Native Heap Free: 从mallinfo fordblks获得，代表总共剩余空间。<br>Native Heap Size 约等于Native Heap Alloc + Native Heap Free。</p>
+<p>Dalvik Heap Size:从Runtime totalMemory()获得，Dalvik Heap总共的内存大小。<br>Dalvik Heap Alloc: Runtime totalMemory()-freeMemory() ，Dalvik Heap分配的内存大小。<br>Dalvik Heap Free:从Runtime freeMemory()获得，Dalvik Heap剩余的内存大小。<br>Dalvik Heap Size 约等于Dalvik  Heap Alloc + Dalvik  Heap Free。</p>
+<p>同样的这种方法来发现内存问题太痛苦了，不建议使用。</p>
+<h4 id="Android-Monitor-Memory"><a href="#Android-Monitor-Memory" class="headerlink" title="Android Monitor / Memory"></a>Android Monitor / Memory</h4><p>这个方法比较有效，划重点的来了。当然Android Monitor下面是有两个功能的，一个logcat，一个就是我们的Memory了。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true" alt="Android Monitor"></p>
+<p>这是我们Android Monitor的界面，很简洁，还是可视化的，非常好。横坐标是时间，纵坐标是内存使用量。<br>那么在这里我们就可以看到内存的使用情况了，而且还一目了然。</p>
+<p><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor3.png?raw=true" alt="Android Monitor3"><br>说下这三个按钮，第一个是GC，也就是调用回收内存的方法。第二个是dump java heap，把java的堆栈给收集的方法。第三个是Allocation Tracking，追踪内存分配信息。</p>
+<p>当我们查看内存的时候就可以选择dump java heap，将一段内存收集起来。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true" alt="Android Monitor4"><br>收集完后就可以在界面上看到具体的收集情况了。从中我们可以从 class view 的角度去分析内存，也可以从 package view 的角度去分析。</p>
+<h4 id="MAT"><a href="#MAT" class="headerlink" title="MAT"></a>MAT</h4><p>这个MAT比较具体，可以分析出很多东西，使用这个一般是比较后期的优化了，因为从前期的泄漏和大块内存的冗余都可以直接从Android Monitor这个工具上很方便看出。<br>使用MAT也比较简单，在Android Monitor中使用dump java heap收集到一个hprof的文件后右键，将它设置为标准文件保存。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20mat.png?raw=true" alt="Android MAT"></p>
+<p>在我们导入进去后我们可以发现很直接的就把各种性能给你展现出来了。那么通过它也可以快速发现内存的占用。<br>这里先献上<a href="http://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.mat.ui.help/welcome.html" target="_blank" rel="external">MAT 使用手册</a>给大家使用。</p>
+<h4 id="LeakCanary"><a href="#LeakCanary" class="headerlink" title="LeakCanary"></a>LeakCanary</h4><p>LeakCanary是square出的一款开源的用来做内存泄露检测的工具。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20LeakCanary.jpg?raw=true" alt="LeakCanary"></p>
+<p>具体使用参考<a href="https://github.com/square/leakcanary" target="_blank" rel="external">LeakCanary README</a>文档。</p>
+<p>好，通过这些工具我们就可以有效的分析出到底有没有内存的问题了，如果发现内存有暴涨并且没法释放，那肯定是有内存泄漏。如果发现某一个模块突然占用大量的内存，那这块可能存在内存冗余的问题。</p>
+<h3 id="第二步：找到内存问题"><a href="#第二步：找到内存问题" class="headerlink" title="第二步：找到内存问题"></a>第二步：找到内存问题</h3><p>如果我们发现之前说的那些现象，那么我们大体可以确定是有内存问题的。接下来用Monitor为例子来说下怎么查找到内存泄漏点。</p>
+<h4 id="Step-1：打开Monitor，不停使用某一个功能"><a href="#Step-1：打开Monitor，不停使用某一个功能" class="headerlink" title="Step 1：打开Monitor，不停使用某一个功能"></a>Step 1：打开Monitor，不停使用某一个功能</h4><p>首先我们打开Monitor 的内存板块，并且不停的点击GC按钮，使得这个时段的内存一定是最平稳的。接下来我们找一个目标模块开始不停的测试它。在测试一段时间后会发现内存涨了不少，这时候就可以停止测试，并且回到APP的首页。回到首页后继续狂点我们的GC按钮。留意内存，内存如果回落到刚刚的大小或者差不多的大小，那么可以认为是正常的。</p>
+<p>很可惜我在项目中第一个测试的模块就发现了很严重的问题。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true" alt="monitor"><br>看到这里，我不停的让应用GC，但程序内存一点都没降，还保持在100+M的高位。这就是找到一个内存泄漏点了。</p>
+<h4 id="Step-2：通过dump-java-heap把问题点定位"><a href="#Step-2：通过dump-java-heap把问题点定位" class="headerlink" title="Step 2：通过dump java heap把问题点定位"></a>Step 2：通过dump java heap把问题点定位</h4><p>找到这个泄漏点后我们选择第二个按钮：dump java heap，把当前内存状况抓取下来。<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true" alt="Android Monitor4"><br>我们打开后调整到package视图，找到我们的com 文件夹开始从上往下看。这时候我们是看到图片缓存非常大，而且在里面有非常多的对象被持有者没有释放。好，回到那个工程，我们从图片哪里排查可以发现因为图片用了一个算法，而那个算法把持了activity的对象，导致内存没法释放。还有其他一些点我们也顺路做了修改。</p>
+<p>通过这种方式基本可以把大的内存泄漏点排查出来了。接下来我们分析第二个需要排查的问题，内存冗余。</p>
+<h4 id="Step-3-接着分析dump-找到里面内存大的部位"><a href="#Step-3-接着分析dump-找到里面内存大的部位" class="headerlink" title="Step 3: 接着分析dump 找到里面内存大的部位"></a>Step 3: 接着分析dump 找到里面内存大的部位</h4><p>因为一个应用出的问题只会在其中20%代码引起的，所以找到内存冗余也是从这20%着手。<br>在分析dump java heap 的其中我发现有四个图片占据了高位，在没有泄漏的大内存后，就它的内存占用高，我们先尝试的把这几张图片去掉，结果发现内存果然降了下来，开心了。接下来就很简单了，代码层面花点时间优化它，最后的结果是把内存降了整整<strong>18M</strong>。</p>
+<p><img src="https://github.com/jasonzhong/PicturePool/blob/master/mem%20save.png?raw=true" alt="Android save"><br>最后的内存花销降低非常多，效果也非常不错。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>内存优化是一件长期的任务，因为代码每天都在写。各种工具也只是帮你找到优化点，重点还是在每个功能的制作中也要有优化的时间。内存问题的分析, 分析对象的内存占用, 找出Retained Size大的对象, 找到其直接支配, 跟踪其GC可达路径, 从而找到是谁让这个大对象活着并将其尽可能的优化。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/性能优化/" rel="tag">#性能优化</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/05/Android-浅析-ClassLoader/" rel="next" title="Android-浅析-ClassLoader">
+                <i class="fa fa-chevron-left"></i> Android-浅析-ClassLoader
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/07/24/Android-性能优化-内存优化/"
+           data-title="Android-性能优化-内存优化" data-url="http://yoursite.com/2017/07/24/Android-性能优化-内存优化/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">51</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">29</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存"><span class="nav-number">3.</span> <span class="nav-text">内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分类"><span class="nav-number">3.1.</span> <span class="nav-text">内存分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#沙箱模型"><span class="nav-number">3.2.</span> <span class="nav-text">沙箱模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存优化方法"><span class="nav-number">4.</span> <span class="nav-text">内存优化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一步：有没有内存问题"><span class="nav-number">4.1.</span> <span class="nav-text">第一步：有没有内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-ps"><span class="nav-number">4.1.1.</span> <span class="nav-text">adb shell ps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-dumpsys-meminfo"><span class="nav-number">4.1.2.</span> <span class="nav-text">adb shell dumpsys meminfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Android-Monitor-Memory"><span class="nav-number">4.1.3.</span> <span class="nav-text">Android Monitor / Memory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MAT"><span class="nav-number">4.1.4.</span> <span class="nav-text">MAT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LeakCanary"><span class="nav-number">4.1.5.</span> <span class="nav-text">LeakCanary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二步：找到内存问题"><span class="nav-number">4.2.</span> <span class="nav-text">第二步：找到内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-1：打开Monitor，不停使用某一个功能"><span class="nav-number">4.2.1.</span> <span class="nav-text">Step 1：打开Monitor，不停使用某一个功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-2：通过dump-java-heap把问题点定位"><span class="nav-number">4.2.2.</span> <span class="nav-text">Step 2：通过dump java heap把问题点定位</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-3-接着分析dump-找到里面内存大的部位"><span class="nav-number">4.2.3.</span> <span class="nav-text">Step 3: 接着分析dump 找到里面内存大的部位</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
