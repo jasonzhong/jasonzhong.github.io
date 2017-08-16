@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true">
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true">
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20save.png?raw=true">
-<meta property="og:updated_time" content="2017-08-16T09:23:01.872Z">
+<meta property="og:updated_time" content="2017-08-16T09:30:27.168Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android-性能优化-内存优化">
 <meta name="twitter:description" content="Android 的优化是很重要的，在开发的时候一味往前跑，往往会忽略对内存的严谨使用。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。">
@@ -355,11 +355,11 @@
 <li>堆(Heap)：在堆上分配内存的过程称作内存动态分配过程。在java中堆用于存放由new创建的对象和数组。堆中分配的内存，由java虚拟机自动垃圾回收器(GC)来管理。堆是不连续的内存区域（因为系统是用链表来存储空闲内存地址，自然不是连续的），堆大小受限于计算机系统中有效的虚拟内存。</li>
 <li>栈(Stack)：存放基本类型的对象和引用，但是对象本身不存放在栈中而是存放在堆中。在Java中除了基本类型，都是引用类型。在函数执行的时候，函数内部的局部变量就会在栈上创建，函数执行结束的时候这些存储单元会被自动释放。栈内存分配运算内置于处理器的指令集中是一块连续的内存区域，效率很高，速度快，但是大小是操作系统预定好的所以分配的内存容量有限。</li>
 <li>静态存储区/方法区(Static Field)：指在固定的位置上存放应用程序运行时一直存在的数据，java在内存中专门划分了一个静态存储区域来管理一些特殊的数据变量如静态的数据变量。</li>
-<li>常量池(Constant Pool)：专门存放常量的区域。JVM虚拟机为每个已经被转载的类型维护一个常量池。常量池就是该类型所有用到地常量的一个有序集合包括直接常量(基本类型，String)和对其他类型、字段和方法的符号引用。<br>/*</li>
+<li>常量池(Constant Pool)：专门存放常量的区域。JVM虚拟机为每个已经被转载的类型维护一个常量池。常量池就是该类型所有用到地常量的一个有序集合包括直接常量(基本类型，String)和对其他类型、字段和方法的符号引用。</li>
 </ol>
 <h3 id="沙箱模型"><a href="#沙箱模型" class="headerlink" title="沙箱模型"></a>沙箱模型</h3><p>应用程序进程之间，应用程序与操作系统之间的安全性由Linux操作系统的标准进程级安全机制实现。在默认状态下，应用程序之间无法交互，运行在进程沙箱内的应用程序没有被分配权限，无法访问系统或资源。因此，无论是直接运行于操作系统之上的应用程序，还是运行于Dalvik虚拟机的应用程序都得到同样的安全隔离与保护，被限制在各自“沙箱”内的应用程序互不干扰。对于Android来说每个应用都是在Dalvik虚拟机上运行，各个应用间都是相互隔离。那么就存在了内存的分配不是无限的，每个应用最高分配内存都是固定的而且是越少越好的形式分配。对于应用来说内存的优化就显得十分重要了。</p>
 <h3 id="GC-Log"><a href="#GC-Log" class="headerlink" title="GC Log"></a>GC Log</h3><p>在我们Android Studio 的 Logcat里我们可以从日志中看到关于GC 的日志，在第一步分析我们可以先分析下系统对我们的app进行GC的信息。<br>在 Android 5.0 之前是DVM虚拟机，5.0之后是ART虚拟机，所以日志的格式也分为了两种，但大致信息差不多。</p>
-<h4 id="DVM-日志"><a href="#DVM-日志" class="headerlink" title="DVM 日志"></a>DVM 日志</h4><p>例子：D/dalvikvm: GC_CONCURRENT freed 2012K, 63% free 3213K/9291K, external 4501K/5161K, paused 2ms+2ms<br>这是一条典型的 DVM GC 日志。包含了这5个结构：<br>D/dalvikvm: <gc_reason> <amount_freed>, <heap_stats>, <external_memory_stats>, <pause_time><br>GC_Reason：</pause_time></external_memory_stats></heap_stats></amount_freed></gc_reason></p>
+<h4 id="DVM-日志"><a href="#DVM-日志" class="headerlink" title="DVM 日志"></a>DVM 日志</h4><p>例子：D/dalvikvm: GC_CONCURRENT freed 2012K, 63% free 3213K/9291K, external 4501K/5161K, paused 2ms+2ms<br>这是一条典型的 DVM GC 日志。包含了这5个结构：<br><code>D/dalvikvm: &lt;GC_Reason&gt; &lt;Amount_freed&gt;, &lt;Heap_stats&gt;, &lt;External_memory_stats&gt;, &lt;Pause_time&gt;</code><br>GC_Reason：</p>
 <ul>
 <li>GC_CONCURRENT：当堆开始填充时，并发GC可以释放内存。</li>
 <li>GC_FOR_MALLOC：当堆内存已满时，app尝试分配内存而引起的GC，系统必须停止app并回收内存。</li>
@@ -375,7 +375,7 @@
 <li>Pause time：暂停时间，更大的堆会有更长的暂停时间。并发暂停时间显示了两个暂停：一个出现在垃圾收集开始时，另一个出现在垃圾收集快要完成时。</li>
 </ul>
 <h4 id="ART-日志"><a href="#ART-日志" class="headerlink" title="ART 日志"></a>ART 日志</h4><p>ART 日志的收集只在当GC暂停超过5ms的时候才会触发日志。</p>
-<p>例子：I/art : Explicit concurrent mark sweep GC freed 104710(7MB) AllocSpace objects, 21(416KB) LOS objects, 33% free, 25MB/38MB, paused 1.230ms total 67.216ms<br>它包含了这几个信息：<br>I/art: <gc_reason> <gc_name> <objects_freed>(<size_freed>) AllocSpace Objects, <large_objects_freed>(<large_object_size_freed>) <heap_stats> LOS objects, <pause_time(s)></pause_time(s)></heap_stats></large_object_size_freed></large_objects_freed></size_freed></objects_freed></gc_name></gc_reason></p>
+<p>例子：I/art : Explicit concurrent mark sweep GC freed 104710(7MB) AllocSpace objects, 21(416KB) LOS objects, 33% free, 25MB/38MB, paused 1.230ms total 67.216ms<br>它包含了这几个信息：<br><code>I/art: &lt;GC_Reason&gt; &lt;GC_Name&gt; &lt;Objects_freed&gt;(&lt;Size_freed&gt;) AllocSpace Objects, &lt;Large_objects_freed&gt;(&lt;Large_object_size_freed&gt;) &lt;Heap_stats&gt; LOS objects, &lt;Pause_time(s)&gt;</code></p>
 <p>GC_Reason：</p>
 <ul>
 <li>Concurrent：并发GC，不会使App的线程暂停，该GC是在后台线程运行的，并不会阻止内存分配。</li>
