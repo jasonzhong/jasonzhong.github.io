@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor.png?raw=true">
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20monitor4.png?raw=true">
 <meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/mem%20save.png?raw=true">
-<meta property="og:updated_time" content="2017-07-27T13:24:28.506Z">
+<meta property="og:updated_time" content="2017-08-16T09:23:01.872Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android-性能优化-内存优化">
 <meta name="twitter:description" content="Android 的优化是很重要的，在开发的时候一味往前跑，往往会忽略对内存的严谨使用。本章将从内存优化的工具开始。如何分析内存，如何通过工具找到内存的消耗点和泄漏点。">
@@ -358,6 +358,52 @@
 <li>常量池(Constant Pool)：专门存放常量的区域。JVM虚拟机为每个已经被转载的类型维护一个常量池。常量池就是该类型所有用到地常量的一个有序集合包括直接常量(基本类型，String)和对其他类型、字段和方法的符号引用。<br>/*</li>
 </ol>
 <h3 id="沙箱模型"><a href="#沙箱模型" class="headerlink" title="沙箱模型"></a>沙箱模型</h3><p>应用程序进程之间，应用程序与操作系统之间的安全性由Linux操作系统的标准进程级安全机制实现。在默认状态下，应用程序之间无法交互，运行在进程沙箱内的应用程序没有被分配权限，无法访问系统或资源。因此，无论是直接运行于操作系统之上的应用程序，还是运行于Dalvik虚拟机的应用程序都得到同样的安全隔离与保护，被限制在各自“沙箱”内的应用程序互不干扰。对于Android来说每个应用都是在Dalvik虚拟机上运行，各个应用间都是相互隔离。那么就存在了内存的分配不是无限的，每个应用最高分配内存都是固定的而且是越少越好的形式分配。对于应用来说内存的优化就显得十分重要了。</p>
+<h3 id="GC-Log"><a href="#GC-Log" class="headerlink" title="GC Log"></a>GC Log</h3><p>在我们Android Studio 的 Logcat里我们可以从日志中看到关于GC 的日志，在第一步分析我们可以先分析下系统对我们的app进行GC的信息。<br>在 Android 5.0 之前是DVM虚拟机，5.0之后是ART虚拟机，所以日志的格式也分为了两种，但大致信息差不多。</p>
+<h4 id="DVM-日志"><a href="#DVM-日志" class="headerlink" title="DVM 日志"></a>DVM 日志</h4><p>例子：D/dalvikvm: GC_CONCURRENT freed 2012K, 63% free 3213K/9291K, external 4501K/5161K, paused 2ms+2ms<br>这是一条典型的 DVM GC 日志。包含了这5个结构：<br>D/dalvikvm: <gc_reason> <amount_freed>, <heap_stats>, <external_memory_stats>, <pause_time><br>GC_Reason：</pause_time></external_memory_stats></heap_stats></amount_freed></gc_reason></p>
+<ul>
+<li>GC_CONCURRENT：当堆开始填充时，并发GC可以释放内存。</li>
+<li>GC_FOR_MALLOC：当堆内存已满时，app尝试分配内存而引起的GC，系统必须停止app并回收内存。</li>
+<li>GC_HPROF_DUMP_HEAP：当你请求创建 HPROF 文件来分析堆内存时出现的GC。</li>
+<li>GC_EXPLICIT：显示的GC，例如调用System.gc()（应该避免调用显示的GC，信任GC会在需要时运行）。</li>
+<li>GC_EXTERNAL_ALLOC：仅适用于 API 级别小于等于10 ，用于外部分配内存的GC。</li>
+</ul>
+<p>其他信息：</p>
+<ul>
+<li>Amount_freed：本次GC释放内存的大小。</li>
+<li>Heap_stats：堆的空闲内存百分比 （已用内存）/（堆的总内存）。</li>
+<li>External_memory_stats：API 级别 10 及更低级别的内存分配 （已分配的内存）/（引起GC的阀值）。</li>
+<li>Pause time：暂停时间，更大的堆会有更长的暂停时间。并发暂停时间显示了两个暂停：一个出现在垃圾收集开始时，另一个出现在垃圾收集快要完成时。</li>
+</ul>
+<h4 id="ART-日志"><a href="#ART-日志" class="headerlink" title="ART 日志"></a>ART 日志</h4><p>ART 日志的收集只在当GC暂停超过5ms的时候才会触发日志。</p>
+<p>例子：I/art : Explicit concurrent mark sweep GC freed 104710(7MB) AllocSpace objects, 21(416KB) LOS objects, 33% free, 25MB/38MB, paused 1.230ms total 67.216ms<br>它包含了这几个信息：<br>I/art: <gc_reason> <gc_name> <objects_freed>(<size_freed>) AllocSpace Objects, <large_objects_freed>(<large_object_size_freed>) <heap_stats> LOS objects, <pause_time(s)></pause_time(s)></heap_stats></large_object_size_freed></large_objects_freed></size_freed></objects_freed></gc_name></gc_reason></p>
+<p>GC_Reason：</p>
+<ul>
+<li>Concurrent：并发GC，不会使App的线程暂停，该GC是在后台线程运行的，并不会阻止内存分配。</li>
+<li>Alloc：当堆内存已满时，App尝试分配内存而引起的GC，这个GC会发生在正在分配内存的线程。</li>
+<li>Explicit：App显示的请求垃圾收集，例如调用System.gc()。与DVM一样，最佳做法是应该信任GC并避免显示的请求GC，显示的请求GC会阻止分配线程并不必要的浪费 CPU - 周期。如果显式的请求GC导致其他线程被抢占，那么有可能会导致 jank（App同一帧画了多次)。</li>
+<li>NativeAlloc：Native内存分配时，比如为Bitmaps或者RenderScript分配对象， 这会导致Native内存压力，从而触发GC。</li>
+<li>CollectorTransition：由堆转换引起的回收，这是运行时切换GC而引起的。收集器转换包括将所有对象从空闲列表空间复制到碰撞指针空间（反之亦然）。当前，收集器转换仅在以下情况下出现：在内存较小的设备上，App将进程状态从可察觉的暂停状态变更为可察觉的非暂停状态（反之亦然）。</li>
+<li>HomogeneousSpaceCompact：齐性空间压缩是指空闲列表到压缩的空闲列表空间，通常发生在当App已经移动到可察觉的暂停进程状态。这样做的主要原因是减少了内存使用并对堆内存进行碎片整理。</li>
+<li>DisableMovingGc：不是真正的触发GC原因，发生并发堆压缩时，由于使用了 GetPrimitiveArrayCritical，收集会被阻塞。一般情况下，强烈建议不要使用 - GetPrimitiveArrayCritical，因为它在移动收集器方面具有限制。</li>
+<li>HeapTrim：不是触发GC原因，但是请注意，收集会一直被阻塞，直到堆内存整理完毕。</li>
+</ul>
+<p>GC_Name：</p>
+<ul>
+<li>Concurrent mark sweep (CMS)：CMS收集器是一种以获取最短收集暂停时间为目标收集器，采用了标记-清除算法（Mark-Sweep）实现。 它是完整的堆垃圾收集器，能释放除了Image Space之外的所有的空间。</li>
+<li>Concurrent partial mark sweep：部分完整的堆垃圾收集器，能释放除了Image Space和Zygote Spaces之外的所有空间。关于Image Space和Zygote Spaces可以查看Android内存优化（一）DVM和ART原理初探这篇文章。</li>
+<li>Concurrent sticky mark sweep：分代收集器，它只能释放自上次GC以来分配的对象。这个垃圾收集器比一个完整的或部分完整的垃圾收集器扫描的更频繁，因为它更快并且有更短的暂停时间。</li>
+<li>Marksweep + semispace：非并发的GC，复制GC用于堆转换以及齐性空间压缩（堆碎片整理）。</li>
+</ul>
+<p>其他信息：</p>
+<ul>
+<li>Objects freed：本次GC从非Large Object Space中回收的对象的数量。</li>
+<li>Size_freed：本次GC从非Large Object Space中回收的字节数。</li>
+<li>Large objects freed： 本次GC从Large Object Space中回收的对象的数量。</li>
+<li>Large object size freed：本次GC从Large Object Space中回收的字节数。</li>
+<li>Heap stats：堆的空闲内存百分比 （已用内存）/（堆的总内存）。</li>
+<li>Pause times：暂停时间，暂停时间与在GC运行时修改的对象引用的数量成比例。目前，ART的CMS收集器仅有一次暂停，它出现GC的结尾附近。移动的垃圾收集器暂停时间会很长，会在大部分垃圾回收期间持续出现。</li>
+</ul>
+<p>所以当我们app卡顿的时候可以考虑下是否因为频繁申请内存导致虚拟机gc频繁操作而耗时。</p>
 <h2 id="内存优化方法"><a href="#内存优化方法" class="headerlink" title="内存优化方法"></a>内存优化方法</h2><p>内存优化我们要做两点，首先要问有没有内存问题，然后这个问题要怎么解决。</p>
 <h3 id="第一步：有没有内存问题"><a href="#第一步：有没有内存问题" class="headerlink" title="第一步：有没有内存问题"></a>第一步：有没有内存问题</h3><p>查找有没有内存问题的第一步是查看内存，直观的能看到内存到底是涨还是跌，才好分析内存是否健康。</p>
 <ol>
@@ -560,7 +606,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存"><span class="nav-number">3.</span> <span class="nav-text">内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分类"><span class="nav-number">3.1.</span> <span class="nav-text">内存分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#沙箱模型"><span class="nav-number">3.2.</span> <span class="nav-text">沙箱模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存优化方法"><span class="nav-number">4.</span> <span class="nav-text">内存优化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一步：有没有内存问题"><span class="nav-number">4.1.</span> <span class="nav-text">第一步：有没有内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-ps"><span class="nav-number">4.1.1.</span> <span class="nav-text">adb shell ps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-dumpsys-meminfo"><span class="nav-number">4.1.2.</span> <span class="nav-text">adb shell dumpsys meminfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Android-Monitor-Memory"><span class="nav-number">4.1.3.</span> <span class="nav-text">Android Monitor / Memory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MAT"><span class="nav-number">4.1.4.</span> <span class="nav-text">MAT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LeakCanary"><span class="nav-number">4.1.5.</span> <span class="nav-text">LeakCanary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二步：找到内存问题"><span class="nav-number">4.2.</span> <span class="nav-text">第二步：找到内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-1：打开Monitor，不停使用某一个功能"><span class="nav-number">4.2.1.</span> <span class="nav-text">Step 1：打开Monitor，不停使用某一个功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-2：通过dump-java-heap把问题点定位"><span class="nav-number">4.2.2.</span> <span class="nav-text">Step 2：通过dump java heap把问题点定位</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-3-接着分析dump-找到里面内存大的部位"><span class="nav-number">4.2.3.</span> <span class="nav-text">Step 3: 接着分析dump 找到里面内存大的部位</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存"><span class="nav-number">3.</span> <span class="nav-text">内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分类"><span class="nav-number">3.1.</span> <span class="nav-text">内存分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#沙箱模型"><span class="nav-number">3.2.</span> <span class="nav-text">沙箱模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GC-Log"><span class="nav-number">3.3.</span> <span class="nav-text">GC Log</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DVM-日志"><span class="nav-number">3.3.1.</span> <span class="nav-text">DVM 日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ART-日志"><span class="nav-number">3.3.2.</span> <span class="nav-text">ART 日志</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存优化方法"><span class="nav-number">4.</span> <span class="nav-text">内存优化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一步：有没有内存问题"><span class="nav-number">4.1.</span> <span class="nav-text">第一步：有没有内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-ps"><span class="nav-number">4.1.1.</span> <span class="nav-text">adb shell ps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#adb-shell-dumpsys-meminfo"><span class="nav-number">4.1.2.</span> <span class="nav-text">adb shell dumpsys meminfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Android-Monitor-Memory"><span class="nav-number">4.1.3.</span> <span class="nav-text">Android Monitor / Memory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MAT"><span class="nav-number">4.1.4.</span> <span class="nav-text">MAT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LeakCanary"><span class="nav-number">4.1.5.</span> <span class="nav-text">LeakCanary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二步：找到内存问题"><span class="nav-number">4.2.</span> <span class="nav-text">第二步：找到内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-1：打开Monitor，不停使用某一个功能"><span class="nav-number">4.2.1.</span> <span class="nav-text">Step 1：打开Monitor，不停使用某一个功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-2：通过dump-java-heap把问题点定位"><span class="nav-number">4.2.2.</span> <span class="nav-text">Step 2：通过dump java heap把问题点定位</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Step-3-接着分析dump-找到里面内存大的部位"><span class="nav-number">4.2.3.</span> <span class="nav-text">Step 3: 接着分析dump 找到里面内存大的部位</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
           </div>
         </section>
