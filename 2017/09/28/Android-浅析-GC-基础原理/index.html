@@ -1,0 +1,705 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,GC," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="对于程序的优化还是要从底层开始关注，这篇文章将从GC开始去分析系统对垃圾回收机制的设立和流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-浅析-GC-基础原理">
+<meta property="og:url" content="http://yoursite.com/2017/09/28/Android-浅析-GC-基础原理/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="对于程序的优化还是要从底层开始关注，这篇文章将从GC开始去分析系统对垃圾回收机制的设立和流程。">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/Android%20Dalvik%20GC.png?raw=true">
+<meta property="og:image" content="https://github.com/jasonzhong/PicturePool/blob/master/Android%20ART%20GC.png?raw=true">
+<meta property="og:updated_time" content="2017-09-30T08:47:13.422Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-浅析-GC-基础原理">
+<meta name="twitter:description" content="对于程序的优化还是要从底层开始关注，这篇文章将从GC开始去分析系统对垃圾回收机制的设立和流程。">
+<meta name="twitter:image" content="https://github.com/jasonzhong/PicturePool/blob/master/Android%20Dalvik%20GC.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/09/28/Android-浅析-GC-基础原理/"/>
+
+  <title> Android-浅析-GC-基础原理 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-浅析-GC-基础原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-09-28T19:46:12+08:00" content="2017-09-28">
+              2017-09-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-GC/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-GC</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/09/28/Android-浅析-GC-基础原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/09/28/Android-浅析-GC-基础原理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p>针对 Android 的垃圾回收机制分为 Dalvik 虚拟机 和 ART(Android Runtime) 虚拟机两种，因为 Dalvik 虚拟机已经被 ART 取代，所以我们重点还是关注 ART虚拟机的垃圾回收情况。</p>
+</blockquote>
+<h2 id="GC-算法"><a href="#GC-算法" class="headerlink" title="GC 算法"></a>GC 算法</h2><h3 id="Mark-Sweep-算法"><a href="#Mark-Sweep-算法" class="headerlink" title="Mark Sweep 算法"></a>Mark Sweep 算法</h3><blockquote>
+<p>Mark Sweep 算法是 Dalvik GC 和 ART GC 的核心算法。</p>
+</blockquote>
+<p>Mark-Sweep 算法分为 Mark 标记 和 Sweep 打扫 两个阶段。<br>简单来讲：Mark 阶段从根集开始递归地标记引用的对象，然后在 Sweep 阶段 对没有标记的对象占用的内存进行回收。</p>
+<p>ps：根集对象，就是指在GC开始的瞬间，被全局变量、栈变量和寄存器等引用的对象。</p>
+<p>在 Mark 阶段要求除了 GC 线程以外的所有线程都停止，以防止错误的标记对象。这种停止称为 Stop the world。因为会导致程序中止执行，造成停顿的现象，所以在改进后加入了 Concurrent GC，就是并行垃圾收集算法。</p>
+<h3 id="Copying-复制算法"><a href="#Copying-复制算法" class="headerlink" title="Copying 复制算法"></a>Copying 复制算法</h3><p>将现有的内存空间分为两快，每次只使用其中一块，在垃圾回收时将正在使用的内存中的存活对象复制到未被使用的内存块中，之后，清除正在使用的内存块中的所有对象，交换两个内存的角色，完成垃圾回收。</p>
+<h3 id="Mark-Compact-标记-压缩算法"><a href="#Mark-Compact-标记-压缩算法" class="headerlink" title="Mark-Compact 标记-压缩算法"></a>Mark-Compact 标记-压缩算法</h3><p>先需要从根节点开始对所有可达对象做一次标记，但之后，它并不简单地清理未标记的对象，而是将所有的存活对象压缩到内存的一端。之后，清理边界外所有的空间。这种方法既避免了碎片的产生，又不需要两块相同的内存空间，因此，其性价比比较高。</p>
+<h3 id="分代"><a href="#分代" class="headerlink" title="分代"></a>分代</h3><p>将所有的新建对象都放入称为年轻代的内存区域，年轻代的特点是对象会很快回收，因此，在年轻代就选择效率较高的复制算法。当一个对象经过几次回收后依然存活，对象就会被放入称为老生代的内存空间。对于新生代适用于复制算法，而对于老年代则采取标记-压缩算法。</p>
+<h2 id="Dalvik-GC"><a href="#Dalvik-GC" class="headerlink" title="Dalvik GC"></a>Dalvik GC</h2><p>Dalvik 是Google公司自己设计用于Android平台的虚拟机。是Android移动设备平台的核心组成部分之一。<br>它可以支持已转换为 dex格式的Java应用程序的运行，dex格式是专为Dalvik设计的一种压缩格式，适合内存和处理器速度有限的系统。<br>Dalvik 经过优化，允许在有限的内存中同时运行多个虚拟机的实例，并且每一个Dalvik 应用作为一个独立的Linux 进程执行。独立的进程可以防止在虚拟机崩溃的时候所有程序都被关闭。</p>
+<p>我们简单的用一张图来说明 Dalvik GC 的大体流程：<br><img src="https://github.com/jasonzhong/PicturePool/blob/master/Android%20Dalvik%20GC.png?raw=true" alt="Android Dalvik GC"></p>
+<p>在GingerBread之前，Dalvik虚拟使用的垃圾收集机制有以下特点：</p>
+<ol>
+<li>Stop-the-world，也就是垃圾收集线程在执行的时候，其它的线程都停止；</li>
+<li>Full heap collection，也就是一次收集完全部的垃圾；</li>
+<li>一次垃圾收集造成的程序中止时间通常都大于100ms。</li>
+</ol>
+<p>在GingerBread以及更高的版本中，Dalvik虚拟使用的垃圾收集机制得到了改进，如下所示：</p>
+<ol>
+<li>Cocurrent，也就是大多数情况下，垃圾收集线程与其它线程是并发执行的；</li>
+<li>Partial collection，也就是一次可能只收集一部分垃圾；</li>
+<li>一次垃圾收集造成的程序中止时间通常都小于5ms。</li>
+</ol>
+<p>GingerBread Android 2.3</p>
+<h2 id="ART-GC"><a href="#ART-GC" class="headerlink" title="ART GC"></a>ART GC</h2><p>ART模式英文全称为：Android runtime，谷歌Android 4.4系统新增的一种应用运行模式。<br>ART 的机制与 Dalvik 不同。在Dalvik下，应用每次运行的时候，字节码都需要通过即时编译器（just in time ，JIT）转换为机器码，这会拖慢应用的运行效率，而在ART 环境中，应用在第一次安装的时候，字节码就会预先编译成机器码，使其成为真正的本地应用。这个过程叫做预编译（AOT,Ahead-Of-Time）。这样的话，应用的启动(首次)和执行都会变得更加快速。</p>
+<p>ART GC 与 Dalvik 的一个主要区别在于 ART GC 引入了移动垃圾回收器。使用移动 GC 的目的在于通过堆压缩来减少后台应用使用的内存。目前，触发堆压缩的事件是 ActivityManager 进程状态的改变。当应用转到后台运行时，它会通知 ART 已进入不再“感知”卡顿的进程状态。此时 ART 会进行一些操作（例如，压缩和监视器压缩），从而导致应用线程长时间暂停。目前正在使用的两个移动 GC 是同构空间压缩和半空间压缩。</p>
+<ol>
+<li>半空间压缩将对象在两个紧密排列的碰撞指针空间之间进行移动。这种移动 GC 适用于小内存设备，因为它可以比同构空间压缩稍微多节省一点内存。额外节省出的空间主要来自紧密排列的对象，这样可以避免 RosAlloc/DlMalloc 分配器占用开销。由于 CMS 仍在前台使用，且不能从碰撞指针空间中进行收集，因此当应用在前台使用时，半空间还要再进行一次转换。这种情况并不理想，因为它可能引起较长时间的暂停。</li>
+<li>同构空间压缩通过将对象从一个 RosAlloc 空间复制到另一个 RosAlloc 空间来实现。这有助于通过减少堆碎片来减少内存使用量。这是目前非低内存设备的默认压缩模式。相比半空间压缩，同构空间压缩的主要优势在于应用从后台切换到前台时无需进行堆转换。</li>
+</ol>
+<h3 id="OAT文件"><a href="#OAT文件" class="headerlink" title="OAT文件"></a>OAT文件</h3><p>OAT文件是Android运行时ART的核心，它是一种Android私有ELF文件格式，它不仅包含有从DEX文件翻译而来的本地机器指令，还包含有原来的DEX文件内容。这使得我们无需重新编译原有的APK就可以让它正常地在ART里面运行，也就是我们不需要改变原来的APK编程接口。</p>
+<h3 id="主要流程"><a href="#主要流程" class="headerlink" title="主要流程"></a>主要流程</h3><p><img src="https://github.com/jasonzhong/PicturePool/blob/master/Android%20ART%20GC.png?raw=true" alt="Android ART GC"></p>
+<p>ART 的优点主要有三点：</p>
+<ol>
+<li>标记自身：ART在对象分配时会将新分配的对象压入到Heap类的成员变量allocation<em>stack</em>描述的Allocation Stack中去，从而可以一定程度上缩减对象遍历范围。</li>
+<li>预读取：对于标记Allocation Stack的内存时，会预读取接下来要遍历的对象，同时在取出来该对象后又会将该对象引用的其他对象压入栈中，直至遍历完毕。</li>
+<li>减少Suspend时间：在Mark阶段是不会Block其他线程的，这个阶段会有Dirty数据，比如Mark发现不会使用的但是这个时候又被其他线程使用的数据，在Mark阶段也会处理一些Dirty数据而不是留在最后Block的时候再去处理，这样也会减少后面Block阶段对于脏数据的处理的时间。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/GC/" rel="tag">#GC</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/24/Android-性能优化-内存优化/" rel="next" title="Android-性能优化-内存优化">
+                <i class="fa fa-chevron-left"></i> Android-性能优化-内存优化
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/09/28/Android-浅析-GC-基础原理/"
+           data-title="Android-浅析-GC-基础原理" data-url="http://yoursite.com/2017/09/28/Android-浅析-GC-基础原理/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">52</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GC-算法"><span class="nav-number">3.</span> <span class="nav-text">GC 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mark-Sweep-算法"><span class="nav-number">3.1.</span> <span class="nav-text">Mark Sweep 算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Copying-复制算法"><span class="nav-number">3.2.</span> <span class="nav-text">Copying 复制算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mark-Compact-标记-压缩算法"><span class="nav-number">3.3.</span> <span class="nav-text">Mark-Compact 标记-压缩算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分代"><span class="nav-number">3.4.</span> <span class="nav-text">分代</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dalvik-GC"><span class="nav-number">4.</span> <span class="nav-text">Dalvik GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ART-GC"><span class="nav-number">5.</span> <span class="nav-text">ART GC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#OAT文件"><span class="nav-number">5.1.</span> <span class="nav-text">OAT文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主要流程"><span class="nav-number">5.2.</span> <span class="nav-text">主要流程</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
