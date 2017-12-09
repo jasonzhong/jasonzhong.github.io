@@ -1,0 +1,777 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.useso.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Android_基础知识,AudioTrack," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="AudioTrack 是管理和播放音频资源的一个应用层类。基本上 mediaplayer 和 其它一些播放api 底层都是调用它的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android-浅析-音频系统-AudioTrack-一-基础原理">
+<meta property="og:url" content="http://yoursite.com/2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/index.html">
+<meta property="og:site_name" content="Zhong's_blog">
+<meta property="og:description" content="AudioTrack 是管理和播放音频资源的一个应用层类。基本上 mediaplayer 和 其它一些播放api 底层都是调用它的方法。">
+<meta property="og:updated_time" content="2017-12-09T11:00:44.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android-浅析-音频系统-AudioTrack-一-基础原理">
+<meta name="twitter:description" content="AudioTrack 是管理和播放音频资源的一个应用层类。基本上 mediaplayer 和 其它一些播放api 底层都是调用它的方法。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/"/>
+
+  <title> Android-浅析-音频系统-AudioTrack-一-基础原理 | Zhong's_blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d18587c6291210ec4a8ce3d8868a3df9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zhong's_blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Read The Funning Source Code</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android-浅析-音频系统-AudioTrack-一-基础原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-12-09T18:48:56+08:00" content="2017-12-09">
+              2017-12-09
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>Linus Benedict Torvalds : RTFSC – Read The Funning Source Code</p>
+</blockquote>
+<h2 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h2><blockquote>
+<p>The AudioTrack class manages and plays a single audio resource for Java applications.</p>
+</blockquote>
+<h2 id="AudioTrack"><a href="#AudioTrack" class="headerlink" title="AudioTrack"></a>AudioTrack</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 根据音频数据的特性来确定所要分配的缓冲区的最小size</span></div><div class="line"><span class="keyword">int</span> bufsize = AudioTrack.getMinBufferSize(</div><div class="line">        <span class="number">8000</span>,                                     <span class="comment">// 采样率：每秒8K个点                     </span></div><div class="line">        AudioFormat.CHANNEL_CONFIGURATION_STEREO, <span class="comment">// 声道数：双声道           </span></div><div class="line">        AudioFormat.ENCODING_PCM_16BIT            <span class="comment">// 采样精度：一个采样点16比特，相当于2个字节</span></div><div class="line">        );</div><div class="line"> </div><div class="line"><span class="comment">// 创建AudioTrack</span></div><div class="line">AudioTrack trackplayer = <span class="keyword">new</span> AudioTrack(</div><div class="line">                AudioManager.STREAM_MUSIC,          <span class="comment">//音频流类型</span></div><div class="line">                <span class="number">8000</span>, </div><div class="line">                AudioFormat.CHANNEL_CONFIGURATION_ STEREO,</div><div class="line">                AudioFormat.ENCODING_PCM_16BIT, bufsize,</div><div class="line">                AudioTrack.MODE_STREAM              <span class="comment">//数据加载模式</span></div><div class="line">                );</div><div class="line"></div><div class="line"><span class="comment">// 开始播放</span></div><div class="line">trackplayer.play();</div><div class="line"> </div><div class="line"><span class="comment">// 调用write写数据</span></div><div class="line">trackplayer.write(bytes_pkg, <span class="number">0</span>,bytes_pkg.length); <span class="comment">//往track中写数据</span></div><div class="line"></div><div class="line"><span class="comment">// 停止播放和释放资源</span></div><div class="line">trackplayer.stop();     <span class="comment">//停止播放</span></div><div class="line">trackplayer.release();  <span class="comment">//释放底层资源</span></div></pre></td></tr></table></figure>
+<h3 id="getMinBufferSize"><a href="#getMinBufferSize" class="headerlink" title="getMinBufferSize"></a>getMinBufferSize</h3><blockquote>
+<p>Returns the estimated minimum buffer size required for an AudioTrack object to be created in the MODE_STREAM mode.<br>返回一个从 AudioTrack 对象中获取最小可被创建在 MODE_STREAM 模式下的最小缓冲区大小估计值。</p>
+</blockquote>
+<p>estimated : 估计</p>
+<p>The size is an estimate because it does not consider either the route or the sink, since neither is known yet. Note that this size doesn’t guarantee a smooth playback under load, and higher values should be chosen according to the expected frequency at which the buffer will be refilled with additional data to play. For example, if you intend to dynamically set the source sample rate of an AudioTrack to a higher value than the initial source sample rate, be sure to configure the buffer size based on the highest planned sample rate.</p>
+<p>在 Android SDK 中getMinBufferSize函数在经过一系列检查后会调用native层的 <strong>native_get_min_buff_size</strong> 函数，因为在音频录制的时候我们也要检查硬件是否支持我们需要的采样率和采样精度。</p>
+<p>java层流程：</p>
+<ol>
+<li>声道检测，是否单声道、双声道、多声道。</li>
+<li>采样率检测，是否在 4000～192000 之间。</li>
+<li>硬件层检测，判断是否支持我们设置的采样率和采样精度，并且返回最小估值。</li>
+</ol>
+<p>native层流程：</p>
+<ol>
+<li>查询采样率，一般返回的是所支持的最高采样率，例如44100。（最大采样率）</li>
+<li>查询硬件内部缓冲的大小，以Frame为单位。（帧数）</li>
+<li>查询硬件的延时时间。（延迟量）</li>
+<li>计算最少缓冲区个数：延迟量 / ((1000 * 帧数) / 最大采样率)。</li>
+<li>通过缓冲区数量计算得出最少Frame数。</li>
+<li>计算Buffer大小：PCM格式数据：bufrer是由每帧的字节数，通道数量和采样精度的乘积（frameCount <em> channelCount </em> bytesPerSample）;其他格式数据：buffer大小就是Frame大小。</li>
+</ol>
+<p><strong>Frame 用来描述数据量的多少的单位</strong>，1单位的Frame等于1个采样点的字节数×声道数（例如 16k 采样精度占2字节，一般用MONO两声道，Frame＝2*2）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMinBufferSize</span><span class="params">(<span class="keyword">int</span> sampleRateInHz, <span class="keyword">int</span> channelConfig, <span class="keyword">int</span> audioFormat)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> channelCount = <span class="number">0</span>;</div><div class="line">    <span class="keyword">switch</span>(channelConfig) &#123;</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_OUT_MONO:</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_CONFIGURATION_MONO:</div><div class="line">        channelCount = <span class="number">1</span>;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_OUT_STEREO:</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_CONFIGURATION_STEREO:</div><div class="line">        channelCount = <span class="number">2</span>;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">default</span>:</div><div class="line">        channelCount = AudioFormat.channelCountFromOutChannelMask(channelConfig);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// sample rate, note these values are subject to change</span></div><div class="line">    <span class="comment">// Note: AudioFormat.SAMPLE_RATE_UNSPECIFIED is not allowed</span></div><div class="line">    <span class="keyword">if</span> ( (sampleRateInHz &lt; AudioFormat.SAMPLE_RATE_HZ_MIN) ||</div><div class="line">            (sampleRateInHz &gt; AudioFormat.SAMPLE_RATE_HZ_MAX) ) &#123;</div><div class="line">        <span class="keyword">return</span> ERROR_BAD_VALUE;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> size = native_get_min_buff_size(sampleRateInHz, channelCount, audioFormat);</div><div class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> ERROR;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> size;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// ----------------------------------------------------------------------------</span></div><div class="line"><span class="comment">// returns the minimum required size for the successful creation of a streaming AudioTrack</span></div><div class="line"><span class="comment">// returns -1 if there was an error querying the hardware.</span></div><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_media_AudioTrack_get_min_buff_size</span><span class="params">(JNIEnv *env,  jobject thiz,</span></span></div><div class="line">    jint sampleRateInHertz, jint channelCount, jint audioFormat) &#123;</div><div class="line"></div><div class="line">    size_t frameCount;</div><div class="line">    <span class="keyword">const</span> status_t status = AudioTrack::getMinFrameCount(&amp;frameCount, AUDIO_STREAM_DEFAULT,</div><div class="line">            sampleRateInHertz);</div><div class="line">    <span class="keyword">if</span> (status != NO_ERROR) &#123;</div><div class="line">        ALOGE(<span class="string">"AudioTrack::getMinFrameCount() for sample rate %d failed with status %d"</span>,</div><div class="line">                sampleRateInHertz, status);</div><div class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">const</span> audio_format_t format = audioFormatToNative(audioFormat);</div><div class="line">    <span class="keyword">if</span> (audio_is_linear_pcm(format)) &#123;</div><div class="line">        <span class="keyword">const</span> size_t bytesPerSample = audio_bytes_per_sample(format);</div><div class="line">        <span class="keyword">return</span> frameCount * channelCount * bytesPerSample;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> frameCount;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">status_t AudioTrack::getMinFrameCount(size_t* frameCount, </div><div class="line">        audio_stream_type_t streamType,</div><div class="line">        uint32_t sampleRate)</div><div class="line">&#123;</div><div class="line">    uint32_t afSampleRate;</div><div class="line">    status_t status;</div><div class="line">    AudioSystem::getOutputSamplingRate(&amp;afSampleRate, streamType);</div><div class="line">    </div><div class="line">    size_t afFrameCount;</div><div class="line">    AudioSystem::getOutputFrameCount(&amp;afFrameCount, streamType);</div><div class="line">    </div><div class="line">    uint32_t afLatency;</div><div class="line">    AudioSystem::getOutputLatency(&amp;afLatency, streamType);</div><div class="line"></div><div class="line">    <span class="comment">// When called from createTrack, speed is 1.0f (normal speed).</span></div><div class="line">    <span class="comment">// This is rechecked again on setting playback rate (<span class="doctag">TODO:</span> on setting sample rate, too).</span></div><div class="line">    *frameCount = calculateMinFrameCount(afLatency, afFrameCount, afSampleRate, sampleRate, <span class="number">1.0f</span>);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> NO_ERROR;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> size_t <span class="title">calculateMinFrameCount</span><span class="params">(</span></span></div><div class="line">        uint32_t afLatencyMs, uint32_t afFrameCount, uint32_t afSampleRate,</div><div class="line">        uint32_t sampleRate, <span class="keyword">float</span> speed)</div><div class="line">&#123;</div><div class="line">    <span class="comment">// Ensure that buffer depth covers at least audio hardware latency</span></div><div class="line">    uint32_t minBufCount = afLatencyMs / ((<span class="number">1000</span> * afFrameCount) / afSampleRate);</div><div class="line">    <span class="keyword">if</span> (minBufCount &lt; <span class="number">2</span>) &#123;</div><div class="line">        minBufCount = <span class="number">2</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">return</span> minBufCount * sourceFramesNeededWithTimestretch(sampleRate, afFrameCount, afSampleRate, speed);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>总结：getMinBufSize会综合考虑硬件的情况（例如是否支持采样率，硬件本身的延迟情况等）后，得出一个最小缓冲区的大小。一般我们分配的缓冲大小会是它的整数倍。</p>
+<h3 id="创建AudioTrack"><a href="#创建AudioTrack" class="headerlink" title="创建AudioTrack"></a>创建AudioTrack</h3><blockquote>
+<p>Class constructor with AudioAttributes and AudioFormat.</p>
+</blockquote>
+<p>java层流程：</p>
+<ol>
+<li>检查传入的参数是否符合。（具体的判断标准可以看下文代码）</li>
+<li>检查传入的Buffer缓冲区大小是否符合。（因为在上一步获取了最小Buffer，这里一般都没问题）</li>
+<li>通过调用 Native 层构造此类。</li>
+</ol>
+<p>native层流程：</p>
+<ol>
+<li>获取framecount、samplerate和channel的信息。</li>
+<li>通过<code>AudioSystem::popCount</code>函数从channel int类型里获取通道数。(popCount用于统计一个整数中有多少位为1，有很多经典的算法)</li>
+<li>将传入进来的Java层参数值转换为native层值。</li>
+<li>通过传入的参数来计算一次framecount值。</li>
+<li>创建一个native层audiotrack对象。</li>
+<li>创建一个audioTrackJniStorage对象。(这个数据将在每个AudioTrack回调中传递)</li>
+<li>将native参数传入创建出来的audiotrack对象。</li>
+<li>将audiotrack对象指针保存到java层的变量中，联通java和native层。</li>
+</ol>
+<p>Java层：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Convenience method for the constructor's parameter checks.</span></div><div class="line"><span class="comment">// This is where constructor IllegalArgumentException-s are thrown</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">audioParamCheck</span><span class="params">(<span class="keyword">int</span> sampleRateInHz, <span class="keyword">int</span> channelConfig, <span class="keyword">int</span> channelIndexMask,</span></span></div><div class="line">                             <span class="keyword">int</span> audioFormat, <span class="keyword">int</span> mode) &#123;</div><div class="line">    <span class="comment">// sample rate, note these values are subject to change</span></div><div class="line">    <span class="keyword">if</span> ((sampleRateInHz &lt; AudioFormat.SAMPLE_RATE_HZ_MIN ||</div><div class="line">            sampleRateInHz &gt; AudioFormat.SAMPLE_RATE_HZ_MAX) &amp;&amp;</div><div class="line">            sampleRateInHz != AudioFormat.SAMPLE_RATE_UNSPECIFIED) &#123;</div><div class="line">        <span class="keyword">throw</span> ...</div><div class="line">    &#125;</div><div class="line">    mSampleRate = sampleRateInHz;</div><div class="line"></div><div class="line">    <span class="comment">// IEC61937 is based on stereo. We could coerce it to stereo.</span></div><div class="line">    <span class="comment">// But the application needs to know the stream is stereo so that it is encoded and played correctly. So better to just reject it.</span></div><div class="line">    <span class="keyword">if</span> (audioFormat == AudioFormat.ENCODING_IEC61937</div><div class="line">            &amp;&amp; channelConfig != AudioFormat.CHANNEL_OUT_STEREO) &#123;</div><div class="line">        <span class="keyword">throw</span> ...;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// channel config</span></div><div class="line">    mChannelConfiguration = channelConfig;</div><div class="line">    <span class="keyword">switch</span> (channelConfig) &#123;</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_OUT_DEFAULT: <span class="comment">//AudioFormat.CHANNEL_CONFIGURATION_DEFAULT</span></div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_OUT_MONO:</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_CONFIGURATION_MONO:</div><div class="line">        mChannelCount = <span class="number">1</span>;</div><div class="line">        mChannelMask = AudioFormat.CHANNEL_OUT_MONO;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_OUT_STEREO:</div><div class="line">    <span class="keyword">case</span> AudioFormat.CHANNEL_CONFIGURATION_STEREO:</div><div class="line">        mChannelCount = <span class="number">2</span>;</div><div class="line">        mChannelMask = AudioFormat.CHANNEL_OUT_STEREO;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">default</span>:</div><div class="line">        <span class="keyword">if</span> (channelConfig == AudioFormat.CHANNEL_INVALID &amp;&amp; channelIndexMask != <span class="number">0</span>) &#123;</div><div class="line">            mChannelCount = <span class="number">0</span>;</div><div class="line">            <span class="keyword">break</span>; <span class="comment">// channel index configuration only</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (!isMultichannelConfigSupported(channelConfig)) &#123;</div><div class="line">            <span class="comment">// input channel configuration features unsupported channels</span></div><div class="line">            <span class="keyword">throw</span> ...;</div><div class="line">        &#125;</div><div class="line">        mChannelMask = channelConfig;</div><div class="line">        mChannelCount = AudioFormat.channelCountFromOutChannelMask(channelConfig);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// check the channel index configuration (if present)</span></div><div class="line">    mChannelIndexMask = channelIndexMask;</div><div class="line">    <span class="keyword">if</span> (mChannelIndexMask != <span class="number">0</span>) &#123;</div><div class="line">        <span class="comment">// restrictive: indexMask could allow up to AUDIO_CHANNEL_BITS_LOG2</span></div><div class="line">        <span class="keyword">final</span> <span class="keyword">int</span> indexMask = (<span class="number">1</span> &lt;&lt; CHANNEL_COUNT_MAX) - <span class="number">1</span>;</div><div class="line">        <span class="keyword">if</span> ((channelIndexMask &amp; ~indexMask) != <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">throw</span> ...;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">int</span> channelIndexCount = Integer.bitCount(channelIndexMask);</div><div class="line">        <span class="keyword">if</span> (mChannelCount == <span class="number">0</span>) &#123;</div><div class="line">             mChannelCount = channelIndexCount;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mChannelCount != channelIndexCount) &#123;</div><div class="line">            <span class="keyword">throw</span> ...;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// audio format</span></div><div class="line">    <span class="keyword">if</span> (audioFormat == AudioFormat.ENCODING_DEFAULT) &#123;</div><div class="line">        audioFormat = AudioFormat.ENCODING_PCM_16BIT;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (!AudioFormat.isPublicEncoding(audioFormat)) &#123;</div><div class="line">        <span class="keyword">throw</span> ...;</div><div class="line">    &#125;</div><div class="line">    mAudioFormat = audioFormat;</div><div class="line"></div><div class="line">    <span class="comment">// audio load mode</span></div><div class="line">    <span class="keyword">if</span> (((mode != MODE_STREAM) &amp;&amp; (mode != MODE_STATIC)) ||</div><div class="line">            ((mode != MODE_STREAM) &amp;&amp; !AudioFormat.isEncodingLinearPcm(mAudioFormat))) &#123;</div><div class="line">        <span class="keyword">throw</span> ...;</div><div class="line">    &#125;</div><div class="line">    mDataLoadMode = mode;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Class constructor with &#123;@link AudioAttributes&#125; and &#123;@link AudioFormat&#125;.</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">AudioTrack</span><span class="params">(AudioAttributes attributes, AudioFormat format, <span class="keyword">int</span> bufferSizeInBytes,</span></span></div><div class="line">        <span class="keyword">int</span> mode, <span class="keyword">int</span> sessionId)</div><div class="line">                <span class="keyword">throws</span> IllegalArgumentException &#123;</div><div class="line">    <span class="keyword">super</span>(attributes);</div><div class="line"></div><div class="line">    audioParamCheck(rate, channelMask, channelIndexMask, encoding, mode);</div><div class="line">    audioBuffSizeCheck(bufferSizeInBytes);</div><div class="line"></div><div class="line">    <span class="keyword">int</span>[] sampleRate = <span class="keyword">new</span> <span class="keyword">int</span>[] &#123;mSampleRate&#125;;</div><div class="line">    <span class="keyword">int</span>[] session = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1</span>];</div><div class="line">    session[<span class="number">0</span>] = sessionId;</div><div class="line"></div><div class="line">    <span class="comment">// native initialization</span></div><div class="line">    <span class="keyword">int</span> initResult = native_setup(<span class="keyword">new</span> WeakReference&lt;AudioTrack&gt;(<span class="keyword">this</span>), mAttributes,</div><div class="line">            sampleRate, mChannelMask, mChannelIndexMask, mAudioFormat,</div><div class="line">            mNativeBufferSizeInBytes, mDataLoadMode, session, <span class="number">0</span> <span class="comment">/*nativeTrackInJavaObj*/</span>);</div><div class="line">    <span class="keyword">if</span> (initResult != SUCCESS) &#123;</div><div class="line">        <span class="keyword">return</span>; <span class="comment">// with mState == STATE_UNINITIALIZED</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Native层：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div></pre></td><td class="code"><pre><div class="line">android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject weak_this,</div><div class="line">        jobject jaa,</div><div class="line">        jint sampleRateInHertz, jint channelPositionMask, jint channelIndexMask,</div><div class="line">        jint audioFormat, jint buffSizeInBytes, jint memoryMode, jintArray jSession) &#123;</div><div class="line">    <span class="comment">// Invalid channel representations are caught by !audio_is_output_channel() below.</span></div><div class="line">    audio_channel_mask_t nativeChannelMask = nativeChannelMaskFromJavaChannelMasks(</div><div class="line">            channelPositionMask, channelIndexMask);</div><div class="line">    uint32_t channelCount = audio_channel_count_from_out_mask(nativeChannelMask);</div><div class="line"></div><div class="line">    <span class="comment">// check the format.</span></div><div class="line">    <span class="comment">// This function was called from Java, so we compare the format against the Java constants</span></div><div class="line">    audio_format_t format = audioFormatToNative(audioFormat);</div><div class="line"></div><div class="line">    <span class="comment">// compute the frame count</span></div><div class="line">    size_t frameCount;</div><div class="line">    <span class="keyword">if</span> (audio_is_linear_pcm(format)) &#123;</div><div class="line">        <span class="keyword">const</span> size_t bytesPerSample = audio_bytes_per_sample(format);</div><div class="line">        frameCount = buffSizeInBytes / (channelCount * bytesPerSample);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        frameCount = buffSizeInBytes;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    jint* nSession = (jint *) env-&gt;GetPrimitiveArrayCritical(jSession, NULL);</div><div class="line">    </div><div class="line">    <span class="keyword">int</span> sessionId = nSession[<span class="number">0</span>];</div><div class="line">    env-&gt;ReleasePrimitiveArrayCritical(jSession, nSession, <span class="number">0</span>);</div><div class="line"></div><div class="line">    <span class="comment">// create the native AudioTrack object</span></div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = <span class="keyword">new</span> AudioTrack();</div><div class="line"></div><div class="line">    <span class="comment">// initialize the callback information:</span></div><div class="line">    <span class="comment">// this data will be passed with every AudioTrack callback</span></div><div class="line">    AudioTrackJniStorage* lpJniStorage = <span class="keyword">new</span> AudioTrackJniStorage();</div><div class="line">    lpJniStorage-&gt;mCallbackData.audioTrack_class = (jclass)env-&gt;NewGlobalRef(clazz);</div><div class="line">    <span class="comment">// we use a weak reference so the AudioTrack object can be garbage collected.</span></div><div class="line">    lpJniStorage-&gt;mCallbackData.audioTrack_ref = env-&gt;NewGlobalRef(weak_this);</div><div class="line">    lpJniStorage-&gt;mCallbackData.busy = <span class="keyword">false</span>;</div><div class="line"></div><div class="line">    <span class="comment">// initialize the native AudioTrack object</span></div><div class="line">    status_t status = NO_ERROR;</div><div class="line">    <span class="keyword">switch</span> (memoryMode) &#123;</div><div class="line">    <span class="keyword">case</span> MODE_STREAM:</div><div class="line">        status = lpTrack-&gt;set(</div><div class="line">                AUDIO_STREAM_DEFAULT,<span class="comment">// stream type, but more info conveyed in paa (last argument)</span></div><div class="line">                sampleRateInHertz,</div><div class="line">                format,<span class="comment">// word length, PCM</span></div><div class="line">                nativeChannelMask,</div><div class="line">                frameCount,</div><div class="line">                AUDIO_OUTPUT_FLAG_NONE,</div><div class="line">                audioCallback, &amp;(lpJniStorage-&gt;mCallbackData),<span class="comment">//callback, callback data (user)</span></div><div class="line">                <span class="number">0</span>,<span class="comment">// notificationFrames == 0 since not using EVENT_MORE_DATA to feed the AudioTrack</span></div><div class="line">                <span class="number">0</span>,<span class="comment">// shared mem</span></div><div class="line">                <span class="keyword">true</span>,<span class="comment">// thread can call Java</span></div><div class="line">                sessionId,<span class="comment">// audio session ID</span></div><div class="line">                AudioTrack::TRANSFER_SYNC,</div><div class="line">                NULL,                         <span class="comment">// default offloadInfo</span></div><div class="line">                -<span class="number">1</span>, -<span class="number">1</span>,                       <span class="comment">// default uid, pid values</span></div><div class="line">                paa);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> MODE_STATIC:</div><div class="line">        <span class="comment">// AudioTrack is using shared memory</span></div><div class="line">        status = lpTrack-&gt;set(</div><div class="line">                AUDIO_STREAM_DEFAULT,<span class="comment">// stream type, but more info conveyed in paa (last argument)</span></div><div class="line">                sampleRateInHertz,</div><div class="line">                format,<span class="comment">// word length, PCM</span></div><div class="line">                nativeChannelMask,</div><div class="line">                frameCount,</div><div class="line">                AUDIO_OUTPUT_FLAG_NONE,</div><div class="line">                audioCallback, &amp;(lpJniStorage-&gt;mCallbackData),<span class="comment">//callback, callback data (user));</span></div><div class="line">                <span class="number">0</span>,<span class="comment">// notificationFrames == 0 since not using EVENT_MORE_DATA to feed the AudioTrack</span></div><div class="line">                lpJniStorage-&gt;mMemBase,<span class="comment">// shared mem</span></div><div class="line">                <span class="keyword">true</span>,<span class="comment">// thread can call Java</span></div><div class="line">                sessionId,<span class="comment">// audio session ID</span></div><div class="line">                AudioTrack::TRANSFER_SHARED,</div><div class="line">                NULL,                         <span class="comment">// default offloadInfo</span></div><div class="line">                -<span class="number">1</span>, -<span class="number">1</span>,                       <span class="comment">// default uid, pid values</span></div><div class="line">                paa);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line"></div><div class="line">    <span class="keyword">default</span>:</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    nSession = (jint *) env-&gt;GetPrimitiveArrayCritical(jSession, NULL);</div><div class="line">   </div><div class="line">    <span class="comment">// read the audio session ID back from AudioTrack in case we create a new session</span></div><div class="line">    nSession[<span class="number">0</span>] = lpTrack-&gt;getSessionId();</div><div class="line">    env-&gt;ReleasePrimitiveArrayCritical(jSession, nSession, <span class="number">0</span>);</div><div class="line">    nSession = NULL;</div><div class="line"></div><div class="line">    &#123;   <span class="comment">// scope for the lock</span></div><div class="line">        Mutex::<span class="function">Autolock <span class="title">l</span><span class="params">(sLock)</span></span>;</div><div class="line">        sAudioTrackCallBackCookies.add(&amp;lpJniStorage-&gt;mCallbackData);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// save our newly created C++ AudioTrack in the "nativeTrackInJavaObj" field of the Java object (in mNativeTrackInJavaObj)</span></div><div class="line">    setAudioTrack(env, thiz, lpTrack);</div><div class="line"></div><div class="line">    <span class="comment">// save the JNI resources so we can free them later</span></div><div class="line">    <span class="comment">//ALOGV("storing lpJniStorage: %x\n", (long)lpJniStorage);</span></div><div class="line">    env-&gt;SetLongField(thiz, javaAudioTrackFields.jniData, (jlong)lpJniStorage);</div><div class="line"></div><div class="line">    <span class="comment">// since we had audio attributes, the stream type was derived from them during the</span></div><div class="line">    <span class="comment">// creation of the native AudioTrack: push the same value to the Java object</span></div><div class="line">    env-&gt;SetIntField(thiz, javaAudioTrackFields.fieldStreamType, (jint) lpTrack-&gt;streamType());</div><div class="line">    <span class="comment">// audio attributes were copied in AudioTrack creation</span></div><div class="line">    free(paa);</div><div class="line">    paa = NULL;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> (jint) AUDIO_JAVA_SUCCESS;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>先记下几个关键点：</p>
+<ol>
+<li>AudioTrackJniStorage 对象。</li>
+<li>AudioTrack 创建。</li>
+<li>AudioTrack 流模式的设置。</li>
+</ol>
+<h4 id="AudioTrackJniStorage"><a href="#AudioTrackJniStorage" class="headerlink" title="AudioTrackJniStorage"></a>AudioTrackJniStorage</h4><p>AudioTrackJniStorage 是对Android 共享内存机制的一个封装类。里面包含了两个关键变量：MemoryHeapBase 和 MemoryBase。<br>MemoryHeapBase 是Android 的一套基于Binder机制的对内存操作的类。从BnMemoryHeap派生。服务端（Bnxxx），代理端（Bpxxx）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">struct audiotrack_callback_cookie &#123;</div><div class="line">    jclass      audioTrack_class;</div><div class="line">    jobject     audioTrack_ref;</div><div class="line">    bool        busy;</div><div class="line">    Condition   cond;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">AudioTrackJniStorage</span> </span>&#123;</div><div class="line">   <span class="keyword">public</span>:</div><div class="line">       sp&lt;MemoryHeapBase&gt;         mMemHeap;</div><div class="line">       sp&lt;MemoryBase&gt;             mMemBase;</div><div class="line">       audiotrack_callback_cookie mCallbackData;</div><div class="line">       sp&lt;JNIDeviceCallback&gt;      mDeviceCallback;</div><div class="line"></div><div class="line">   AudioTrackJniStorage() &#123;</div><div class="line">       mCallbackData.audioTrack_class = <span class="number">0</span>;</div><div class="line">       mCallbackData.audioTrack_ref = <span class="number">0</span>;</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   ~AudioTrackJniStorage() &#123;</div><div class="line">       mMemBase.clear();</div><div class="line">       mMemHeap.clear();</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="function">bool <span class="title">allocSharedMem</span><span class="params">(<span class="keyword">int</span> sizeInBytes)</span> </span>&#123;</div><div class="line">       mMemHeap = <span class="keyword">new</span> MemoryHeapBase(sizeInBytes, <span class="number">0</span>, <span class="string">"AudioTrack Heap Base"</span>);</div><div class="line">       <span class="keyword">if</span> (mMemHeap-&gt;getHeapID() &lt; <span class="number">0</span>) &#123;</div><div class="line">           <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">       &#125;</div><div class="line">        mMemBase = <span class="keyword">new</span> MemoryBase(mMemHeap, <span class="number">0</span>, sizeInBytes);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>在这里我们能明白 MemoryHeapBase 是共享内存的核心类，MemoryBase 是在 MemoryHeapBase 基础上包了一层offset的类。在我们new 了一段共享内存后，通过把 MemoryBase 传递给我们要共享内存的代理端来实现共享。</p>
+<ol>
+<li>分配了一块共享内存，使两个进程可以共享这块内存。</li>
+<li>基于Binder通信，使这两个类的进程就可以交互。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">class</span> MemoryHeapBase : <span class="keyword">public</span> <span class="keyword">virtual</span> BnMemoryHeap</div><div class="line">&#123;</div><div class="line">    MemoryHeapBase::MemoryHeapBase(<span class="keyword">size_t</span> size, <span class="keyword">uint32_t</span> flags, <span class="keyword">char</span> <span class="keyword">const</span> * name)</div><div class="line">        : mFD(<span class="number">-1</span>), mSize(<span class="number">0</span>), mBase(MAP_FAILED), mFlags(flags),</div><div class="line">          mDevice(<span class="number">0</span>), mNeedUnmap(<span class="literal">false</span>), mOffset(<span class="number">0</span>)</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">const</span> <span class="keyword">size_t</span> pagesize = getpagesize();</div><div class="line">        size = ((size + pagesize<span class="number">-1</span>) &amp; ~(pagesize<span class="number">-1</span>));</div><div class="line">        <span class="keyword">int</span> fd = ashmem_create_region(name == <span class="literal">NULL</span> ? <span class="string">"MemoryHeapBase"</span> : name, size);</div><div class="line">        ALOGE_IF(fd&lt;<span class="number">0</span>, <span class="string">"error creating ashmem region: %s"</span>, strerror(errno));</div><div class="line">        <span class="keyword">if</span> (fd &gt;= <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (mapfd(fd, size) == NO_ERROR) &#123;</div><div class="line">                <span class="keyword">if</span> (flags &amp; READ_ONLY) &#123;</div><div class="line">                    ashmem_set_prot_region(fd, PROT_READ);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">class</span> MemoryBase : <span class="keyword">public</span> BnMemory </div><div class="line">&#123;</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    MemoryBase(<span class="keyword">const</span> sp&lt;IMemoryHeap&gt;&amp; heap, <span class="keyword">ssize_t</span> offset, <span class="keyword">size_t</span> size);</div><div class="line">    <span class="keyword">virtual</span> ~MemoryBase();</div><div class="line">    <span class="keyword">virtual</span> sp&lt;IMemoryHeap&gt; getMemory(<span class="keyword">ssize_t</span>* offset, <span class="keyword">size_t</span>* size) <span class="keyword">const</span>;</div><div class="line"></div><div class="line"><span class="keyword">protected</span>:</div><div class="line">    <span class="keyword">size_t</span> getSize() <span class="keyword">const</span> &#123; <span class="keyword">return</span> mSize; &#125;</div><div class="line">    <span class="keyword">ssize_t</span> getOffset() <span class="keyword">const</span> &#123; <span class="keyword">return</span> mOffset; &#125;</div><div class="line">    <span class="keyword">const</span> sp&lt;IMemoryHeap&gt;&amp; getHeap() <span class="keyword">const</span> &#123; <span class="keyword">return</span> mHeap; &#125;</div><div class="line"></div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="keyword">size_t</span>          mSize;</div><div class="line">    <span class="keyword">ssize_t</span>         mOffset;</div><div class="line">    sp&lt;IMemoryHeap&gt; mHeap;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="new-AudioTrack"><a href="#new-AudioTrack" class="headerlink" title="new AudioTrack"></a>new AudioTrack</h4><p>将AudioTrack 状态初始为未加载。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">AudioTrack::AudioTrack()</div><div class="line">    : mStatus(NO_INIT),</div><div class="line">    ...</div><div class="line">&#123;</div><div class="line">    mAttributes.content_type = AUDIO_CONTENT_TYPE_UNKNOWN;</div><div class="line">    mAttributes.usage = AUDIO_USAGE_UNKNOWN;</div><div class="line">    mAttributes.flags = <span class="number">0x0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="AudioTrack-set"><a href="#AudioTrack-set" class="headerlink" title="AudioTrack.set"></a>AudioTrack.set</h4><p>别看 set 函数很长，其实核心做的事就三件:</p>
+<ol>
+<li>检测跟转换各种参数。</li>
+<li>创建 AudioTrackThread 工作线程。</li>
+<li>调用核心创建函数 createTrack_l。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> AudioTrack::<span class="built_in">set</span>(</div><div class="line">        <span class="keyword">audio_stream_type_t</span> streamType,</div><div class="line">        <span class="keyword">uint32_t</span> sampleRate,</div><div class="line">        <span class="keyword">audio_format_t</span> format,</div><div class="line">        <span class="keyword">audio_channel_mask_t</span> channelMask,</div><div class="line">        <span class="keyword">size_t</span> frameCount,</div><div class="line">        <span class="keyword">audio_output_flags_t</span> flags,</div><div class="line">        <span class="keyword">callback_t</span> cbf,</div><div class="line">        <span class="keyword">void</span>* user,</div><div class="line">        <span class="keyword">uint32_t</span> notificationFrames,</div><div class="line">        <span class="keyword">const</span> sp&lt;IMemory&gt;&amp; sharedBuffer,</div><div class="line">        <span class="keyword">bool</span> threadCanCallJava,</div><div class="line">        <span class="keyword">int</span> sessionId,</div><div class="line">        transfer_type transferType,</div><div class="line">        <span class="keyword">const</span> <span class="keyword">audio_offload_info_t</span> *offloadInfo,</div><div class="line">        <span class="keyword">int</span> uid,</div><div class="line">        <span class="keyword">pid_t</span> pid,</div><div class="line">        <span class="keyword">const</span> <span class="keyword">audio_attributes_t</span>* pAttributes,</div><div class="line">        <span class="keyword">bool</span> doNotReconnect)</div><div class="line">&#123;</div><div class="line">    ...</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (cbf != <span class="literal">NULL</span>) &#123;</div><div class="line">        mAudioTrackThread = <span class="keyword">new</span> AudioTrackThread(*<span class="keyword">this</span>, threadCanCallJava);</div><div class="line">        mAudioTrackThread-&gt;run(<span class="string">"AudioTrack"</span>, ANDROID_PRIORITY_AUDIO, <span class="number">0</span> <span class="comment">/*stack*/</span>);</div><div class="line">        <span class="comment">// thread begins in paused state, and will not reference us until start()</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// create the IAudioTrack</span></div><div class="line">    <span class="keyword">status_t</span> status = createTrack_l();</div><div class="line"></div><div class="line">    <span class="keyword">return</span> NO_ERROR;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="AudioTrackThread"><a href="#AudioTrackThread" class="headerlink" title="AudioTrackThread"></a>AudioTrackThread</h4><blockquote>
+<p>a small internal class to handle the callback.<br>这个线程是用于AudioTrack(native)与AudioTrack(java)间的数据事件通知的，为上层应用处理事件提供了一个入口。</p>
+</blockquote>
+<h4 id="AudioTrack-createTrack-l"><a href="#AudioTrack-createTrack-l" class="headerlink" title="AudioTrack.createTrack_l"></a>AudioTrack.createTrack_l</h4><p>看到核心 createTrack 的时候我们应该明白这几个步骤：</p>
+<ol>
+<li>获取内核 AudioFlinger 对象。</li>
+<li>通过 AudioFlinger 创建 track。</li>
+<li>从拿到的 track 里开始为以后的 write函数做准备。</li>
+</ol>
+<p>总结：AudioTrack 其实也是一个壳，核心的工作都是由 AudioFlinger 实现，到此，我们基本明白 AudioTrack 的调用也是一步步函数封装加上共享内存的调用。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// must be called with mLock held</span></div><div class="line"><span class="keyword">status_t</span> AudioTrack::createTrack_l()</div><div class="line">&#123;</div><div class="line">    <span class="keyword">const</span> sp&lt;IAudioFlinger&gt;&amp; audioFlinger = AudioSystem::get_audio_flinger();</div><div class="line"></div><div class="line">    sp&lt;IAudioTrack&gt; track = audioFlinger-&gt;createTrack(streamType,</div><div class="line">                                                      mSampleRate,</div><div class="line">                                                      mFormat,</div><div class="line">                                                      mChannelMask,</div><div class="line">                                                      &amp;temp,</div><div class="line">                                                      &amp;trackFlags,</div><div class="line">                                                      mSharedBuffer,</div><div class="line">                                                      output,</div><div class="line">                                                      tid,</div><div class="line">                                                      &amp;mSessionId,</div><div class="line">                                                      mClientUid,</div><div class="line">                                                      &amp;status);</div><div class="line"></div><div class="line">    sp&lt;IMemory&gt; iMem = track-&gt;getCblk();</div><div class="line">    <span class="keyword">void</span> *iMemPointer = iMem-&gt;pointer();</div><div class="line">    </div><div class="line">    mCblkMemory = iMem;</div><div class="line">    <span class="keyword">audio_track_cblk_t</span>* cblk = <span class="keyword">static_cast</span>&lt;<span class="keyword">audio_track_cblk_t</span>*&gt;(iMemPointer);</div><div class="line">    </div><div class="line">    <span class="comment">// Starting address of buffers in shared memory.  If there is a shared buffer, buffers</span></div><div class="line">    <span class="comment">// is the value of pointer() for the shared buffer, otherwise buffers points</span></div><div class="line">    <span class="comment">// immediately after the control block.  This address is for the mapping within client</span></div><div class="line">    <span class="comment">// address space.  AudioFlinger::TrackBase::mBuffer is for the server address space.</span></div><div class="line">    <span class="keyword">void</span>* buffers;</div><div class="line">    <span class="keyword">if</span> (mSharedBuffer == <span class="number">0</span>) &#123;</div><div class="line">        buffers = cblk + <span class="number">1</span>;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        buffers = mSharedBuffer-&gt;pointer();</div><div class="line">        <span class="keyword">if</span> (buffers == <span class="literal">NULL</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"Could not get buffer pointer"</span>);</div><div class="line">            <span class="keyword">return</span> NO_INIT;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (mSharedBuffer == <span class="number">0</span>) &#123;</div><div class="line">        mStaticProxy.clear();</div><div class="line">        mProxy = <span class="keyword">new</span> AudioTrackClientProxy(cblk, buffers, frameCount, mFrameSize);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        mStaticProxy = <span class="keyword">new</span> StaticAudioTrackClientProxy(cblk, buffers, frameCount, mFrameSize);</div><div class="line">        mProxy = mStaticProxy;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> NO_ERROR;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="AudioTrack-play"><a href="#AudioTrack-play" class="headerlink" title="AudioTrack.play"></a>AudioTrack.play</h3><blockquote>
+<p>Starts playing an AudioTrack.</p>
+</blockquote>
+<p>java层流程：</p>
+<ol>
+<li>检查当前是否被禁止。是的话就将音量降为0。</li>
+<li>调用native层的播放函数。</li>
+</ol>
+<p>native层流程：</p>
+<ol>
+<li>取出之前native层创建的audiotrack对象。</li>
+<li>调用audiotrack对象的start开始播放。</li>
+</ol>
+<p>native层：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">android_media_AudioTrack_start(JNIEnv *env, jobject thiz) &#123;</div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = getAudioTrack(env, thiz);</div><div class="line">    lpTrack-&gt;start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="AudioTrack-write"><a href="#AudioTrack-write" class="headerlink" title="AudioTrack.write"></a>AudioTrack.write</h3><blockquote>
+<p>Writes the audio data to the audio sink for playback (streaming mode), or copies audio data for later playback (static buffer mode). </p>
+</blockquote>
+<p>write有两种方式，一种是读流播放：先调用play，再调用write；另一种是读文件：先调用writ再调用play。</p>
+<p>java层流程：</p>
+<ol>
+<li>检查当前传入的格式，播放的起始、终点是否合法。</li>
+<li>调用native层的写入函数。</li>
+</ol>
+<p>native层流程：</p>
+<ol>
+<li>取出之前native层创建的audiotrack对象。</li>
+<li>调用audiotrack对象的write开始写入播放信息。</li>
+</ol>
+<p>这里在调用函数时有一个注意的点：<br>The format specified in the AudioTrack constructor should be ENCODING_PCM_16BIT to correspond to the data in the array.<br><code>write(short[] audioData, int offsetInShorts, int sizeInShorts)</code></p>
+<p>The format specified in the AudioTrack constructor should be ENCODING_PCM_8BIT to correspond to the data in the array. The format can be ENCODING_PCM_16BIT, but this is deprecated.<br><code>write(byte[] audioData, int offsetInBytes, int sizeInBytes, int writeMode)</code></p>
+<p>也就是在调用write写入的时候如果pcm是16bit的格式就尽量选择传入short数组格式。</p>
+<p>在write Java层有两种方式，一种是读流的方式进行播放，一种是读文件形式。两种形式调用的方法不同，但最终调用native层的方法都是一样的。</p>
+<p>native层：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 读流的方式：</span></div><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_media_AudioTrack_writeArray</span><span class="params">(JNIEnv *env, jobject thiz,</span></span></div><div class="line">                                                T javaAudioData,</div><div class="line">                                                jint offsetInSamples, jint sizeInSamples,</div><div class="line">                                                jint javaAudioFormat,</div><div class="line">                                                jboolean isWriteBlocking) &#123;</div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = getAudioTrack(env, thiz);</div><div class="line"></div><div class="line">    <span class="comment">// get the pointer for the audio data from the java array</span></div><div class="line">    auto cAudioData = envGetArrayElements(env, javaAudioData, NULL);</div><div class="line">    jint samplesWritten = writeToTrack(lpTrack, javaAudioFormat, cAudioData,</div><div class="line">            offsetInSamples, sizeInSamples, isWriteBlocking == JNI_TRUE <span class="comment">/* blocking */</span>);</div><div class="line"></div><div class="line">    envReleaseArrayElements(env, javaAudioData, cAudioData, <span class="number">0</span>);</div><div class="line">    <span class="keyword">return</span> samplesWritten;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 读文件的形式：</span></div><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_media_AudioTrack_write_native_bytes</span><span class="params">(JNIEnv *env,  jobject thiz,</span></span></div><div class="line">        jbyteArray javaBytes, jint byteOffset, jint sizeInBytes,</div><div class="line">        jint javaAudioFormat, jboolean isWriteBlocking) &#123;</div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = getAudioTrack(env, thiz);</div><div class="line"></div><div class="line">    <span class="function">ScopedBytesRO <span class="title">bytes</span><span class="params">(env, javaBytes)</span></span>;</div><div class="line">    jint written = writeToTrack(lpTrack, javaAudioFormat, bytes.get(), byteOffset,</div><div class="line">            sizeInBytes, isWriteBlocking == JNI_TRUE <span class="comment">/* blocking */</span>);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> written;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">writeToTrack</span><span class="params">(<span class="keyword">const</span> sp&lt;AudioTrack&gt;&amp; track, jint audioFormat, <span class="keyword">const</span> T *data,</span></span></div><div class="line">                         jint offsetInSamples, jint sizeInSamples, bool blocking) &#123;</div><div class="line">    ssize_t written = <span class="number">0</span>;</div><div class="line">    <span class="comment">// regular write() or copy the data to the AudioTrack's shared memory?</span></div><div class="line">    size_t sizeInBytes = sizeInSamples * sizeof(T);</div><div class="line">    </div><div class="line">    <span class="comment">// 如果是读流的形式 sharedBuffer()为空，读文件则不为空。</span></div><div class="line">    <span class="keyword">if</span> (track-&gt;sharedBuffer() == <span class="number">0</span>) &#123;</div><div class="line">        written = track-&gt;write(data + offsetInSamples, sizeInBytes, blocking);</div><div class="line">        <span class="comment">// for compatibility with earlier behavior of write(), return 0 in this case</span></div><div class="line">        <span class="keyword">if</span> (written == (ssize_t) WOULD_BLOCK) &#123;</div><div class="line">            written = <span class="number">0</span>;</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// writing to shared memory, check for capacity 首先把数据拷贝到共享内存中。</span></div><div class="line">        <span class="keyword">if</span> ((size_t)sizeInBytes &gt; track-&gt;sharedBuffer()-&gt;size()) &#123;</div><div class="line">            sizeInBytes = track-&gt;sharedBuffer()-&gt;size();</div><div class="line">        &#125;</div><div class="line">        memcpy(track-&gt;sharedBuffer()-&gt;pointer(), data + offsetInSamples, sizeInBytes);</div><div class="line">        written = sizeInBytes;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (written &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> written / sizeof(T);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// for compatibility, error codes pass through unchanged</span></div><div class="line">    <span class="keyword">return</span> written;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="AudioTrack-stop、AudioTrack-release"><a href="#AudioTrack-stop、AudioTrack-release" class="headerlink" title="AudioTrack.stop、AudioTrack.release"></a>AudioTrack.stop、AudioTrack.release</h3><blockquote>
+<p>Stops playing the audio data. Releases the native AudioTrack resources.</p>
+</blockquote>
+<p>因为release里面就包含了stop。我们直接分析release就好。</p>
+<p>java层流程：</p>
+<ol>
+<li>调用stop函数停止播放，stop函数也很粗暴直接调用native层stop。</li>
+<li>调用native层release函数。</li>
+</ol>
+<p>native层流程：</p>
+<ol>
+<li>stop 首先取出之前native层创建的audiotrack对象，调用stop方法。</li>
+<li>release 也首先调用stop，然后获取AudioTrackJniStorage对象，释放AudioTrackJniStorage保存的资源。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">android_media_AudioTrack_stop(JNIEnv *env, jobject thiz) &#123;</div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = getAudioTrack(env, thiz);</div><div class="line">    lpTrack-&gt;stop();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">android_media_AudioTrack_release</span><span class="params">(JNIEnv *env,  jobject thiz)</span> </span>&#123;</div><div class="line">    sp&lt;AudioTrack&gt; lpTrack = setAudioTrack(env, thiz, <span class="number">0</span>);</div><div class="line">    lpTrack-&gt;stop();</div><div class="line"></div><div class="line">    <span class="comment">// delete the JNI data</span></div><div class="line">    AudioTrackJniStorage* pJniStorage = (AudioTrackJniStorage *)env-&gt;GetLongField(</div><div class="line">        thiz, javaAudioTrackFields.jniData);</div><div class="line">    <span class="comment">// reset the native resources in the Java object so any attempt to access</span></div><div class="line">    <span class="comment">// them after a call to release fails.</span></div><div class="line">    env-&gt;SetLongField(thiz, javaAudioTrackFields.jniData, <span class="number">0</span>);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (pJniStorage) &#123;</div><div class="line">        Mutex::<span class="function">Autolock <span class="title">l</span><span class="params">(sLock)</span></span>;</div><div class="line">        audiotrack_callback_cookie *lpCookie = &amp;pJniStorage-&gt;mCallbackData;</div><div class="line">        <span class="keyword">while</span> (lpCookie-&gt;busy) &#123;</div><div class="line">            <span class="keyword">if</span> (lpCookie-&gt;cond.waitRelative(sLock,  milliseconds(CALLBACK_COND_WAIT_TIMEOUT_MS)) != NO_ERROR) &#123;</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        sAudioTrackCallBackCookies.remove(lpCookie);</div><div class="line">        <span class="comment">// delete global refs created in native_setup</span></div><div class="line">        env-&gt;DeleteGlobalRef(lpCookie-&gt;audioTrack_class);</div><div class="line">        env-&gt;DeleteGlobalRef(lpCookie-&gt;audioTrack_ref);</div><div class="line">        delete pJniStorage;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>音频这块要了解的东西确实太多了，针对 接下来的核心层我们要分层次的去了解，大致对于应用层来说了解应该是足够了。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Android-基础知识/" rel="tag">#Android_基础知识</a>
+          
+            <a href="/tags/AudioTrack/" rel="tag">#AudioTrack</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/28/Android-浅析-GC-基础原理/" rel="next" title="Android-浅析-GC-基础原理">
+                <i class="fa fa-chevron-left"></i> Android-浅析-GC-基础原理
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/"
+           data-title="Android-浅析-音频系统-AudioTrack-一-基础原理" data-url="http://yoursite.com/2017/12/09/Android-浅析-音频系统-AudioTrack-一-基础原理/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="钟华健" />
+          <p class="site-author-name" itemprop="name">钟华健</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">53</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jasonzhong" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概括"><span class="nav-number">2.</span> <span class="nav-text">概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AudioTrack"><span class="nav-number">3.</span> <span class="nav-text">AudioTrack</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#getMinBufferSize"><span class="nav-number">3.1.</span> <span class="nav-text">getMinBufferSize</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建AudioTrack"><span class="nav-number">3.2.</span> <span class="nav-text">创建AudioTrack</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AudioTrackJniStorage"><span class="nav-number">3.2.1.</span> <span class="nav-text">AudioTrackJniStorage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#new-AudioTrack"><span class="nav-number">3.2.2.</span> <span class="nav-text">new AudioTrack</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AudioTrack-set"><span class="nav-number">3.2.3.</span> <span class="nav-text">AudioTrack.set</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AudioTrackThread"><span class="nav-number">3.2.4.</span> <span class="nav-text">AudioTrackThread</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AudioTrack-createTrack-l"><span class="nav-number">3.2.5.</span> <span class="nav-text">AudioTrack.createTrack_l</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AudioTrack-play"><span class="nav-number">3.3.</span> <span class="nav-text">AudioTrack.play</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AudioTrack-write"><span class="nav-number">3.4.</span> <span class="nav-text">AudioTrack.write</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AudioTrack-stop、AudioTrack-release"><span class="nav-number">3.5.</span> <span class="nav-text">AudioTrack.stop、AudioTrack.release</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钟华健</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jasonzhong"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
